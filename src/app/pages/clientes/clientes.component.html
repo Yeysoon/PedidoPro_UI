@@ -1,0 +1,99 @@
+﻿<div class="fade-in">
+  <div class="page-header">
+    <h1>Directorio de <span>Clientes</span></h1>
+    <button class="btn btn-gold" (click)="openCreate()">
+      <span class="material-icons">person_add</span> Nuevo Cliente
+    </button>
+  </div>
+
+  <div class="toolbar glass-card">
+    <div class="search-box">
+      <span class="material-icons">search</span>
+      <input class="form-control" style="border:none;background:transparent;flex:1" placeholder="Buscar cliente por nombre o NIT..." [value]="search()" (input)="search.set($any($event.target).value)"/>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-state">
+      <span class="material-icons spin-icon">sync</span>
+      <p>Cargando clientes...</p>
+    </div>
+  } @else {
+    <div class="glass-card table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>NIT / Identificación</th>
+            <th>Nombre Completo</th>
+            <th>Correo Electrónico</th>
+            <th>Teléfono</th>
+            <th style="text-align: right;">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (c of filtered(); track c.id_cliente) {
+            <tr>
+              <td>
+                <span class="badge badge-gold">
+                  <span class="material-icons badge-icon">badge</span>
+                  {{ c.nit_documento || 'Consumidor Final' }}
+                </span>
+              </td>
+              <td><strong>{{ c.nombre_completo }}</strong></td>
+              <td>{{ c.correo_electronico || '—' }}</td>
+              <td>{{ c.telefono || '—' }}</td>
+              <td style="text-align: right;">
+                <div class="row-actions">
+                  <button class="action-btn edit" (click)="openEdit(c)" title="Editar">
+                    <span class="material-icons">edit</span>
+                  </button>
+                  <button class="action-btn del" (click)="delete(c.id_cliente)" title="Eliminar">
+                    <span class="material-icons">delete_outline</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+@if (showModal()) {
+  <div class="modal-overlay" (click)="showModal.set(false)">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ isEdit() ? 'Editar Cliente' : 'Nuevo Cliente' }}</h2>
+        <button class="close-btn" (click)="showModal.set(false)">×</button>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Nombre Completo *</label>
+          <input class="form-control" [value]="editItem().nombre_completo" (input)="update('nombre_completo', $any($event.target).value)" placeholder="Ej. Carlos Martínez"/>
+        </div>
+
+        <div class="form-group">
+          <label>NIT / Identificación Fiscal</label>
+          <input class="form-control" [value]="editItem().nit_documento" (input)="update('nit_documento', $any($event.target).value)" placeholder="Ej. 1234567-8"/>
+        </div>
+
+        <div class="form-group">
+          <label>Teléfono de Contacto</label>
+          <input class="form-control" [value]="editItem().telefono" (input)="update('telefono', $any($event.target).value)" placeholder="+502 5555-5555"/>
+        </div>
+
+        <div class="form-group full">
+          <label>Correo Electrónico</label>
+          <input class="form-control" type="email" [value]="editItem().correo_electronico" (input)="update('correo_electronico', $any($event.target).value)" placeholder="cliente@correo.com"/>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-ghost" (click)="showModal.set(false)">Cancelar</button>
+        <button class="btn btn-gold" (click)="save()">Guardar</button>
+      </div>
+    </div>
+  </div>
+}

@@ -1,0 +1,128 @@
+﻿<div class="fade-in">
+  <div class="page-header">
+    <h1>Menú del <span>Restaurante</span></h1>
+    @if (isAdmin()) {
+      <button class="btn btn-gold" (click)="openCreate()">
+        <span class="material-icons">add_circle_outline</span> Nuevo Platillo
+      </button>
+    }
+  </div>
+
+  <!-- FILTROS -->
+  <div class="menu-filters glass-card">
+    <div class="search-box">
+      <span class="material-icons search-icon">search</span>
+      <input class="form-control search-input" placeholder="Buscar por nombre de platillo..." [value]="search()" (input)="search.set($any($event.target).value)"/>
+    </div>
+
+    <div class="cats-row">
+      <button class="cat-chip" [class.active]="catActiva()===0" (click)="catActiva.set(0)">
+        <span class="material-icons chip-icon">restaurant_menu</span>
+        Todos
+      </button>
+      @for (c of categorias(); track c.id_categoria) {
+        <button class="cat-chip" [class.active]="catActiva()===c.id_categoria" (click)="catActiva.set(c.id_categoria)">
+          <span class="material-icons chip-icon">{{ getCatIcon(c.nombre_categoria) }}</span>
+          {{ c.nombre_categoria }}
+        </button>
+      }
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-state">
+      <span class="material-icons spin-icon">sync</span>
+      <p>Cargando menú...</p>
+    </div>
+  } @else {
+    <div class="menu-grid">
+      @for (p of filtrados(); track p.id_producto) {
+        <div class="menu-card glass-card" [class.no-disponible]="!p.disponible">
+          <div class="card-icon-header">
+            <div class="cat-icon-circle">
+              <span class="material-icons">{{ getCatIcon(getCatNombre(p.id_categoria)) }}</span>
+            </div>
+            @if (!p.disponible) {
+              <span class="badge badge-cancelado">No disponible</span>
+            }
+          </div>
+
+          <div class="card-body">
+            <span class="cat-tag">{{ getCatNombre(p.id_categoria) }}</span>
+            <h3 class="prod-name">{{ p.nombre_producto }}</h3>
+            <p class="prod-desc">{{ p.descripcion || 'Sin descripción' }}</p>
+
+            <div class="card-footer">
+              <span class="price">{{ formatCurrency(p.precio) }}</span>
+              @if (isAdmin()) {
+                <div class="actions">
+                  <button class="action-btn edit" (click)="openEdit(p)" title="Editar platillo">
+                    <span class="material-icons">edit</span>
+                  </button>
+                  <button class="action-btn del" (click)="delete(p.id_producto)" title="Eliminar platillo">
+                    <span class="material-icons">delete_outline</span>
+                  </button>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+@if (showModal()) {
+  <div class="modal-overlay" (click)="showModal.set(false)">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ isEdit() ? 'Editar Platillo' : 'Nuevo Platillo' }}</h2>
+        <button class="close-btn" (click)="showModal.set(false)">×</button>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Nombre del Platillo *</label>
+          <input class="form-control" [value]="editProd().nombre_producto" (input)="update('nombre_producto', $any($event.target).value)" placeholder="Ej. Lomo en Salsa de Champiñones"/>
+        </div>
+
+        <div class="form-group full">
+          <label>Descripción</label>
+          <textarea class="form-control" rows="2" [value]="editProd().descripcion" (input)="update('descripcion', $any($event.target).value)" placeholder="Detalle de ingredientes y preparación..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Precio (Q) *</label>
+          <input class="form-control" type="number" step="0.01" [value]="editProd().precio" (input)="update('precio', +$any($event.target).value)"/>
+        </div>
+
+        <div class="form-group">
+          <label>Categoría</label>
+          <select class="form-control" [value]="editProd().id_categoria" (change)="update('id_categoria', +$any($event.target).value)">
+            @for (c of categorias(); track c.id_categoria) {
+              <option [value]="c.id_categoria">{{ c.nombre_categoria }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group full">
+          <label>Disponibilidad</label>
+          <div class="toggle-row">
+            <input type="checkbox" id="disp" [checked]="editProd().disponible" (change)="update('disponible', $any($event.target).checked)"/>
+            <label for="disp" class="toggle-label">
+              <span class="badge" [class.badge-listo]="editProd().disponible" [class.badge-cancelado]="!editProd().disponible">
+                <span class="material-icons badge-icon">{{ editProd().disponible ? 'check_circle' : 'cancel' }}</span>
+                {{ editProd().disponible ? 'Disponible en menú' : 'Agotado temporalmente' }}
+              </span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-ghost" (click)="showModal.set(false)">Cancelar</button>
+        <button class="btn btn-gold" (click)="save()">Guardar</button>
+      </div>
+    </div>
+  </div>
+}

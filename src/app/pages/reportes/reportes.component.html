@@ -1,0 +1,119 @@
+﻿<div class="fade-in">
+  <div class="page-header">
+    <h1>Reportes y <span>Estadísticas</span></h1>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi glass-card">
+      <div class="kpi-icon-wrap gold">
+        <span class="material-icons">account_balance_wallet</span>
+      </div>
+      <div class="kpi-body">
+        <span class="kpi-label">Ingresos Totales</span>
+        <span class="kpi-val">{{ formatCurrency(totalGeneral()) }}</span>
+      </div>
+    </div>
+
+    <div class="kpi glass-card">
+      <div class="kpi-icon-wrap info">
+        <span class="material-icons">analytics</span>
+      </div>
+      <div class="kpi-body">
+        <span class="kpi-label">Promedio de Ventas Diarias</span>
+        <span class="kpi-val">{{ formatCurrency(avgDiario()) }}</span>
+      </div>
+    </div>
+
+    <div class="kpi glass-card">
+      <div class="kpi-icon-wrap success">
+        <span class="material-icons">calendar_today</span>
+      </div>
+      <div class="kpi-body">
+        <span class="kpi-label">Jornadas Registradas</span>
+        <span class="kpi-val">{{ ventas().length }} días</span>
+      </div>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-state">
+      <span class="material-icons spin-icon">sync</span>
+      <p>Generando reportes...</p>
+    </div>
+  } @else {
+    <div class="charts-row">
+      <div class="chart-card glass-card">
+        <div class="card-title-row">
+          <span class="material-icons title-icon">trending_up</span>
+          <h3>Facturación por Fecha</h3>
+        </div>
+
+        <div class="bar-chart">
+          @for (v of ventas().slice(-14); track v.fecha) {
+            <div class="bar-col" [title]="formatCurrency(v.total_ventas) + ' — ' + v.fecha">
+              <div class="bar-fill" [style.height]="getBarH(v.total_ventas)"></div>
+              <span class="bar-label">{{ v.fecha | slice:8:10 }}/{{ v.fecha | slice:5:7 }}</span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="chart-card glass-card">
+        <div class="card-title-row">
+          <span class="material-icons title-icon">leaderboard</span>
+          <h3>Ranking de Ventas</h3>
+        </div>
+
+        <div class="top-list">
+          @for (p of productosTop(); track p.nombre_producto; let i = $index) {
+            <div class="top-item">
+              <span class="rank" [class.gold]="i===0" [class.silver]="i===1" [class.bronze]="i===2">{{ i + 1 }}</span>
+              <div class="top-info">
+                <span class="top-name">{{ p.nombre_producto }}</span>
+                <div class="top-bar">
+                  <div class="top-fill" [style.width]="getTopW(p.total_vendido)"></div>
+                </div>
+              </div>
+              <span class="top-count">{{ p.total_vendido }} unidades</span>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="glass-card ventas-table">
+      <div class="card-title-row">
+        <span class="material-icons title-icon">receipt</span>
+        <h3>Historial Detallado de Facturas</h3>
+      </div>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Facturas Emitidas</th>
+            <th style="text-align: right;">Total Facturado</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (v of ventas().slice().reverse(); track v.fecha) {
+            <tr>
+              <td>
+                <span class="date-cell">
+                  <span class="material-icons">event</span>
+                  {{ v.fecha }}
+                </span>
+              </td>
+              <td>{{ v.cantidad_facturas }} comprobantes</td>
+              <td style="text-align: right;">
+                <strong style="color:var(--gold); font-family:var(--font-serif); font-size:1rem;">
+                  {{ formatCurrency(v.total_ventas) }}
+                </strong>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

@@ -1,0 +1,137 @@
+﻿<div class="fade-in">
+  <div class="page-header">
+    <h1>Mapa de <span>Mesas</span></h1>
+    @if (isAdmin()) {
+      <button class="btn btn-gold" (click)="openCreate()">
+        <span class="material-icons">add_circle_outline</span> Nueva Mesa
+      </button>
+    }
+  </div>
+
+  <!-- FILTROS -->
+  <div class="filters glass-card">
+    <div class="filter-group">
+      <span class="material-icons filter-icon">filter_alt</span>
+      <select class="form-control filter-select" [value]="filterZona()" (change)="filterZona.set(+$any($event.target).value)">
+        <option value="0">Todas las zonas</option>
+        @for (z of zonas(); track z.id_zona) {
+          <option [value]="z.id_zona">{{ z.nombre_zona }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <select class="form-control filter-select" [value]="filterEstado()" (change)="filterEstado.set($any($event.target).value)">
+        <option value="">Todos los estados</option>
+        @for (e of estadoOpts; track e) {
+          <option [value]="e">{{ e }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="mesas-counters">
+      <span class="counter libre">
+        <span class="material-icons">check_circle</span>
+        {{ libresCount() }} Libres
+      </span>
+      <span class="counter ocupada">
+        <span class="material-icons">cancel</span>
+        {{ ocupadasCount() }} Ocupadas
+      </span>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-state">
+      <span class="material-icons spin-icon">sync</span>
+      <p>Cargando mesas...</p>
+    </div>
+  } @else {
+    <div class="mesas-grid">
+      @for (mesa of filteredMesas(); track mesa.id_mesa) {
+        <div class="mesa-card glass-card" [class]="'estado-' + getBadge(mesa.estado)" (click)="openPedido(mesa)">
+          <div class="mesa-header">
+            <div class="mesa-title">
+              <span class="material-icons mesa-icon">table_restaurant</span>
+              <span class="mesa-num">Mesa {{ mesa.numero_mesa }}</span>
+            </div>
+            <span class="badge" [class]="'badge-' + getBadge(mesa.estado)">{{ mesa.estado }}</span>
+          </div>
+
+          <div class="mesa-body">
+            <div class="mesa-info">
+              <span class="material-icons">people_outline</span>
+              {{ mesa.capacidad }} personas
+            </div>
+            <div class="mesa-info">
+              <span class="material-icons">place</span>
+              {{ getZonaNombre(mesa.id_zona) }}
+            </div>
+          </div>
+
+          @if (isAdmin()) {
+            <div class="mesa-actions" (click)="$event.stopPropagation()">
+              <select class="estado-select form-control" [value]="mesa.estado" (change)="setEstado(mesa, $any($event.target).value)">
+                @for (e of estadoOpts; track e) {
+                  <option [value]="e">{{ e }}</option>
+                }
+              </select>
+              <button class="action-btn edit" (click)="openEdit(mesa)" title="Editar">
+                <span class="material-icons">edit</span>
+              </button>
+              <button class="action-btn del" (click)="deleteMesa(mesa.id_mesa)" title="Eliminar">
+                <span class="material-icons">delete_outline</span>
+              </button>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>
+
+@if (showModal()) {
+  <div class="modal-overlay" (click)="showModal.set(false)">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ isEdit() ? 'Editar Mesa' : 'Nueva Mesa' }}</h2>
+        <button class="close-btn" (click)="showModal.set(false)">×</button>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Número de Mesa *</label>
+          <input class="form-control" type="number" [value]="editMesa().numero_mesa" (input)="update('numero_mesa', +$any($event.target).value)"/>
+        </div>
+
+        <div class="form-group">
+          <label>Capacidad (personas) *</label>
+          <input class="form-control" type="number" [value]="editMesa().capacidad" (input)="update('capacidad', +$any($event.target).value)"/>
+        </div>
+
+        <div class="form-group">
+          <label>Zona</label>
+          <select class="form-control" [value]="editMesa().id_zona" (change)="update('id_zona', +$any($event.target).value)">
+            @for (z of zonas(); track z.id_zona) {
+              <option [value]="z.id_zona">{{ z.nombre_zona }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Estado Inicial</label>
+          <select class="form-control" [value]="editMesa().estado" (change)="update('estado', $any($event.target).value)">
+            @for (e of estadoOpts; track e) {
+              <option [value]="e">{{ e }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-ghost" (click)="showModal.set(false)">Cancelar</button>
+        <button class="btn btn-gold" (click)="save()">Guardar</button>
+      </div>
+    </div>
+  </div>
+}

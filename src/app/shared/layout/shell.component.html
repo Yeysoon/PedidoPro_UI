@@ -1,0 +1,66 @@
+﻿<div class="app-shell" [class.sidebar-collapsed]="!sidebarOpen()">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-box">
+        <span class="material-icons logo-icon">restaurant</span>
+      </div>
+      @if (sidebarOpen()) {
+        <div class="logo-text-wrap">
+          <span class="logo-text">Pedido<span>Pro</span></span>
+          <span class="logo-version">v1.0</span>
+        </div>
+      }
+    </div>
+
+    <nav class="sidebar-nav">
+      @for (item of navItems(); track item.route) {
+        <a [routerLink]="item.route" routerLinkActive="active" class="nav-item" [title]="item.label">
+          <span class="material-icons nav-icon">{{ item.icon }}</span>
+          @if (sidebarOpen()) {
+            <span class="nav-label">{{ item.label }}</span>
+          }
+        </a>
+      }
+    </nav>
+
+    <div class="sidebar-footer">
+      @if (sidebarOpen()) {
+        <div class="user-info">
+          <div class="user-avatar">
+            <span class="material-icons">{{ getRoleIcon() }}</span>
+          </div>
+          <div class="user-details">
+            <span class="user-name">{{ user()?.nombre }}</span>
+            <span class="user-role">{{ role() }}</span>
+          </div>
+        </div>
+      }
+      <button class="logout-btn" (click)="logout()" title="Cerrar sesión">
+        <span class="material-icons">logout</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main-wrapper">
+    <header class="top-bar">
+      <div class="top-bar-left">
+        <button class="toggle-btn" (click)="toggleSidebar()">
+          <span class="material-icons">{{ sidebarOpen() ? 'menu_open' : 'menu' }}</span>
+        </button>
+      </div>
+
+      <div class="top-bar-right">
+        <span class="role-badge">
+          <span class="material-icons">{{ getRoleIcon() }}</span>
+          {{ role() }}
+        </span>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <router-outlet />
+    </main>
+  </div>
+</div>

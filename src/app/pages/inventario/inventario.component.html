@@ -1,0 +1,95 @@
+﻿<div class="fade-in">
+  <div class="page-header">
+    <h1>Control de <span>Inventario</span></h1>
+    <button class="btn btn-gold" (click)="openCreate()">
+      <span class="material-icons">add_box</span> Nuevo Insumo
+    </button>
+  </div>
+
+  <div class="toolbar glass-card">
+    <span class="material-icons" style="color:var(--text-muted)">search</span>
+    <input class="form-control" style="border:none;background:transparent;flex:1" placeholder="Buscar insumo o ingrediente..." [value]="search()" (input)="search.set($any($event.target).value)"/>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-state">
+      <span class="material-icons spin-icon">sync</span>
+      <p>Cargando inventario...</p>
+    </div>
+  } @else {
+    <div class="glass-card table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Ingrediente / Insumo</th>
+            <th>Unidad de Medida</th>
+            <th>Stock Disponible</th>
+            <th>Nivel de Existencia</th>
+            <th style="text-align: right;">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (i of filtered(); track i.id_ingrediente) {
+            <tr>
+              <td><strong>{{ i.nombre_ingrediente }}</strong></td>
+              <td>{{ i.unidad_medida }}</td>
+              <td><strong>{{ i.stock_actual }} {{ i.unidad_medida }}</strong></td>
+              <td>
+                <div class="stock-bar">
+                  <div class="stock-fill" [class]="getStockClass(i.stock_actual)" [style.width]="(i.stock_actual > 100 ? 100 : i.stock_actual) + '%'"></div>
+                </div>
+                <span class="badge" [class]="getStockClass(i.stock_actual)">
+                  <span class="material-icons badge-icon">{{ i.stock_actual <= 5 ? 'warning' : 'inventory' }}</span>
+                  {{ i.stock_actual <= 5 ? 'Crítico' : i.stock_actual <= 20 ? 'Bajo' : 'Óptimo' }}
+                </span>
+              </td>
+              <td style="text-align: right;">
+                <div class="row-actions">
+                  <button class="action-btn edit" (click)="openEdit(i)" title="Editar">
+                    <span class="material-icons">edit</span>
+                  </button>
+                  <button class="action-btn del" (click)="delete(i.id_ingrediente)" title="Eliminar">
+                    <span class="material-icons">delete_outline</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+@if (showModal()) {
+  <div class="modal-overlay" (click)="showModal.set(false)">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ isEdit() ? 'Editar Insumo' : 'Nuevo Insumo' }}</h2>
+        <button class="close-btn" (click)="showModal.set(false)">×</button>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Nombre del Insumo *</label>
+          <input class="form-control" [value]="editItem().nombre_ingrediente" (input)="update('nombre_ingrediente', $any($event.target).value)" placeholder="Ej. Tomate Roma"/>
+        </div>
+
+        <div class="form-group">
+          <label>Unidad de Medida</label>
+          <input class="form-control" placeholder="kg, lb, litros, unidades..." [value]="editItem().unidad_medida" (input)="update('unidad_medida', $any($event.target).value)"/>
+        </div>
+
+        <div class="form-group">
+          <label>Stock Disponible</label>
+          <input class="form-control" type="number" step="0.1" [value]="editItem().stock_actual" (input)="update('stock_actual', +$any($event.target).value)"/>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-ghost" (click)="showModal.set(false)">Cancelar</button>
+        <button class="btn btn-gold" (click)="save()">Guardar</button>
+      </div>
+    </div>
+  </div>
+}

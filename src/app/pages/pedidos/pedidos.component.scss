@@ -1,0 +1,331 @@
+﻿.pedidos-layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 20px;
+  height: calc(100vh - 110px);
+  overflow: hidden;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+    height: auto;
+    overflow: visible;
+  }
+}
+
+.menu-panel {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+
+  .panel-title-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    .title-icon {
+      color: var(--gold);
+      font-size: 1.5rem;
+    }
+
+    h2 {
+      font-family: var(--font-serif);
+      font-size: 1.4rem;
+    }
+  }
+
+  .mesa-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    background: var(--gold-subtle);
+    color: var(--gold);
+    border: 1px solid var(--border-card);
+    font-size: 0.85rem;
+    font-weight: 600;
+
+    .material-icons { font-size: 1.1rem; }
+  }
+}
+
+.cats-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.cat-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  .material-icons { font-size: 1rem; }
+
+  &:hover, &.active {
+    background: var(--gold-subtle);
+    color: var(--gold);
+    border-color: var(--border-card);
+  }
+}
+
+.productos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 14px;
+  overflow-y: auto;
+  padding-bottom: 8px;
+}
+
+.producto-card {
+  padding: 16px;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+
+  .prod-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+
+    .prod-icon-box {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-sm);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--gold);
+
+      .material-icons { font-size: 1.15rem; }
+    }
+
+    .qty-badge {
+      background: var(--gold);
+      color: #120E08;
+      font-size: 0.72rem;
+      font-weight: 700;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+
+  .prod-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    .prod-name {
+      font-weight: 600;
+      font-size: 0.88rem;
+    }
+
+    .prod-desc {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .prod-price {
+      font-family: var(--font-serif);
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--gold);
+      margin-top: 4px;
+    }
+  }
+}
+
+.carrito-panel {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  overflow: hidden;
+}
+
+.carrito-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--gold);
+
+    .material-icons { font-size: 1.3rem; }
+    h3 { font-family: var(--font-serif); font-size: 1.15rem; color: var(--text-primary); }
+  }
+}
+
+.carrito-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 20px;
+
+  .material-icons { font-size: 3rem; color: var(--text-muted); }
+  p { font-size: 0.85rem; }
+}
+
+.carrito-items {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.carrito-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-subtle);
+
+  .item-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+
+    .item-name {
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+
+    .item-unit-price {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+  }
+
+  .qty-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .qty-btn {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: 4px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 2px 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+
+    .material-icons { font-size: 0.95rem; }
+    &:hover { border-color: var(--gold); color: var(--gold); }
+  }
+
+  .qty-num {
+    font-size: 0.85rem;
+    font-weight: 600;
+    min-width: 18px;
+    text-align: center;
+  }
+
+  .item-price {
+    font-family: var(--font-serif);
+    font-size: 0.9rem;
+    color: var(--gold);
+    font-weight: 700;
+    min-width: 60px;
+    text-align: right;
+  }
+}
+
+.carrito-notes {
+  margin-bottom: 12px;
+  label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    display: block;
+    margin-bottom: 6px;
+  }
+  textarea { resize: none; }
+}
+
+.carrito-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-top: 1px solid var(--border-card);
+  margin-bottom: 12px;
+
+  span { font-size: 0.85rem; color: var(--text-secondary); }
+  .total-amount {
+    font-family: var(--font-serif);
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--gold);
+  }
+}
+
+.send-btn {
+  width: 100%;
+  justify-content: center;
+  padding: 12px;
+  font-size: 0.95rem;
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60px;
+  gap: 12px;
+  color: var(--text-muted);
+
+  .spin-icon {
+    font-size: 2rem;
+    animation: spin 1s linear infinite;
+    color: var(--gold);
+  }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}

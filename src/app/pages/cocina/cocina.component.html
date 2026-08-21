@@ -1,0 +1,103 @@
+﻿<div class="fade-in">
+  <div class="page-header">
+    <h1>Comandas de <span>Cocina</span></h1>
+    <div class="auto-refresh-chip">
+      <span class="material-icons spin-soft">sync</span>
+      Actualización en tiempo real
+    </div>
+  </div>
+
+  <div class="quick-stats">
+    <div class="stat glass-card">
+      <div class="stat-icon-wrap warning">
+        <span class="material-icons">hourglass_empty</span>
+      </div>
+      <div class="stat-text">
+        <span class="stat-num">{{ pendientes() }}</span>
+        <span class="stat-label">Pendientes</span>
+      </div>
+    </div>
+
+    <div class="stat glass-card">
+      <div class="stat-icon-wrap info">
+        <span class="material-icons">soup_kitchen</span>
+      </div>
+      <div class="stat-text">
+        <span class="stat-num">{{ preparando() }}</span>
+        <span class="stat-label">En Preparación</span>
+      </div>
+    </div>
+
+    <div class="stat glass-card">
+      <div class="stat-icon-wrap success">
+        <span class="material-icons">check_circle_outline</span>
+      </div>
+      <div class="stat-text">
+        <span class="stat-num">{{ listos() }}</span>
+        <span class="stat-label">Listos para Servir</span>
+      </div>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-state">
+      <span class="material-icons spin-icon">sync</span>
+      <p>Cargando comandas...</p>
+    </div>
+  } @else if (!comandas().length) {
+    <div class="empty-state glass-card">
+      <span class="material-icons">task_alt</span>
+      <h3>Cocina al día</h3>
+      <p>No hay comandas pendientes en este momento.</p>
+    </div>
+  } @else {
+    <div class="comandas-grid">
+      @for (c of comandas(); track c.id_pedido) {
+        <div class="comanda-card glass-card" [class]="'estado-' + getBadge(c.nombre_estado)">
+          <div class="comanda-header">
+            <div>
+              <div class="mesa-title">
+                <span class="material-icons">table_restaurant</span>
+                <span class="mesa-label">Mesa {{ c.numero_mesa }}</span>
+              </div>
+              <span class="pedido-id">Orden #{{ c.id_pedido }}</span>
+            </div>
+            <div class="header-right">
+              <span class="badge" [class]="'badge-' + getBadge(c.nombre_estado)">{{ c.nombre_estado }}</span>
+              <span class="tiempo">
+                <span class="material-icons">schedule</span>
+                {{ tiempoTranscurrido(c.fecha_hora_creacion) }}
+              </span>
+            </div>
+          </div>
+
+          @if (c.notas_generales) {
+            <div class="notas-box">
+              <span class="material-icons">notes</span>
+              {{ c.notas_generales }}
+            </div>
+          }
+
+          <div class="items-list">
+            @for (d of c.detalles; track d.id_producto) {
+              <div class="item-row">
+                <span class="item-qty">{{ d.cantidad }}x</span>
+                <span class="item-name">{{ d.nombre_producto }}</span>
+                @if (d.notas_especiales) {
+                  <span class="item-nota">{{ d.notas_especiales }}</span>
+                }
+              </div>
+            }
+          </div>
+
+          @if (getEstado(c.id_estado)?.next) {
+            <button class="btn avanzar-btn" [class.btn-gold]="c.id_estado===1" [class.btn-success]="c.id_estado===2" (click)="avanzar(c)">
+              <span class="material-icons">{{ getEstado(c.id_estado)?.icon }}</span>
+              {{ getEstado(c.id_estado)?.label }}
+            </button>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>

@@ -1,0 +1,115 @@
+﻿.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px;
+  gap: 12px;
+  color: var(--text-muted);
+
+  .spin-icon {
+    font-size: 2rem;
+    animation: spin 1s linear infinite;
+    color: var(--gold);
+  }
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.user-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  .user-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gold);
+    flex-shrink: 0;
+
+    .material-icons {
+      font-size: 1.2rem;
+    }
+  }
+
+  .user-name-col {
+    display: flex;
+    flex-direction: column;
+
+    strong {
+      color: var(--text-primary);
+      font-size: 0.875rem;
+    }
+
+    .user-id {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+  }
+}
+
+.badge-icon {
+  font-size: 0.9rem;
+}
+
+.row-actions {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.action-btn {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  cursor: pointer;
+  padding: 6px 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+
+  .material-icons {
+    font-size: 1.15rem;
+  }
+
+  &.edit:hover {
+    color: var(--gold);
+    border-color: var(--gold);
+    background: var(--gold-subtle);
+  }
+
+  &.active-toggle {
+    color: var(--success);
+    &:hover {
+      background: rgba(76, 175, 130, 0.15);
+      border-color: var(--success);
+    }
+  }
+
+  &:not(.active-toggle):hover {
+    color: var(--danger);
+    border-color: var(--danger);
+    background: rgba(224, 82, 82, 0.15);
+  }
+}
+
+.form-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}

@@ -1,0 +1,217 @@
+﻿.auto-refresh-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+
+  .spin-soft {
+    font-size: 1rem;
+    color: var(--gold);
+    animation: spin 6s linear infinite;
+  }
+}
+
+.quick-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.stat {
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+
+  .stat-icon-wrap {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    .material-icons { font-size: 1.35rem; }
+
+    &.warning { background: rgba(229, 169, 60, 0.12); color: var(--warning); border: 1px solid rgba(229, 169, 60, 0.25); }
+    &.info    { background: rgba(91, 155, 213, 0.12); color: var(--info); border: 1px solid rgba(91, 155, 213, 0.25); }
+    &.success { background: rgba(76, 175, 130, 0.12); color: var(--success); border: 1px solid rgba(76, 175, 130, 0.25); }
+  }
+
+  .stat-num {
+    display: block;
+    font-family: var(--font-serif);
+    font-size: 1.7rem;
+    font-weight: 700;
+    line-height: 1.1;
+  }
+
+  .stat-label {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+  }
+}
+
+.empty-state {
+  padding: 60px 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+
+  .material-icons {
+    font-size: 3.5rem;
+    color: var(--success);
+    margin-bottom: 8px;
+  }
+
+  h3 {
+    font-family: var(--font-serif);
+    font-size: 1.25rem;
+  }
+
+  p {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+  }
+}
+
+.comandas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 18px;
+}
+
+.comanda-card {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  border-left: 3px solid transparent;
+
+  &.estado-pendiente   { border-left-color: var(--warning); }
+  &.estado-preparacion { border-left-color: var(--info); }
+  &.estado-listo       { border-left-color: var(--success); }
+}
+
+.comanda-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+
+  .mesa-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--gold);
+
+    .material-icons { font-size: 1.2rem; }
+    .mesa-label {
+      font-family: var(--font-serif);
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+  }
+
+  .pedido-id {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+  }
+
+  .header-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+
+    .tiempo {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      .material-icons { font-size: 0.85rem; }
+    }
+  }
+}
+
+.notas-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  font-size: 0.78rem;
+  color: var(--warning);
+
+  .material-icons { font-size: 1rem; flex-shrink: 0; }
+}
+
+.items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.item-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border-subtle);
+
+  .item-qty {
+    font-weight: 700;
+    color: var(--gold);
+    font-size: 0.9rem;
+    min-width: 28px;
+  }
+
+  .item-name {
+    flex: 1;
+    font-size: 0.85rem;
+  }
+
+  .item-nota {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+  }
+}
+
+.avanzar-btn {
+  width: 100%;
+  justify-content: center;
+  padding: 10px;
+  margin-top: 4px;
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60px;
+  gap: 12px;
+  color: var(--text-muted);
+
+  .spin-icon {
+    font-size: 2rem;
+    animation: spin 1s linear infinite;
+    color: var(--gold);
+  }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}

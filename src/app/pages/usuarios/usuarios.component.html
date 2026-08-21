@@ -1,0 +1,117 @@
+﻿<div class="fade-in">
+  <div class="page-header">
+    <h1>Gestión de <span>Usuarios</span></h1>
+    <button class="btn btn-gold" (click)="openCreate()">
+      <span class="material-icons">person_add_alt_1</span> Nuevo Usuario
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-state">
+      <span class="material-icons spin-icon">sync</span>
+      <p>Cargando personal...</p>
+    </div>
+  } @else {
+    <div class="glass-card table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Personal</th>
+            <th>Correo Electrónico</th>
+            <th>Rol / Acceso</th>
+            <th>Estado</th>
+            <th style="text-align: right;">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (u of usuarios(); track u.id_usuario) {
+            <tr>
+              <td>
+                <div class="user-cell">
+                  <div class="user-avatar">
+                    <span class="material-icons">person</span>
+                  </div>
+                  <div class="user-name-col">
+                    <strong>{{ u.nombre }}</strong>
+                    <span class="user-id">ID #{{ u.id_usuario }}</span>
+                  </div>
+                </div>
+              </td>
+              <td>{{ u.email }}</td>
+              <td>
+                <span class="badge badge-gold">
+                  <span class="material-icons badge-icon">badge</span>
+                  {{ getRolNombre(u) }}
+                </span>
+              </td>
+              <td>
+                <span class="badge" [class.badge-listo]="u.activo" [class.badge-cancelado]="!u.activo">
+                  <span class="material-icons badge-icon">{{ u.activo ? 'check_circle' : 'cancel' }}</span>
+                  {{ u.activo ? 'Activo' : 'Inactivo' }}
+                </span>
+              </td>
+              <td style="text-align: right;">
+                <div class="row-actions">
+                  <button class="action-btn edit" (click)="openEdit(u)" title="Editar datos">
+                    <span class="material-icons">edit</span>
+                  </button>
+                  <button class="action-btn" [class.active-toggle]="u.activo" (click)="toggle(u)" [title]="u.activo ? 'Desactivar acceso' : 'Activar acceso'">
+                    <span class="material-icons">{{ u.activo ? 'toggle_on' : 'toggle_off' }}</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+@if (showModal()) {
+  <div class="modal-overlay" (click)="showModal.set(false)">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ isEdit() ? 'Editar Usuario' : 'Nuevo Usuario' }}</h2>
+        <button class="close-btn" (click)="showModal.set(false)">×</button>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Nombre Completo *</label>
+          <input class="form-control" [value]="editItem().nombre" (input)="updateField('nombre', $any($event.target).value)" placeholder="Ej. Juan Pérez"/>
+        </div>
+
+        <div class="form-group full">
+          <label>Correo Electrónico *</label>
+          <input class="form-control" type="email" [value]="editItem().email" (input)="updateField('email', $any($event.target).value)" placeholder="correo@pedidopro.com"/>
+        </div>
+
+        <div class="form-group full">
+          <label>Rol Asignado *</label>
+          <select class="form-control" [value]="editItem().id_rol" (change)="updateField('id_rol', +$any($event.target).value)">
+            @for (r of roles(); track r.id_rol) {
+              <option [value]="r.id_rol">{{ r.nombre_rol }}</option>
+            }
+          </select>
+        </div>
+
+        @if (!isEdit()) {
+          <div class="form-group full">
+            <label>Contraseña de Acceso *</label>
+            <input class="form-control" type="password" [value]="editItem().password" (input)="updateField('password', $any($event.target).value)" placeholder="••••••••"/>
+          </div>
+        }
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-ghost" (click)="showModal.set(false)">Cancelar</button>
+        <button class="btn btn-gold" [disabled]="saving()" (click)="save()">
+          <span class="material-icons">save</span>
+          {{ saving() ? 'Guardando...' : 'Guardar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+

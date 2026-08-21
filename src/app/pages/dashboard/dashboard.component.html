@@ -1,0 +1,117 @@
+﻿<div class="fade-in">
+  <div class="page-header">
+    <h1>Panel <span>Principal</span></h1>
+    <span class="user-greeting">
+      <span class="material-icons">account_circle</span>
+      {{ user()?.nombre }}
+    </span>
+  </div>
+
+  <!-- KPI CARDS -->
+  <div class="kpi-grid">
+    <div class="kpi-card glass-card">
+      <div class="kpi-icon gold">
+        <span class="material-icons">payments</span>
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-label">Ventas del Día</span>
+        <span class="kpi-value">{{ formatCurrency(totalHoy()) }}</span>
+      </div>
+    </div>
+
+    <div class="kpi-card glass-card">
+      <div class="kpi-icon success">
+        <span class="material-icons">table_restaurant</span>
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-label">Mesas Libres</span>
+        <span class="kpi-value">{{ mesasLibres() }}</span>
+      </div>
+    </div>
+
+    <div class="kpi-card glass-card">
+      <div class="kpi-icon danger">
+        <span class="material-icons">event_busy</span>
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-label">Mesas Ocupadas</span>
+        <span class="kpi-value">{{ mesasOcupadas() }}</span>
+      </div>
+    </div>
+
+    <div class="kpi-card glass-card">
+      <div class="kpi-icon info">
+        <span class="material-icons">badge</span>
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-label">Personal Activo</span>
+        <span class="kpi-value">{{ usuarios() }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHARTS ROW -->
+  <div class="charts-row">
+    <!-- Ventas Chart -->
+    <div class="chart-card glass-card">
+      <div class="card-title-row">
+        <span class="material-icons title-icon">trending_up</span>
+        <h3>Historial de Ventas</h3>
+      </div>
+      @if (loading()) {
+        <div class="loading-state">
+          <span class="material-icons spin-icon">sync</span>
+        </div>
+      } @else {
+        <div class="bar-chart">
+          @for (v of ventas().slice(-7); track v.fecha) {
+            <div class="bar-col">
+              <div class="bar-fill" [style.height]="getBarWidth(v.total_ventas)" title="{{ formatCurrency(v.total_ventas) }}">
+                <span class="bar-val">{{ formatCurrency(v.total_ventas) }}</span>
+              </div>
+              <span class="bar-label">{{ v.fecha | slice:5:10 }}</span>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Top Productos -->
+    <div class="chart-card glass-card">
+      <div class="card-title-row">
+        <span class="material-icons title-icon">star_outline</span>
+        <h3>Platillos Más Vendidos</h3>
+      </div>
+      <div class="top-list">
+        @for (p of productosTop(); track p.nombre_producto; let i = $index) {
+          <div class="top-item">
+            <span class="rank">{{ i + 1 }}</span>
+            <div class="top-info">
+              <span class="top-name">{{ p.nombre_producto }}</span>
+              <div class="top-bar">
+                <div class="top-fill" [style.width]="getBarWidth(p.total_vendido)"></div>
+              </div>
+            </div>
+            <span class="top-count">{{ p.total_vendido }} pedidos</span>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Mesas Status -->
+  <div class="glass-card mesas-status">
+    <div class="card-title-row">
+      <span class="material-icons title-icon">grid_view</span>
+      <h3>Distribución de Mesas en Salón</h3>
+    </div>
+    <div class="mini-mesas">
+      @for (m of mesas(); track m.id_mesa) {
+        <div class="mini-mesa" [class]="'mini-' + m.estado.toLowerCase()" [title]="'Mesa ' + m.numero_mesa + ' — ' + m.estado">
+          <span class="mesa-number">{{ m.numero_mesa }}</span>
+          <span class="mesa-badge-state">{{ m.estado }}</span>
+        </div>
+      }
+    </div>
+  </div>
+</div>
