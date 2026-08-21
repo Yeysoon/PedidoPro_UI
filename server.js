@@ -11,15 +11,24 @@ let rawTarget = process.env.API_URL || 'http://pedidoproapi.railway.internal:300
 if (!rawTarget.startsWith('http://') && !rawTarget.startsWith('https://')) {
   rawTarget = `https://${rawTarget}`;
 }
+// Remove trailing slash if present
+rawTarget = rawTarget.replace(/\/+$/, '');
 const API_TARGET = rawTarget;
+
+console.log(`Configurando Proxy /api -> ${API_TARGET}`);
 
 app.use('/api', createProxyMiddleware({
   target: API_TARGET,
   changeOrigin: true,
   secure: false,
+  pathRewrite: (pathStr, req) => {
+    // Asegurar que el path final mantenga siempre el prefijo /api/
+    const cleanPath = pathStr.startsWith('/') ? pathStr : `/${pathStr}`;
+    return cleanPath.startsWith('/api') ? cleanPath : `/api${cleanPath}`;
+  },
   logLevel: 'debug',
   onError: (err, req, res) => {
-    console.error('Error al conectar con el backend API:', err.message);
+    console.error('Error en proxy:', err.message);
     res.status(502).json({ message: 'Error de conexión con el backend: ' + err.message });
   }
 }));
