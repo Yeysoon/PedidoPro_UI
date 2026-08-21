@@ -45,9 +45,9 @@ export class LoginComponent {
         }, 300);
       },
       error: (e) => {
-        console.error('Error login:', e);
-        const msg = e.error?.message || (e.status === 0 ? 'No se pudo conectar con el servidor (puerto 3000)' : 'Credenciales incorrectas');
-        this.alert.error('Error de Acceso', msg);
+        console.error('Error login detallado:', e);
+        const detailedMsg = e.error?.message || (e.status === 401 ? 'Credenciales incorrectas (verifica correo y contraseña)' : `Error HTTP ${e.status}: ${e.statusText || 'No se pudo comunicar con el backend'}`);
+        this.alert.error('Error de Acceso', detailedMsg);
         this.loading.set(false);
       }
     });
