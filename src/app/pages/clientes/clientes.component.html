@@ -1,30 +1,33 @@
-﻿<div class="fade-in">
+<div class="fade-in">
   <div class="page-header">
-    <h1>Directorio de <span>Clientes</span></h1>
-    <button class="btn btn-gold" (click)="openCreate()">
-      <span class="material-icons">person_add</span> Nuevo Cliente
+    <div class="header-left">
+      <h1>Directorio de <span class="highlight">Clientes</span></h1>
+      <span class="header-subtitle">Base de datos de clientes recurrentes, datos de facturación e historial.</span>
+    </div>
+    <button class="btn btn-primary" (click)="openCreate()">
+      <i class="pi pi-user-plus"></i> Nuevo Cliente
     </button>
   </div>
 
   <div class="toolbar glass-card">
-    <div class="search-box">
-      <span class="material-icons">search</span>
-      <input class="form-control" style="border:none;background:transparent;flex:1" placeholder="Buscar cliente por nombre o NIT..." [value]="search()" (input)="search.set($any($event.target).value)"/>
+    <div class="search-wrap">
+      <i class="pi pi-search search-icon"></i>
+      <input class="form-control" placeholder="Buscar cliente por nombre o NIT..." [value]="search()" (input)="search.set($any($event.target).value)"/>
     </div>
   </div>
 
   @if (loading()) {
     <div class="loading-state">
-      <span class="material-icons spin-icon">sync</span>
-      <p>Cargando clientes...</p>
+      <i class="pi pi-spin pi-spinner spin-icon"></i>
+      <p>Cargando lista de clientes...</p>
     </div>
   } @else {
-    <div class="glass-card table-wrap">
+    <div class="glass-card data-table-container">
       <table class="data-table">
         <thead>
           <tr>
             <th>NIT / Identificación</th>
-            <th>Nombre Completo</th>
+            <th>Cliente</th>
             <th>Correo Electrónico</th>
             <th>Teléfono</th>
             <th style="text-align: right;">Acciones</th>
@@ -34,21 +37,28 @@
           @for (c of filtered(); track c.id_cliente) {
             <tr>
               <td>
-                <span class="badge badge-gold">
-                  <span class="material-icons badge-icon">badge</span>
-                  {{ c.nit_documento || 'Consumidor Final' }}
+                <span class="status-pill badge-neutral">
+                  <i class="pi pi-id-card"></i>
+                  {{ c.nit_documento || 'Consumidor Final (C/F)' }}
                 </span>
               </td>
-              <td><strong>{{ c.nombre_completo }}</strong></td>
-              <td>{{ c.correo_electronico || '—' }}</td>
-              <td>{{ c.telefono || '—' }}</td>
+              <td>
+                <div class="user-row-cell">
+                  <div class="avatar-initials avatar-sky">
+                    {{ c.nombre_completo.slice(0, 2).toUpperCase() }}
+                  </div>
+                  <strong class="user-cell-name">{{ c.nombre_completo }}</strong>
+                </div>
+              </td>
+              <td class="text-secondary">{{ c.correo_electronico || '—' }}</td>
+              <td class="text-secondary">{{ c.telefono || '—' }}</td>
               <td style="text-align: right;">
                 <div class="row-actions">
-                  <button class="action-btn edit" (click)="openEdit(c)" title="Editar">
-                    <span class="material-icons">edit</span>
+                  <button class="action-btn edit" (click)="openEdit(c)" title="Editar cliente">
+                    <i class="pi pi-pencil"></i>
                   </button>
-                  <button class="action-btn del" (click)="delete(c.id_cliente)" title="Eliminar">
-                    <span class="material-icons">delete_outline</span>
+                  <button class="action-btn del" (click)="delete(c.id_cliente)" title="Eliminar cliente">
+                    <i class="pi pi-trash"></i>
                   </button>
                 </div>
               </td>
@@ -65,7 +75,9 @@
     <div class="modal-box" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h2>{{ isEdit() ? 'Editar Cliente' : 'Nuevo Cliente' }}</h2>
-        <button class="close-btn" (click)="showModal.set(false)">×</button>
+        <button class="close-btn" (click)="showModal.set(false)">
+          <i class="pi pi-times"></i>
+        </button>
       </div>
 
       <div class="form-grid">
@@ -92,7 +104,7 @@
 
       <div class="modal-footer">
         <button class="btn btn-ghost" (click)="showModal.set(false)">Cancelar</button>
-        <button class="btn btn-gold" (click)="save()">Guardar</button>
+        <button class="btn btn-primary" (click)="save()">Guardar Cliente</button>
       </div>
     </div>
   </div>

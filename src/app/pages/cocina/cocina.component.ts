@@ -1,4 +1,4 @@
-﻿import { Component, signal, computed, OnInit, OnDestroy } from '@angular/core';
+import { Component, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { CocinaService } from '../../core/services/cocina.service';
 import { AlertService } from '../../core/services/alert.service';
 import { Comanda } from '../../core/models';
@@ -20,8 +20,8 @@ export class CocinaComponent implements OnInit, OnDestroy {
   listos     = computed(() => this.comandas().filter(c => c.id_estado === 3).length);
 
   estados = [
-    { id: 1, nombre: 'Pendiente', next: 2, label: 'Iniciar Preparación', icon: 'play_arrow' },
-    { id: 2, nombre: 'En Preparación', next: 3, label: 'Marcar Listo', icon: 'check_circle' },
+    { id: 1, nombre: 'Pendiente', next: 2, label: 'Iniciar Preparación', icon: 'pi pi-play' },
+    { id: 2, nombre: 'En Preparación', next: 3, label: 'Marcar Listo', icon: 'pi pi-check' },
     { id: 3, nombre: 'Listo', next: null, label: null, icon: null },
   ];
 

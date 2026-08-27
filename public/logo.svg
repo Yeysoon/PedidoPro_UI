@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" fill="none">
+  <g transform="rotate(-23 120 120)">
+    <!-- Top Handle Ring -->
+    <circle cx="120" cy="52" r="10" stroke="#34D399" stroke-width="7" fill="none" />
+    <path d="M120 62 L120 70" stroke="#34D399" stroke-width="7" stroke-linecap="round" />
+
+    <!-- Cloche Dome with 3 Left Speed Lines -->
+    <path d="
+      M 48 140
+      L -5 140
+      L 48 126
+      L 8 120
+      L 52 108
+      L 22 100
+      L 58 92
+      C 72 65, 168 65, 182 140
+      Z
+    " fill="#34D399" />
+
+    <!-- Base Plate -->
+    <rect x="42" y="152" width="156" height="14" rx="7" fill="#34D399" />
+  </g>
+</svg>

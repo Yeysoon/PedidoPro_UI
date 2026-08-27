@@ -1,140 +1,327 @@
-﻿.login-page {
+.split-login-container {
+  display: flex;
   min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  background-color: var(--bg-main);
-  padding: 24px;
-}
-
-.login-backdrop {
-  position: absolute;
-  inset: 0;
-  background: 
-    radial-gradient(ellipse at 50% 30%, rgba(197, 160, 89, 0.05) 0%, transparent 60%),
-    linear-gradient(180deg, rgba(14, 12, 10, 0.85) 0%, #0E0C0A 100%),
-    url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1600&q=80') center/cover no-repeat;
-  opacity: 0.18;
-}
-
-.login-card {
-  position: relative;
-  z-index: 2;
   width: 100%;
-  max-width: 420px;
-  padding: 40px 36px;
-  border-radius: var(--radius-lg);
-  border: 1px solid rgba(197, 160, 89, 0.2);
-  background: rgba(22, 19, 16, 0.95);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-  animation: slideUp 0.35s ease;
-}
+  background: var(--surface-ground);
+  overflow-x: hidden;
 
-.brand {
-  text-align: center;
-  margin-bottom: 32px;
-
-  .brand-badge {
-    width: 52px;
-    height: 52px;
-    margin: 0 auto 14px;
-    border-radius: 50%;
-    background: var(--gold-subtle);
-    border: 1px solid rgba(197, 160, 89, 0.3);
+  // ------------------------------------------------
+  // LEFT SIDE: MODERN GASTRONOMY BRAND SHOWCASE
+  // ------------------------------------------------
+  .split-banner {
+    flex: 1.1;
+    background: linear-gradient(145deg, #070e20 0%, #030814 60%, #02050e 100%);
+    padding: 48px 64px;
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+    color: #f8fafc;
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    cursor: default;
+
+    @media (max-width: 1024px) {
+      padding: 40px 36px;
+    }
+
+    @media (max-width: 900px) {
+      display: none;
+    }
+
+    // Glowing Ambient Orbs
+    .banner-glow {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(100px);
+      pointer-events: none;
+
+      &.glow-1 {
+        top: -60px;
+        left: -60px;
+        width: 420px;
+        height: 420px;
+        background: radial-gradient(circle, rgba(16, 185, 129, 0.28) 0%, transparent 70%);
+      }
+
+      &.glow-2 {
+        bottom: -80px;
+        right: -60px;
+        width: 480px;
+        height: 480px;
+        background: radial-gradient(circle, rgba(59, 130, 246, 0.22) 0%, transparent 70%);
+      }
+    }
+
+    // Interactive Dot Matrix Canvas
+    .dot-matrix-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    // Brand Identifier (Pinned top-left)
+    .banner-brand {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      align-self: flex-start;
+
+      .brand-logo-wrap {
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        .banner-logo {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+        }
+      }
+
+      .brand-name {
+        font-size: 1.3rem;
+        letter-spacing: 0.06em;
+        font-weight: 500;
+        color: #ffffff;
+
+        strong {
+          font-weight: 800;
+        }
+      }
+    }
+
+    // Center Content
+    .banner-center-content {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+      max-width: 520px;
+      margin: auto 0;
+    }
+
+    // Headline Block
+    .banner-headline-block {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+
+      .headline-title {
+        font-size: 2.35rem;
+        line-height: 1.22;
+        font-weight: 800;
+        color: #ffffff;
+        letter-spacing: -0.025em;
+
+        .highlight-text {
+          background: linear-gradient(135deg, #34d399 0%, #06b6d4 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+      }
+
+      .headline-desc {
+        font-size: 0.98rem;
+        line-height: 1.65;
+        color: #94a3b8;
+      }
+    }
+
+    // Pure Text Keywords
+    .banner-keywords {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+
+      .keyword-item {
+        font-size: 0.92rem;
+        font-weight: 600;
+        color: #cbd5e1;
+        letter-spacing: 0.02em;
+        transition: color 0.15s ease;
+
+        &:hover {
+          color: #34d399;
+        }
+      }
+
+      .keyword-sep {
+        color: rgba(255, 255, 255, 0.3);
+        font-size: 1rem;
+      }
+    }
+  }
+
+  // ------------------------------------------------
+  // RIGHT SIDE: CLEAN FORM PANE (Centered)
+  // ------------------------------------------------
+  .split-form-pane {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
     justify-content: center;
-    color: var(--gold);
-
-    .brand-icon {
-      font-size: 1.6rem;
-    }
-  }
-
-  .brand-name {
-    font-family: var(--font-serif);
-    font-size: 2rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    letter-spacing: -0.02em;
-
-    span {
-      color: var(--gold);
-    }
-  }
-
-  .brand-sub {
-    font-size: 0.82rem;
-    color: var(--text-secondary);
-    margin-top: 4px;
-  }
-}
-
-.login-form {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.input-wrap {
-  position: relative;
-
-  .input-icon {
-    position: absolute;
-    left: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--text-muted);
-    font-size: 1.2rem;
-    pointer-events: none;
-  }
-
-  .form-control {
-    padding-left: 42px;
-    padding-right: 42px;
-    height: 44px;
-  }
-
-  .pwd-toggle {
-    position: absolute;
-    right: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: none;
-    border: none;
-    color: var(--text-muted);
-    cursor: pointer;
-    display: flex;
     align-items: center;
-    padding: 4px;
-    &:hover { color: var(--text-primary); }
-    .material-icons { font-size: 1.15rem; }
+    position: relative;
+    padding: 36px;
+    background: var(--surface-ground);
+
+    .form-pane-topbar {
+      position: absolute;
+      top: 24px;
+      right: 28px;
+      z-index: 10;
+
+      .theme-toggle-btn {
+        background: var(--surface-card);
+        border: 1px solid var(--surface-border);
+        color: var(--text-secondary);
+        width: 42px;
+        height: 42px;
+        border-radius: var(--radius-pill);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 1.05rem;
+        transition: all 0.15s ease;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+
+        &:hover {
+          background: var(--surface-hover);
+          color: var(--text-color);
+          border-color: var(--primary-color);
+        }
+      }
+    }
+
+    .form-pane-wrapper {
+      width: 100%;
+      max-width: 400px;
+      margin: 0 auto;
+
+      .login-card-clean {
+        display: flex;
+        flex-direction: column;
+        gap: 28px;
+
+        // Centered Header with Logo and Title
+        .form-header {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+          gap: 10px;
+
+          .form-logo-box {
+            width: 72px;
+            height: 72px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 4px;
+
+            .form-logo-img {
+              width: 100%;
+              height: 100%;
+              object-fit: contain;
+            }
+          }
+
+          .welcome-title {
+            font-size: 1.65rem;
+            font-weight: 800;
+            color: var(--text-color);
+            margin: 0;
+            letter-spacing: -0.02em;
+
+            span {
+              color: var(--primary-color);
+            }
+          }
+
+          .welcome-sub {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+          }
+        }
+
+        .login-form {
+          display: flex;
+          flex-direction: column;
+          gap: 18px;
+
+          .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+
+            label {
+              font-size: 0.82rem;
+              font-weight: 600;
+              color: var(--text-secondary);
+            }
+
+            .input-icon-wrap {
+              position: relative;
+              display: flex;
+              align-items: center;
+
+              .input-icon {
+                position: absolute;
+                left: 14px;
+                color: var(--text-muted);
+                font-size: 0.95rem;
+                pointer-events: none;
+              }
+
+              .form-control {
+                padding-left: 42px;
+                padding-right: 42px;
+                height: 46px;
+                font-size: 0.9rem;
+              }
+
+              .pwd-toggle {
+                position: absolute;
+                right: 12px;
+                background: transparent;
+                border: none;
+                color: var(--text-muted);
+                cursor: pointer;
+                padding: 6px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 0.95rem;
+                transition: color 0.15s ease;
+
+                &:hover {
+                  color: var(--text-color);
+                }
+              }
+            }
+          }
+
+          .submit-btn {
+            margin-top: 8px;
+            height: 46px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            justify-content: center;
+            border-radius: var(--radius-sm);
+          }
+        }
+      }
+    }
   }
-}
-
-.submit-btn {
-  width: 100%;
-  justify-content: center;
-  height: 44px;
-  font-size: 0.95rem;
-  margin-top: 6px;
-}
-
-.card-footer {
-  text-align: center;
-  margin-top: 28px;
-  padding-top: 18px;
-  border-top: 1px solid var(--border-subtle);
-  font-size: 0.75rem;
-  color: var(--text-muted);
-}
-
-.spin-icon {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
 }

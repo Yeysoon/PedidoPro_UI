@@ -1,65 +1,64 @@
-﻿<div class="app-shell" [class.sidebar-collapsed]="!sidebarOpen()">
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
-    <div class="sidebar-logo">
-      <div class="logo-box">
-        <span class="material-icons logo-icon">restaurant</span>
+<div class="shell-outer">
+  <!-- TOP APP BRAND BAR -->
+  <header class="app-global-bar">
+    <div class="brand-zone">
+      <div class="brand-logo-badge">
+        <img [src]="isDark() ? 'images/logo-dark.png' : 'images/logo-light.png'" alt="PedidoPro Logo" class="brand-logo-img" />
       </div>
-      @if (sidebarOpen()) {
-        <div class="logo-text-wrap">
-          <span class="logo-text">Pedido<span>Pro</span></span>
-          <span class="logo-version">v1.0</span>
-        </div>
-      }
-    </div>
-
-    <nav class="sidebar-nav">
-      @for (item of navItems(); track item.route) {
-        <a [routerLink]="item.route" routerLinkActive="active" class="nav-item" [title]="item.label">
-          <span class="material-icons nav-icon">{{ item.icon }}</span>
-          @if (sidebarOpen()) {
-            <span class="nav-label">{{ item.label }}</span>
-          }
-        </a>
-      }
-    </nav>
-
-    <div class="sidebar-footer">
-      @if (sidebarOpen()) {
-        <div class="user-info">
-          <div class="user-avatar">
-            <span class="material-icons">{{ getRoleIcon() }}</span>
-          </div>
-          <div class="user-details">
-            <span class="user-name">{{ user()?.nombre }}</span>
-            <span class="user-role">{{ role() }}</span>
-          </div>
-        </div>
-      }
-      <button class="logout-btn" (click)="logout()" title="Cerrar sesión">
-        <span class="material-icons">logout</span>
+      <div class="brand-meta">
+        <span class="brand-title">PEDIDO<strong>PRO</strong></span>
+      </div>
+      <button class="toggle-sidebar-btn" (click)="toggleSidebar()" [title]="sidebarOpen() ? 'Contraer menú lateral' : 'Expandir menú lateral'">
+        <i class="pi pi-bars"></i>
       </button>
     </div>
-  </aside>
 
-  <!-- MAIN -->
-  <div class="main-wrapper">
-    <header class="top-bar">
-      <div class="top-bar-left">
-        <button class="toggle-btn" (click)="toggleSidebar()">
-          <span class="material-icons">{{ sidebarOpen() ? 'menu_open' : 'menu' }}</span>
+    <div class="global-actions">
+      <!-- Search -->
+      <div class="search-pill">
+        <i class="pi pi-search search-icon"></i>
+        <input type="text" placeholder="Buscar pedidos, mesas o clientes..." />
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="action-buttons">
+        <button class="action-btn" (click)="toggleTheme()" [title]="isDark() ? 'Cambiar a Modo Claro' : 'Cambiar a Modo Oscuro'">
+          <i [class]="isDark() ? 'pi pi-sun' : 'pi pi-moon'"></i>
+        </button>
+
+        <div class="role-pill">
+          <i [class]="getRoleIcon()"></i>
+          <span>{{ role() }}</span>
+        </div>
+
+        <button class="btn btn-primary btn-sm btn-logout" (click)="logout()" title="Cerrar sesión">
+          <i class="pi pi-sign-out"></i>
+          <span class="btn-text">Salir</span>
         </button>
       </div>
+    </div>
+  </header>
 
-      <div class="top-bar-right">
-        <span class="role-badge">
-          <span class="material-icons">{{ getRoleIcon() }}</span>
-          {{ role() }}
-        </span>
-      </div>
-    </header>
+  <!-- MAIN APP CONTAINER WRAPPER (Rounded PrimeNG Card Layout) -->
+  <div class="app-inner-container" [class.sidebar-collapsed]="!sidebarOpen()">
+    <!-- SIDEBAR -->
+    <aside class="sidebar-container">
+      <nav class="nav-stack">
+        @for (item of navItems(); track item.route) {
+          <a [routerLink]="item.route" routerLinkActive="active" class="nav-pill" [title]="item.label">
+            <div class="nav-icon-box">
+              <i [class]="item.icon"></i>
+            </div>
+            @if (sidebarOpen()) {
+              <span class="nav-label">{{ item.label }}</span>
+            }
+          </a>
+        }
+      </nav>
+    </aside>
 
-    <main class="main-content">
+    <!-- CONTENT BODY -->
+    <main class="content-body">
       <router-outlet />
     </main>
   </div>

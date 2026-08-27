@@ -1,4 +1,4 @@
-﻿import { Component, signal, computed, OnInit } from '@angular/core';
+import { Component, signal, computed, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MenuService } from '../../core/services/menu.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -99,16 +99,16 @@ export class MenuComponent implements OnInit {
 
   getCatIcon(cat: string): string {
     const m: Record<string, string> = {
-      'Bebidas': 'local_bar',
-      'Postres': 'cake',
-      'Entradas': 'tapas',
-      'Sopas': 'ramen_dining',
-      'Mariscos': 'set_meal',
-      'Carnes': 'kebab_dining',
-      'Pastas': 'dinner_dining',
-      'Pizzas': 'local_pizza'
+      'Bebidas': 'pi pi-glass',
+      'Postres': 'pi pi-sparkles',
+      'Entradas': 'pi pi-tag',
+      'Sopas': 'pi pi-compass',
+      'Mariscos': 'pi pi-star',
+      'Carnes': 'pi pi-box',
+      'Pastas': 'pi pi-palette',
+      'Pizzas': 'pi pi-circle'
     };
-    return m[cat] ?? 'restaurant';
+    return m[cat] ?? 'pi pi-book';
   }
 
   update(f: string, v: any) {

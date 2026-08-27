@@ -1,52 +1,30 @@
-﻿.loading-state {
+.loading-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 60px;
   gap: 12px;
+  padding: 60px 0;
   color: var(--text-muted);
 
   .spin-icon {
-    font-size: 2rem;
-    animation: spin 1s linear infinite;
-    color: var(--gold);
+    font-size: 1.8rem;
+    color: var(--primary-color);
   }
 }
 
-.table-wrap {
-  overflow-x: auto;
-}
-
-.user-cell {
+.user-row-cell {
   display: flex;
   align-items: center;
-  gap: 12px;
-
-  .user-avatar {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: var(--bg-surface);
-    border: 1px solid var(--border-subtle);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--gold);
-    flex-shrink: 0;
-
-    .material-icons {
-      font-size: 1.2rem;
-    }
-  }
+  gap: 10px;
 
   .user-name-col {
     display: flex;
     flex-direction: column;
 
-    strong {
-      color: var(--text-primary);
-      font-size: 0.875rem;
+    .user-cell-name {
+      color: var(--text-color);
+      font-size: 0.85rem;
     }
 
     .user-id {
@@ -56,60 +34,43 @@
   }
 }
 
-.badge-icon {
-  font-size: 0.9rem;
-}
-
 .row-actions {
-  display: inline-flex;
-  gap: 8px;
+  display: flex;
   align-items: center;
-}
+  justify-content: flex-end;
+  gap: 6px;
 
-.action-btn {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: 6px;
-  cursor: pointer;
-  padding: 6px 8px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-secondary);
-  transition: all 0.2s ease;
+  .action-btn {
+    background: var(--surface-subtle);
+    border: 1px solid var(--surface-border);
+    color: var(--text-secondary);
+    width: 30px;
+    height: 30px;
+    border-radius: var(--radius-xs);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.15s ease;
 
-  .material-icons {
-    font-size: 1.15rem;
-  }
-
-  &.edit:hover {
-    color: var(--gold);
-    border-color: var(--gold);
-    background: var(--gold-subtle);
-  }
-
-  &.active-toggle {
-    color: var(--success);
-    &:hover {
-      background: rgba(76, 175, 130, 0.15);
-      border-color: var(--success);
+    &.edit:hover {
+      background: var(--primary-color);
+      color: var(--primary-contrast);
     }
-  }
 
-  &:not(.active-toggle):hover {
-    color: var(--danger);
-    border-color: var(--danger);
-    background: rgba(224, 82, 82, 0.15);
+    &.active-toggle {
+      color: var(--emerald-text);
+      &:hover {
+        background: var(--rose-bg);
+        color: var(--rose-text);
+      }
+    }
   }
 }
 
 .form-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
 }

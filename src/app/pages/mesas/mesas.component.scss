@@ -1,203 +1,318 @@
-﻿.filters {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 14px 20px;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
-
-  .filter-group {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-
-    .filter-icon {
-      color: var(--text-muted);
-      font-size: 1.2rem;
-    }
-  }
-
-  .filter-select {
-    width: auto;
-    min-width: 160px;
-    height: 38px;
-  }
-}
-
-.mesas-counters {
-  margin-left: auto;
-  display: flex;
-  gap: 12px;
-
-  .counter {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 0.78rem;
-    font-weight: 600;
-
-    .material-icons {
-      font-size: 0.95rem;
-    }
-
-    &.libre {
-      background: rgba(76, 175, 130, 0.12);
-      color: var(--success);
-      border: 1px solid rgba(76, 175, 130, 0.25);
-    }
-
-    &.ocupada {
-      background: rgba(224, 82, 82, 0.12);
-      color: var(--danger);
-      border: 1px solid rgba(224, 82, 82, 0.25);
-    }
-  }
-}
-
-.mesas-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 18px;
-}
-
-.mesa-card {
-  padding: 20px;
-  cursor: pointer;
-  border-left: 3px solid transparent;
-  transition: transform 0.2s ease, border-color 0.2s ease;
-
-  &:hover {
-    transform: translateY(-2px);
-  }
-
-  &.estado-libre {
-    border-left-color: var(--success);
-  }
-
-  &.estado-ocupada {
-    border-left-color: var(--danger);
-  }
-
-  &.estado-reservada {
-    border-left-color: var(--warning);
-  }
-
-  &.estado-mantenimiento {
-    border-left-color: var(--info);
-  }
-}
-
-.mesa-header {
+.filters-card {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  padding: 14px 20px;
+  margin-bottom: 20px;
+  gap: 16px;
+  flex-wrap: wrap;
 
-  .mesa-title {
+  .filters-left {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 14px;
+    flex-wrap: wrap;
 
-    .mesa-icon {
-      color: var(--gold);
-      font-size: 1.3rem;
-    }
+    .filter-pill-cluster {
+      display: flex;
+      align-items: center;
+      background: var(--surface-subtle);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius-pill);
+      padding: 3px;
+      gap: 2px;
+      overflow-x: auto;
 
-    .mesa-num {
-      font-family: var(--font-serif);
-      font-size: 1.15rem;
-      font-weight: 600;
+      .filter-chip-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: transparent;
+        border: none;
+        padding: 6px 12px;
+        border-radius: var(--radius-pill);
+        font-family: var(--font-main);
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        cursor: pointer;
+        white-space: nowrap;
+        transition: all 0.15s ease;
+
+        i {
+          font-size: 0.8rem;
+        }
+
+        &.active {
+          background: var(--primary-color);
+          color: var(--primary-contrast);
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        &:hover:not(.active) {
+          color: var(--text-color);
+          background: var(--surface-hover);
+        }
+      }
     }
   }
-}
 
-.mesa-body {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 16px;
-
-  .mesa-info {
+  .mesas-counters {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 0.82rem;
-    color: var(--text-secondary);
-
-    .material-icons {
-      font-size: 1.05rem;
-      color: var(--text-muted);
-    }
+    gap: 10px;
   }
-}
-
-.mesa-actions {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  padding-top: 14px;
-  border-top: 1px solid var(--border-subtle);
-
-  .estado-select {
-    flex: 1;
-    height: 32px;
-    padding: 4px 8px;
-    font-size: 0.78rem;
-  }
-}
-
-.action-btn {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: 6px;
-  cursor: pointer;
-  padding: 5px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-secondary);
-  transition: all 0.2s;
-
-  .material-icons {
-    font-size: 1.05rem;
-  }
-
-  &.edit:hover {
-    color: var(--gold);
-    border-color: var(--gold);
-  }
-
-  &.del:hover {
-    color: var(--danger);
-    border-color: var(--danger);
-    background: rgba(224, 82, 82, 0.12);
-  }
-}
-
-.form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
 }
 
 .loading-state {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 60px;
+  justify-content: center;
   gap: 12px;
+  padding: 60px 0;
   color: var(--text-muted);
 
   .spin-icon {
-    font-size: 2rem;
-    animation: spin 1s linear infinite;
-    color: var(--gold);
+    font-size: 1.8rem;
+    color: var(--primary-color);
   }
 }
 
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
+.mesas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+
+  .mesa-card {
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    cursor: pointer;
+    border-radius: var(--radius-md);
+
+    .mesa-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      .mesa-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+
+        .mesa-icon-box {
+          width: 34px;
+          height: 34px;
+          border-radius: var(--radius-xs);
+          background: var(--surface-subtle);
+          border: 1px solid var(--surface-border);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1rem;
+          color: var(--text-secondary);
+        }
+
+        .mesa-num {
+          font-size: 1rem;
+          font-weight: 700;
+          color: var(--text-color);
+        }
+      }
+    }
+
+    .mesa-body {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+
+      .mesa-info-pill {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+
+        i {
+          font-size: 0.85rem;
+          color: var(--text-muted);
+        }
+      }
+    }
+
+    &.estado-libre {
+      border-left: 4px solid var(--emerald);
+      &:hover { border-color: var(--emerald-border); }
+    }
+
+    &.estado-ocupada {
+      border-left: 4px solid var(--rose);
+      &:hover { border-color: var(--rose-border); }
+    }
+
+    &.estado-reservada {
+      border-left: 4px solid var(--amber);
+      &:hover { border-color: var(--amber-border); }
+    }
+
+    &.estado-mantenimiento {
+      border-left: 4px solid var(--text-muted);
+    }
+
+    .mesa-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding-top: 10px;
+      border-top: 1px solid var(--surface-border);
+
+      .mini-state-actions {
+        display: flex;
+        gap: 4px;
+
+        .mini-state-dot {
+          width: 24px;
+          height: 24px;
+          border-radius: var(--radius-xs);
+          border: 1px solid var(--surface-border);
+          background: var(--surface-subtle);
+          font-size: 0.65rem;
+          font-weight: 800;
+          color: var(--text-muted);
+          cursor: pointer;
+          transition: all 0.15s ease;
+
+          &.state-dot-libre:hover, &.state-dot-libre.current { background: var(--emerald-bg); color: var(--emerald-text); border-color: var(--emerald-border); }
+          &.state-dot-ocupada:hover, &.state-dot-ocupada.current { background: var(--rose-bg); color: var(--rose-text); border-color: var(--rose-border); }
+          &.state-dot-reservada:hover, &.state-dot-reservada.current { background: var(--amber-bg); color: var(--amber-text); border-color: var(--amber-border); }
+          &.state-dot-mantenimiento:hover, &.state-dot-mantenimiento.current { background: var(--surface-hover); color: var(--text-color); }
+        }
+      }
+
+      .action-btn {
+        background: var(--surface-subtle);
+        border: 1px solid var(--surface-border);
+        color: var(--text-secondary);
+        width: 30px;
+        height: 30px;
+        border-radius: var(--radius-xs);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 0.82rem;
+        transition: all 0.15s ease;
+
+        &.edit:hover {
+          background: var(--primary-color);
+          color: var(--primary-contrast);
+        }
+
+        &.del:hover {
+          background: var(--rose);
+          color: #fff;
+          border-color: var(--rose);
+        }
+      }
+    }
+  }
+}
+
+// -------------------------------------------------------
+// MODAL SELECTOR PILL GRIDS (Modern replacement for select)
+// -------------------------------------------------------
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+
+  .full {
+    grid-column: 1 / -1;
+  }
+}
+
+.selector-pills-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 8px;
+  margin-top: 4px;
+
+  .selector-pill-card {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    background: var(--surface-subtle);
+    border: 1px solid var(--surface-border);
+    color: var(--text-secondary);
+    font-family: var(--font-main);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    position: relative;
+
+    i {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .pill-label {
+      flex: 1;
+      text-align: left;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .check-icon {
+      font-size: 0.75rem;
+      color: var(--primary-color);
+    }
+
+    &:hover:not(.selected) {
+      background: var(--surface-hover);
+      color: var(--text-color);
+    }
+
+    &.selected {
+      background: var(--surface-card);
+      border-color: var(--primary-color);
+      color: var(--text-color);
+      box-shadow: 0 0 0 2px var(--primary-subtle);
+      font-weight: 700;
+
+      i {
+        color: var(--primary-color);
+      }
+    }
+  }
+
+  // State Color Specifics
+  &.state-grid {
+    .state-pill-card {
+      .color-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--text-muted);
+      }
+
+      &.state-libre .color-dot { background: var(--emerald); }
+      &.state-ocupada .color-dot { background: var(--rose); }
+      &.state-reservada .color-dot { background: var(--amber); }
+      &.state-mantenimiento .color-dot { background: var(--text-muted); }
+
+      &.selected {
+        &.state-libre { border-color: var(--emerald); }
+        &.state-ocupada { border-color: var(--rose); }
+        &.state-reservada { border-color: var(--amber); }
+      }
+    }
+  }
 }

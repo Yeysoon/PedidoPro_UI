@@ -1,38 +1,42 @@
-﻿<div class="fade-in">
+<div class="fade-in">
   <div class="page-header">
-    <h1>Comandas de <span>Cocina</span></h1>
-    <div class="auto-refresh-chip">
-      <span class="material-icons spin-soft">sync</span>
-      Actualización en tiempo real
+    <div class="header-left">
+      <h1>Comandas y Pedidos en <span class="highlight">Cocina</span></h1>
+      <span class="header-subtitle">Gestión de tiempos de preparación, órdenes de salón y despacho inmediato.</span>
+    </div>
+    <div class="auto-refresh-pill">
+      <i class="pi pi-sync pi-spin"></i>
+      <span>Tiempo Real Activo</span>
     </div>
   </div>
 
-  <div class="quick-stats">
-    <div class="stat glass-card">
-      <div class="stat-icon-wrap warning">
-        <span class="material-icons">hourglass_empty</span>
+  <!-- QUICK KPI STATS -->
+  <div class="quick-stats-row">
+    <div class="stat-card glass-card">
+      <div class="stat-icon-box icon-amber">
+        <i class="pi pi-hourglass"></i>
       </div>
-      <div class="stat-text">
+      <div class="stat-meta">
         <span class="stat-num">{{ pendientes() }}</span>
-        <span class="stat-label">Pendientes</span>
+        <span class="stat-label">Pendientes por iniciar</span>
       </div>
     </div>
 
-    <div class="stat glass-card">
-      <div class="stat-icon-wrap info">
-        <span class="material-icons">soup_kitchen</span>
+    <div class="stat-card glass-card">
+      <div class="stat-icon-box icon-sky">
+        <i class="pi pi-bell"></i>
       </div>
-      <div class="stat-text">
+      <div class="stat-meta">
         <span class="stat-num">{{ preparando() }}</span>
         <span class="stat-label">En Preparación</span>
       </div>
     </div>
 
-    <div class="stat glass-card">
-      <div class="stat-icon-wrap success">
-        <span class="material-icons">check_circle_outline</span>
+    <div class="stat-card glass-card">
+      <div class="stat-icon-box icon-emerald">
+        <i class="pi pi-check-circle"></i>
       </div>
-      <div class="stat-text">
+      <div class="stat-meta">
         <span class="stat-num">{{ listos() }}</span>
         <span class="stat-label">Listos para Servir</span>
       </div>
@@ -41,12 +45,12 @@
 
   @if (loading()) {
     <div class="loading-state">
-      <span class="material-icons spin-icon">sync</span>
-      <p>Cargando comandas...</p>
+      <i class="pi pi-spin pi-spinner spin-icon"></i>
+      <p>Actualizando órdenes de cocina...</p>
     </div>
   } @else if (!comandas().length) {
     <div class="empty-state glass-card">
-      <span class="material-icons">task_alt</span>
+      <i class="pi pi-check-circle empty-icon"></i>
       <h3>Cocina al día</h3>
       <p>No hay comandas pendientes en este momento.</p>
     </div>
@@ -57,15 +61,18 @@
           <div class="comanda-header">
             <div>
               <div class="mesa-title">
-                <span class="material-icons">table_restaurant</span>
+                <i class="pi pi-table"></i>
                 <span class="mesa-label">Mesa {{ c.numero_mesa }}</span>
               </div>
-              <span class="pedido-id">Orden #{{ c.id_pedido }}</span>
+              <span class="pedido-id">Comanda #{{ c.id_pedido }}</span>
             </div>
             <div class="header-right">
-              <span class="badge" [class]="'badge-' + getBadge(c.nombre_estado)">{{ c.nombre_estado }}</span>
+              <span class="badge" [class]="'badge-' + getBadge(c.nombre_estado)">
+                <span class="dot-indicator"></span>
+                {{ c.nombre_estado }}
+              </span>
               <span class="tiempo">
-                <span class="material-icons">schedule</span>
+                <i class="pi pi-clock"></i>
                 {{ tiempoTranscurrido(c.fecha_hora_creacion) }}
               </span>
             </div>
@@ -73,8 +80,8 @@
 
           @if (c.notas_generales) {
             <div class="notas-box">
-              <span class="material-icons">notes</span>
-              {{ c.notas_generales }}
+              <i class="pi pi-info-circle"></i>
+              <span>{{ c.notas_generales }}</span>
             </div>
           }
 
@@ -91,9 +98,9 @@
           </div>
 
           @if (getEstado(c.id_estado)?.next) {
-            <button class="btn avanzar-btn" [class.btn-gold]="c.id_estado===1" [class.btn-success]="c.id_estado===2" (click)="avanzar(c)">
-              <span class="material-icons">{{ getEstado(c.id_estado)?.icon }}</span>
-              {{ getEstado(c.id_estado)?.label }}
+            <button class="btn avanzar-btn" [class.btn-primary]="c.id_estado===1" [class.btn-success]="c.id_estado===2" (click)="avanzar(c)">
+              <i [class]="getEstado(c.id_estado)?.icon"></i>
+              <span>{{ getEstado(c.id_estado)?.label }}</span>
             </button>
           }
         </div>

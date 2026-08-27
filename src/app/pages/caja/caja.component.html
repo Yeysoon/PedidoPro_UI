@@ -1,22 +1,25 @@
-﻿<div class="fade-in">
+<div class="fade-in">
   <div class="page-header">
-    <h1>Punto de <span>Caja</span></h1>
-    <span class="badge badge-gold">
-      <span class="material-icons">receipt_long</span>
-      {{ pedidos().length }} cuentas por cobrar
+    <div class="header-left">
+      <h1>Punto de <span class="highlight">Caja y Cobros</span></h1>
+      <span class="header-subtitle">Liquidación de cuentas de salón, emisión de comprobantes y métodos de pago.</span>
+    </div>
+    <span class="status-pill badge-neutral">
+      <i class="pi pi-receipt"></i>
+      {{ pedidos().length }} cuentas pendientes de cobro
     </span>
   </div>
 
   @if (loading()) {
     <div class="loading-state">
-      <span class="material-icons spin-icon">sync</span>
-      <p>Cargando órdenes...</p>
+      <i class="pi pi-spin pi-spinner spin-icon"></i>
+      <p>Cargando comandas listas para cobro...</p>
     </div>
   } @else if (!pedidos().length) {
     <div class="empty-state glass-card">
-      <span class="material-icons">point_of_sale</span>
-      <h3>No hay cuentas pendientes</h3>
-      <p>Cuando los pedidos estén listos en cocina, aparecerán aquí para cobrar.</p>
+      <i class="pi pi-check-circle empty-icon"></i>
+      <h3>Sin cuentas pendientes</h3>
+      <p>Cuando los pedidos estén listos en cocina, aparecerán automáticamente en esta bandeja para cobro.</p>
     </div>
   } @else {
     <div class="pedidos-grid">
@@ -24,16 +27,18 @@
         <div class="pedido-card glass-card" (click)="seleccionar(p)">
           <div class="pedido-top">
             <div class="mesa-info">
-              <span class="material-icons mesa-icon">table_restaurant</span>
+              <div class="mesa-icon-box">
+                <i class="pi pi-table"></i>
+              </div>
               <span class="mesa-num">Mesa {{ p.numero_mesa }}</span>
             </div>
-            <span class="badge badge-listo">
-              <span class="material-icons">check_circle</span>
+            <span class="status-pill badge-success">
+              <i class="pi pi-check"></i>
               Listo
             </span>
           </div>
 
-          <div class="pedido-items">
+          <div class="pedido-items-wrap">
             @for (d of p.detalles; track d.id_producto) {
               <span class="item-pill">{{ d.cantidad }}x {{ d.nombre_producto }}</span>
             }
@@ -44,8 +49,8 @@
               <span class="total-label">Total a Pagar</span>
               <span class="pedido-total">{{ formatCurrency(getTotal(p)) }}</span>
             </div>
-            <button class="btn btn-gold" (click)="seleccionar(p); $event.stopPropagation()">
-              <span class="material-icons">payments</span> Cobrar
+            <button class="btn btn-primary btn-sm" (click)="seleccionar(p); $event.stopPropagation()">
+              <i class="pi pi-credit-card"></i> Cobrar
             </button>
           </div>
         </div>
@@ -59,18 +64,20 @@
     <div class="modal-box" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h2>Cobro de Cuenta — Mesa {{ selected()!.numero_mesa }}</h2>
-        <button class="close-btn" (click)="showModal.set(false)">×</button>
+        <button class="close-btn" (click)="showModal.set(false)">
+          <i class="pi pi-times"></i>
+        </button>
       </div>
 
-      <div class="resumen-items">
+      <div class="resumen-items-card">
         @for (d of selected()!.detalles; track d.id_producto) {
           <div class="resumen-row">
-            <span>{{ d.cantidad }}x {{ d.nombre_producto }}</span>
-            <span>{{ formatCurrency((d.precio_unitario_historico ?? 0) * d.cantidad) }}</span>
+            <span class="d-item-name">{{ d.cantidad }}x {{ d.nombre_producto }}</span>
+            <span class="d-item-price">{{ formatCurrency((d.precio_unitario_historico ?? 0) * d.cantidad) }}</span>
           </div>
         }
-        <div class="resumen-row subtotal">
-          <span>Subtotal</span>
+        <div class="resumen-row subtotal-row">
+          <span>Subtotal Consumo</span>
           <span>{{ formatCurrency(getTotal(selected()!)) }}</span>
         </div>
       </div>
@@ -91,7 +98,7 @@
         </div>
 
         <div class="form-group full">
-          <label>Cliente / NIT</label>
+          <label>Cliente Facturación / NIT</label>
           <select class="form-control" [value]="factura().id_cliente" (change)="updateFact('id_cliente', +$any($event.target).value || undefined)">
             <option value="">Consumidor Final (C/F)</option>
             @for (c of clientes(); track c.id_cliente) {
@@ -101,16 +108,19 @@
         </div>
       </div>
 
-      <div class="total-final">
-        <span>Total a Cobrar</span>
+      <div class="total-final-banner">
+        <span>Total a Liquidar</span>
         <span class="total-val">{{ formatCurrency(getTotal(selected()!) + (factura().propina ?? 0)) }}</span>
       </div>
 
       <div class="modal-footer">
         <button class="btn btn-ghost" (click)="showModal.set(false)">Cancelar</button>
-        <button class="btn btn-gold" [disabled]="sending()" (click)="facturar()">
-          <span class="material-icons">receipt_long</span>
-          {{ sending() ? 'Procesando...' : 'Generar Factura' }}
+        <button class="btn btn-primary" [disabled]="sending()" (click)="facturar()">
+          @if (sending()) {
+            <i class="pi pi-spin pi-spinner"></i> Procesando Cobro...
+          } @else {
+            <i class="pi pi-check"></i> Generar Factura
+          }
         </button>
       </div>
     </div>

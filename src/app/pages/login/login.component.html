@@ -1,51 +1,98 @@
-﻿<div class="login-page">
-  <div class="login-backdrop"></div>
+<div class="split-login-container">
+  <!-- LEFT SIDE: SLEEK GASTRONOMY BRAND SHOWCASE -->
+  <aside class="split-banner" (mousemove)="onBannerMouseMove($event)" (mouseleave)="onBannerMouseLeave()">
+    <!-- Ambient glowing accents -->
+    <div class="banner-glow glow-1"></div>
+    <div class="banner-glow glow-2"></div>
 
-  <div class="login-card glass-card">
-    <div class="brand">
-      <div class="brand-badge">
-        <span class="material-icons brand-icon">restaurant</span>
+    <!-- Interactive HTML5 Dot Matrix Grid Canvas -->
+    <canvas #dotCanvas class="dot-matrix-canvas"></canvas>
+
+    <!-- Top Brand Identifier (Pinned top-left) -->
+    <div class="banner-brand">
+      <div class="brand-logo-wrap">
+        <img src="images/logo-dark.png" alt="PedidoPro Logo" class="banner-logo" />
       </div>
-      <h1 class="brand-name">Pedido<span>Pro</span></h1>
-      <p class="brand-sub">Sistema de Gestión de Restaurante</p>
+      <span class="brand-name">PEDIDO<strong>PRO</strong></span>
     </div>
 
-    <form class="login-form" (ngSubmit)="onSubmit()">
-      <div class="form-group">
-        <label for="email">Correo Electrónico</label>
-        <div class="input-wrap">
-          <span class="material-icons input-icon">mail_outline</span>
-          <input id="email" name="email" class="form-control" type="email"
-                 placeholder="admin@pedidopro.com"
-                 [(ngModel)]="email" autocomplete="email" required/>
-        </div>
+    <div class="banner-center-content">
+      <!-- Main Showcase Headline -->
+      <div class="banner-headline-block">
+        <h1 class="headline-title">
+          La plataforma integral para <span class="highlight-text">restaurantes de alto nivel</span>.
+        </h1>
+        <p class="headline-desc">
+          Optimiza la experiencia de tus comensales, acelera el despacho en cocina y mantén el control absoluto de tus ventas.
+        </p>
       </div>
 
-      <div class="form-group">
-        <label for="password">Contraseña</label>
-        <div class="input-wrap">
-          <span class="material-icons input-icon">lock_outline</span>
-          <input id="password" name="password" class="form-control"
+      <!-- Pure Text Words -->
+      <div class="banner-keywords">
+        <span class="keyword-item">Cocina & Comandas</span>
+        <span class="keyword-sep">·</span>
+        <span class="keyword-item">Plano de Mesas</span>
+        <span class="keyword-sep">·</span>
+        <span class="keyword-item">Caja & Facturación</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- RIGHT SIDE: CLEAN MINIMALIST LOGIN FORM -->
+  <main class="split-form-pane">
+    <div class="form-pane-topbar">
+      <button class="theme-toggle-btn" (click)="toggleTheme()" [title]="isDark() ? 'Cambiar a Modo Claro' : 'Cambiar a Modo Oscuro'">
+        <i [class]="isDark() ? 'pi pi-sun' : 'pi pi-moon'"></i>
+      </button>
+    </div>
+
+    <div class="form-pane-wrapper">
+      <div class="login-card-clean">
+        <!-- Centered Header with Logo and Title -->
+        <div class="form-header">
+          <div class="form-logo-box">
+            <img [src]="isDark() ? 'images/logo-dark.png' : 'images/logo-light.png'" alt="PedidoPro Logo" class="form-logo-img" />
+          </div>
+          <h2 class="welcome-title">Bienvenido a Pedido<span>Pro</span></h2>
+          <span class="welcome-sub">Ingresa tus credenciales para acceder a la terminal</span>
+        </div>
+
+        <form class="login-form" (ngSubmit)="onSubmit()">
+          <div class="form-group">
+            <label for="email">Correo Electrónico</label>
+            <div class="input-icon-wrap">
+              <i class="pi pi-envelope input-icon"></i>
+              <input id="email" name="email" class="form-control" type="email"
+                     placeholder="admin@pedidopro.com"
+                     [(ngModel)]="email" autocomplete="email" required/>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="password">Contraseña</label>
+            <div class="input-icon-wrap">
+              <i class="pi pi-lock input-icon"></i>
+              <input id="password" name="password" class="form-control"
                  [type]="showPwd() ? 'text' : 'password'"
                  placeholder="••••••••"
                  [(ngModel)]="password" autocomplete="current-password" required/>
-          <button type="button" class="pwd-toggle" (click)="showPwd.update(v => !v)">
-            <span class="material-icons">{{ showPwd() ? 'visibility_off' : 'visibility' }}</span>
+              <button type="button" class="pwd-toggle" (click)="showPwd.update(v => !v)" title="Ver u ocultar contraseña">
+                <i [class]="showPwd() ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary submit-btn" [disabled]="loading()">
+            @if (loading()) {
+              <i class="pi pi-spin pi-spinner"></i>
+              <span>Autenticando...</span>
+            } @else {
+              <i class="pi pi-sign-in"></i>
+              <span>Ingresar</span>
+            }
           </button>
-        </div>
+        </form>
       </div>
-
-      <button type="submit" class="btn btn-gold submit-btn" [disabled]="loading()">
-        @if (loading()) {
-          <span class="material-icons spin-icon">sync</span> Ingresando...
-        } @else {
-          <span class="material-icons">login</span> Ingresar
-        }
-      </button>
-    </form>
-
-    <div class="card-footer">
-      <span>PedidoPro v1.0 · Panel Administrativo</span>
     </div>
-  </div>
+  </main>
 </div>

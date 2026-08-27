@@ -1,25 +1,28 @@
-﻿<div class="fade-in">
+<div class="fade-in">
   <div class="page-header">
-    <h1>Gestión de <span>Usuarios</span></h1>
-    <button class="btn btn-gold" (click)="openCreate()">
-      <span class="material-icons">person_add_alt_1</span> Nuevo Usuario
+    <div class="header-left">
+      <h1>Gestión del <span class="highlight">Personal y Accesos</span></h1>
+      <span class="header-subtitle">Administración de colaboradores, asignación de roles y estados de cuenta.</span>
+    </div>
+    <button class="btn btn-primary" (click)="openCreate()">
+      <i class="pi pi-user-plus"></i> Nuevo Colaborador
     </button>
   </div>
 
   @if (loading()) {
     <div class="loading-state">
-      <span class="material-icons spin-icon">sync</span>
-      <p>Cargando personal...</p>
+      <i class="pi pi-spin pi-spinner spin-icon"></i>
+      <p>Cargando lista de colaboradores...</p>
     </div>
   } @else {
-    <div class="glass-card table-wrap">
+    <div class="glass-card data-table-container">
       <table class="data-table">
         <thead>
           <tr>
             <th>Personal</th>
-            <th>Correo Electrónico</th>
-            <th>Rol / Acceso</th>
-            <th>Estado</th>
+            <th>Correo Institucional</th>
+            <th>Rol / Permisos</th>
+            <th>Estado de Acceso</th>
             <th style="text-align: right;">Acciones</th>
           </tr>
         </thead>
@@ -27,36 +30,36 @@
           @for (u of usuarios(); track u.id_usuario) {
             <tr>
               <td>
-                <div class="user-cell">
-                  <div class="user-avatar">
-                    <span class="material-icons">person</span>
+                <div class="user-row-cell">
+                  <div class="avatar-initials avatar-indigo">
+                    {{ u.nombre.slice(0, 2).toUpperCase() }}
                   </div>
                   <div class="user-name-col">
-                    <strong>{{ u.nombre }}</strong>
-                    <span class="user-id">ID #{{ u.id_usuario }}</span>
+                    <strong class="user-cell-name">{{ u.nombre }}</strong>
+                    <span class="user-id font-mono text-muted">ID #{{ u.id_usuario }}</span>
                   </div>
                 </div>
               </td>
-              <td>{{ u.email }}</td>
+              <td class="text-secondary">{{ u.email }}</td>
               <td>
-                <span class="badge badge-gold">
-                  <span class="material-icons badge-icon">badge</span>
+                <span class="status-pill badge-neutral">
+                  <i class="pi pi-shield"></i>
                   {{ getRolNombre(u) }}
                 </span>
               </td>
               <td>
-                <span class="badge" [class.badge-listo]="u.activo" [class.badge-cancelado]="!u.activo">
-                  <span class="material-icons badge-icon">{{ u.activo ? 'check_circle' : 'cancel' }}</span>
+                <span class="status-pill" [class.badge-success]="u.activo" [class.badge-danger]="!u.activo">
+                  <i [class]="u.activo ? 'pi pi-check-circle' : 'pi pi-times-circle'"></i>
                   {{ u.activo ? 'Activo' : 'Inactivo' }}
                 </span>
               </td>
               <td style="text-align: right;">
                 <div class="row-actions">
-                  <button class="action-btn edit" (click)="openEdit(u)" title="Editar datos">
-                    <span class="material-icons">edit</span>
+                  <button class="action-btn edit" (click)="openEdit(u)" title="Editar colaborador">
+                    <i class="pi pi-pencil"></i>
                   </button>
                   <button class="action-btn" [class.active-toggle]="u.activo" (click)="toggle(u)" [title]="u.activo ? 'Desactivar acceso' : 'Activar acceso'">
-                    <span class="material-icons">{{ u.activo ? 'toggle_on' : 'toggle_off' }}</span>
+                    <i [class]="u.activo ? 'pi pi-lock-open' : 'pi pi-lock'"></i>
                   </button>
                 </div>
               </td>
@@ -72,8 +75,10 @@
   <div class="modal-overlay" (click)="showModal.set(false)">
     <div class="modal-box" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h2>{{ isEdit() ? 'Editar Usuario' : 'Nuevo Usuario' }}</h2>
-        <button class="close-btn" (click)="showModal.set(false)">×</button>
+        <h2>{{ isEdit() ? 'Editar Colaborador' : 'Nuevo Colaborador' }}</h2>
+        <button class="close-btn" (click)="showModal.set(false)">
+          <i class="pi pi-times"></i>
+        </button>
       </div>
 
       <div class="form-grid">
@@ -106,12 +111,14 @@
 
       <div class="modal-footer">
         <button class="btn btn-ghost" (click)="showModal.set(false)">Cancelar</button>
-        <button class="btn btn-gold" [disabled]="saving()" (click)="save()">
-          <span class="material-icons">save</span>
-          {{ saving() ? 'Guardando...' : 'Guardar' }}
+        <button class="btn btn-primary" [disabled]="saving()" (click)="save()">
+          @if (saving()) {
+            <i class="pi pi-spin pi-spinner"></i> Guardando...
+          } @else {
+            <i class="pi pi-save"></i> Guardar Colaborador
+          }
         </button>
       </div>
     </div>
   </div>
 }
-

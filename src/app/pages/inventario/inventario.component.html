@@ -1,23 +1,28 @@
-﻿<div class="fade-in">
+<div class="fade-in">
   <div class="page-header">
-    <h1>Control de <span>Inventario</span></h1>
-    <button class="btn btn-gold" (click)="openCreate()">
-      <span class="material-icons">add_box</span> Nuevo Insumo
+    <div class="header-left">
+      <h1>Control de <span class="highlight">Inventario e Insumos</span></h1>
+      <span class="header-subtitle">Monitoreo de existencias de almacén, niveles críticos y reabastecimiento.</span>
+    </div>
+    <button class="btn btn-primary" (click)="openCreate()">
+      <i class="pi pi-plus"></i> Nuevo Insumo
     </button>
   </div>
 
   <div class="toolbar glass-card">
-    <span class="material-icons" style="color:var(--text-muted)">search</span>
-    <input class="form-control" style="border:none;background:transparent;flex:1" placeholder="Buscar insumo o ingrediente..." [value]="search()" (input)="search.set($any($event.target).value)"/>
+    <div class="search-wrap">
+      <i class="pi pi-search search-icon"></i>
+      <input class="form-control" placeholder="Buscar insumo o ingrediente por nombre..." [value]="search()" (input)="search.set($any($event.target).value)"/>
+    </div>
   </div>
 
   @if (loading()) {
     <div class="loading-state">
-      <span class="material-icons spin-icon">sync</span>
-      <p>Cargando inventario...</p>
+      <i class="pi pi-spin pi-spinner spin-icon"></i>
+      <p>Cargando existencias de inventario...</p>
     </div>
   } @else {
-    <div class="glass-card table-wrap">
+    <div class="glass-card data-table-container">
       <table class="data-table">
         <thead>
           <tr>
@@ -31,25 +36,34 @@
         <tbody>
           @for (i of filtered(); track i.id_ingrediente) {
             <tr>
-              <td><strong>{{ i.nombre_ingrediente }}</strong></td>
-              <td>{{ i.unidad_medida }}</td>
+              <td>
+                <div class="insumo-row-cell">
+                  <div class="insumo-icon-box">
+                    <i class="pi pi-box"></i>
+                  </div>
+                  <strong>{{ i.nombre_ingrediente }}</strong>
+                </div>
+              </td>
+              <td class="text-secondary">{{ i.unidad_medida }}</td>
               <td><strong>{{ i.stock_actual }} {{ i.unidad_medida }}</strong></td>
               <td>
-                <div class="stock-bar">
-                  <div class="stock-fill" [class]="getStockClass(i.stock_actual)" [style.width]="(i.stock_actual > 100 ? 100 : i.stock_actual) + '%'"></div>
+                <div class="stock-cell-wrap">
+                  <div class="stock-progress-track">
+                    <div class="stock-progress-fill" [class]="i.stock_actual <= 5 ? 'fill-danger' : i.stock_actual <= 20 ? 'fill-warning' : 'fill-success'" [style.width]="(i.stock_actual > 100 ? 100 : i.stock_actual) + '%'"></div>
+                  </div>
+                  <span class="status-pill" [class]="i.stock_actual <= 5 ? 'badge-danger' : i.stock_actual <= 20 ? 'badge-warning' : 'badge-success'">
+                    <i [class]="i.stock_actual <= 5 ? 'pi pi-exclamation-triangle' : 'pi pi-check'"></i>
+                    {{ i.stock_actual <= 5 ? 'Crítico' : i.stock_actual <= 20 ? 'Bajo' : 'Óptimo' }}
+                  </span>
                 </div>
-                <span class="badge" [class]="getStockClass(i.stock_actual)">
-                  <span class="material-icons badge-icon">{{ i.stock_actual <= 5 ? 'warning' : 'inventory' }}</span>
-                  {{ i.stock_actual <= 5 ? 'Crítico' : i.stock_actual <= 20 ? 'Bajo' : 'Óptimo' }}
-                </span>
               </td>
               <td style="text-align: right;">
                 <div class="row-actions">
-                  <button class="action-btn edit" (click)="openEdit(i)" title="Editar">
-                    <span class="material-icons">edit</span>
+                  <button class="action-btn edit" (click)="openEdit(i)" title="Editar insumo">
+                    <i class="pi pi-pencil"></i>
                   </button>
-                  <button class="action-btn del" (click)="delete(i.id_ingrediente)" title="Eliminar">
-                    <span class="material-icons">delete_outline</span>
+                  <button class="action-btn del" (click)="delete(i.id_ingrediente)" title="Eliminar insumo">
+                    <i class="pi pi-trash"></i>
                   </button>
                 </div>
               </td>
@@ -66,7 +80,9 @@
     <div class="modal-box" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h2>{{ isEdit() ? 'Editar Insumo' : 'Nuevo Insumo' }}</h2>
-        <button class="close-btn" (click)="showModal.set(false)">×</button>
+        <button class="close-btn" (click)="showModal.set(false)">
+          <i class="pi pi-times"></i>
+        </button>
       </div>
 
       <div class="form-grid">
@@ -88,7 +104,7 @@
 
       <div class="modal-footer">
         <button class="btn btn-ghost" (click)="showModal.set(false)">Cancelar</button>
-        <button class="btn btn-gold" (click)="save()">Guardar</button>
+        <button class="btn btn-primary" (click)="save()">Guardar Insumo</button>
       </div>
     </div>
   </div>

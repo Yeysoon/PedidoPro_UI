@@ -1,10 +1,17 @@
-﻿import { Component, signal, computed, OnInit } from '@angular/core';
+import { Component, signal, computed, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MesasService } from '../../core/services/mesas.service';
 import { AuthService } from '../../core/services/auth.service';
 import { AlertService } from '../../core/services/alert.service';
 import { Mesa, Zona } from '../../core/models';
+
+const DEFAULT_ZONAS: Zona[] = [
+  { id_zona: 1, nombre_zona: 'Salón Principal' },
+  { id_zona: 2, nombre_zona: 'Terraza' },
+  { id_zona: 3, nombre_zona: 'Área VIP' },
+  { id_zona: 4, nombre_zona: 'Barra' }
+];
 
 @Component({
   selector: 'app-mesas',
@@ -14,15 +21,15 @@ import { Mesa, Zona } from '../../core/models';
   styleUrl: './mesas.component.scss'
 })
 export class MesasComponent implements OnInit {
-  mesas  = signal<Mesa[]>([]);
-  zonas  = signal<Zona[]>([]);
+  mesas = signal<Mesa[]>([]);
+  zonas = signal<Zona[]>(DEFAULT_ZONAS);
   loading = signal(true);
   showModal = signal(false);
-  editMesa  = signal<Partial<Mesa>>({});
-  isEdit    = signal(false);
+  editMesa = signal<Partial<Mesa>>({});
+  isEdit = signal(false);
   filterZona = signal(0);
   filterEstado = signal('');
-  isAdmin   = computed(() => this.auth.hasRole(['Administrador']));
+  isAdmin = computed(() => this.auth.hasRole(['Administrador']));
 
   filteredMesas = computed(() => {
     let list = this.mesas();
@@ -31,7 +38,7 @@ export class MesasComponent implements OnInit {
     return list;
   });
 
-  libresCount   = computed(() => this.mesas().filter(m => m.estado === 'Libre').length);
+  libresCount = computed(() => this.mesas().filter(m => m.estado === 'Libre').length);
   ocupadasCount = computed(() => this.mesas().filter(m => m.estado === 'Ocupada').length);
 
   constructor(
@@ -48,10 +55,28 @@ export class MesasComponent implements OnInit {
   load() {
     this.loading.set(true);
     this.svc.getMesas().subscribe({
-      next: m => { this.mesas.set(m); this.loading.set(false); },
-      error: e => { this.alert.error('Error al cargar mesas', e.error?.message); this.loading.set(false); }
+      next: m => {
+        this.mesas.set(m);
+        this.loading.set(false);
+      },
+      error: e => {
+        this.alert.error('Error al cargar mesas', e.error?.message);
+        this.loading.set(false);
+      }
     });
-    this.svc.getZonas().subscribe({ next: z => this.zonas.set(z) });
+
+    this.svc.getZonas().subscribe({
+      next: z => {
+        if (z && z.length > 0) {
+          this.zonas.set(z);
+        } else {
+          this.zonas.set(DEFAULT_ZONAS);
+        }
+      },
+      error: () => {
+        this.zonas.set(DEFAULT_ZONAS);
+      }
+    });
   }
 
   openPedido(mesa: Mesa) {
@@ -73,13 +98,14 @@ export class MesasComponent implements OnInit {
   }
 
   openCreate() {
-    this.editMesa.set({ estado: 'Libre', capacidad: 4, id_zona: this.zonas()[0]?.id_zona || 1 });
+    const defaultZona = this.zonas()[0]?.id_zona || 1;
+    this.editMesa.set({ estado: 'Libre', capacidad: 4, id_zona: defaultZona });
     this.isEdit.set(false);
     this.showModal.set(true);
   }
 
   openEdit(m: Mesa) {
-    this.editMesa.set({ ...m });
+    this.editMesa.set({ ...m, id_zona: m.id_zona || 1 });
     this.isEdit.set(true);
     this.showModal.set(true);
   }
@@ -118,7 +144,7 @@ export class MesasComponent implements OnInit {
   }
 
   getZonaNombre(id: number) {
-    return this.zonas().find(z => z.id_zona === id)?.nombre_zona ?? 'Salón';
+    return this.zonas().find(z => z.id_zona === id)?.nombre_zona ?? 'Salón Principal';
   }
 
   getBadge(e: string) {

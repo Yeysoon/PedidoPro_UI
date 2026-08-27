@@ -1,22 +1,25 @@
-﻿<div class="fade-in">
+<div class="fade-in">
   <div class="page-header">
-    <h1>Reportes y <span>Estadísticas</span></h1>
+    <div class="header-left">
+      <h1>Reportes Financieros y <span class="highlight">Analítica</span></h1>
+      <span class="header-subtitle">Consolidado de facturación, desempeño de ventas y productos más demandados.</span>
+    </div>
   </div>
 
   <div class="kpi-row">
     <div class="kpi glass-card">
-      <div class="kpi-icon-wrap gold">
-        <span class="material-icons">account_balance_wallet</span>
+      <div class="kpi-icon-wrap icon-emerald">
+        <i class="pi pi-wallet"></i>
       </div>
       <div class="kpi-body">
-        <span class="kpi-label">Ingresos Totales</span>
+        <span class="kpi-label">Ingresos Totales Acumulados</span>
         <span class="kpi-val">{{ formatCurrency(totalGeneral()) }}</span>
       </div>
     </div>
 
     <div class="kpi glass-card">
-      <div class="kpi-icon-wrap info">
-        <span class="material-icons">analytics</span>
+      <div class="kpi-icon-wrap icon-sky">
+        <i class="pi pi-chart-line"></i>
       </div>
       <div class="kpi-body">
         <span class="kpi-label">Promedio de Ventas Diarias</span>
@@ -25,8 +28,8 @@
     </div>
 
     <div class="kpi glass-card">
-      <div class="kpi-icon-wrap success">
-        <span class="material-icons">calendar_today</span>
+      <div class="kpi-icon-wrap icon-indigo">
+        <i class="pi pi-calendar"></i>
       </div>
       <div class="kpi-body">
         <span class="kpi-label">Jornadas Registradas</span>
@@ -37,14 +40,14 @@
 
   @if (loading()) {
     <div class="loading-state">
-      <span class="material-icons spin-icon">sync</span>
-      <p>Generando reportes...</p>
+      <i class="pi pi-spin pi-spinner spin-icon"></i>
+      <p>Generando reportes estadísticos...</p>
     </div>
   } @else {
     <div class="charts-row">
       <div class="chart-card glass-card">
         <div class="card-title-row">
-          <span class="material-icons title-icon">trending_up</span>
+          <i class="pi pi-chart-bar title-icon"></i>
           <h3>Facturación por Fecha</h3>
         </div>
 
@@ -60,8 +63,8 @@
 
       <div class="chart-card glass-card">
         <div class="card-title-row">
-          <span class="material-icons title-icon">leaderboard</span>
-          <h3>Ranking de Ventas</h3>
+          <i class="pi pi-star title-icon"></i>
+          <h3>Ranking de Platillos</h3>
         </div>
 
         <div class="top-list">
@@ -74,24 +77,24 @@
                   <div class="top-fill" [style.width]="getTopW(p.total_vendido)"></div>
                 </div>
               </div>
-              <span class="top-count">{{ p.total_vendido }} unidades</span>
+              <span class="top-count font-bold">{{ p.total_vendido }} un.</span>
             </div>
           }
         </div>
       </div>
     </div>
 
-    <div class="glass-card ventas-table">
-      <div class="card-title-row">
-        <span class="material-icons title-icon">receipt</span>
-        <h3>Historial Detallado de Facturas</h3>
+    <div class="glass-card data-table-container ventas-table">
+      <div class="card-title-row-padded">
+        <i class="pi pi-receipt title-icon"></i>
+        <h3>Historial Detallado de Facturación</h3>
       </div>
 
       <table class="data-table">
         <thead>
           <tr>
-            <th>Fecha</th>
-            <th>Facturas Emitidas</th>
+            <th>Fecha de Operación</th>
+            <th>Comprobantes Emitidos</th>
             <th style="text-align: right;">Total Facturado</th>
           </tr>
         </thead>
@@ -99,14 +102,14 @@
           @for (v of ventas().slice().reverse(); track v.fecha) {
             <tr>
               <td>
-                <span class="date-cell">
-                  <span class="material-icons">event</span>
-                  {{ v.fecha }}
-                </span>
+                <div class="date-cell">
+                  <i class="pi pi-calendar-times text-muted"></i>
+                  <span>{{ v.fecha }}</span>
+                </div>
               </td>
-              <td>{{ v.cantidad_facturas }} comprobantes</td>
+              <td class="text-secondary">{{ v.cantidad_facturas }} comprobantes</td>
               <td style="text-align: right;">
-                <strong style="color:var(--gold); font-family:var(--font-serif); font-size:1rem;">
+                <strong class="total-cell-val">
                   {{ formatCurrency(v.total_ventas) }}
                 </strong>
               </td>

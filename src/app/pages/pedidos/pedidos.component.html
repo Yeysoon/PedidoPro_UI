@@ -1,28 +1,28 @@
-﻿<div class="pedidos-layout fade-in">
+<div class="pedidos-layout fade-in">
   <!-- MENU PANEL -->
   <div class="menu-panel">
     <div class="panel-header">
       <div class="panel-title-group">
-        <span class="material-icons title-icon">restaurant_menu</span>
+        <i class="pi pi-shopping-bag title-icon"></i>
         <h2>Tomar Pedido</h2>
       </div>
 
-      <span class="mesa-chip">
-        <span class="material-icons">table_restaurant</span>
-        Mesa {{ mesaNum() || '—' }}
+      <span class="mesa-pill-badge">
+        <i class="pi pi-table"></i>
+        <span>Mesa {{ mesaNum() || '—' }}</span>
       </span>
     </div>
 
-    <!-- Categorías -->
+    <!-- Categorías Pills -->
     <div class="cats-bar">
-      <button class="cat-btn" [class.active]="catActiva()===0" (click)="catActiva.set(0)">
-        <span class="material-icons">restaurant</span>
-        Todos
+      <button class="cat-pill-btn" [class.active]="catActiva()===0" (click)="catActiva.set(0)">
+        <i class="pi pi-th-large"></i>
+        <span>Todos</span>
       </button>
       @for (c of categorias(); track c.id_categoria) {
-        <button class="cat-btn" [class.active]="catActiva()===c.id_categoria" (click)="catActiva.set(c.id_categoria)">
-          <span class="material-icons">{{ getCatIcon(c.id_categoria) }}</span>
-          {{ c.nombre_categoria }}
+        <button class="cat-pill-btn" [class.active]="catActiva()===c.id_categoria" (click)="catActiva.set(c.id_categoria)">
+          <i [class]="getCatIcon(c.id_categoria)"></i>
+          <span>{{ c.nombre_categoria }}</span>
         </button>
       }
     </div>
@@ -30,8 +30,8 @@
     <!-- Grid de Platillos -->
     @if (loading()) {
       <div class="loading-state">
-        <span class="material-icons spin-icon">sync</span>
-        <p>Cargando menú...</p>
+        <i class="pi pi-spin pi-spinner spin-icon"></i>
+        <p>Cargando menú de servicio...</p>
       </div>
     } @else {
       <div class="productos-grid">
@@ -39,7 +39,7 @@
           <div class="producto-card glass-card" (click)="agregar(p)">
             <div class="prod-top">
               <div class="prod-icon-box">
-                <span class="material-icons">{{ getCatIcon(p.id_categoria) }}</span>
+                <i [class]="getCatIcon(p.id_categoria)"></i>
               </div>
               @if (getQty(p.id_producto) > 0) {
                 <div class="qty-badge">{{ getQty(p.id_producto) }}</div>
@@ -48,7 +48,7 @@
 
             <div class="prod-info">
               <span class="prod-name">{{ p.nombre_producto }}</span>
-              <span class="prod-desc">{{ p.descripcion }}</span>
+              <span class="prod-desc">{{ p.descripcion || 'Especialidad de la casa' }}</span>
               <span class="prod-price">{{ formatCurrency(p.precio) }}</span>
             </div>
           </div>
@@ -57,37 +57,37 @@
     }
   </div>
 
-  <!-- CARRITO / COMANDA PANEL -->
+  <!-- CARRITO / COMANDA TICKET PANEL -->
   <div class="carrito-panel glass-card">
     <div class="carrito-header">
       <div class="header-left">
-        <span class="material-icons">receipt_long</span>
-        <h3>Comanda</h3>
+        <i class="pi pi-receipt header-icon"></i>
+        <h3>Ticket Comanda</h3>
       </div>
-      <span class="badge badge-gold">{{ cantTotal() }} items</span>
+      <span class="status-pill badge-neutral">{{ cantTotal() }} items</span>
     </div>
 
     @if (!carrito().length) {
       <div class="carrito-empty">
-        <span class="material-icons">shopping_bag</span>
-        <p>Selecciona platillos del menú para añadirlos a la orden.</p>
+        <i class="pi pi-shopping-cart empty-icon"></i>
+        <p>Selecciona platillos del catálogo para armar la comanda.</p>
       </div>
     } @else {
-      <div class="carrito-items">
+      <div class="carrito-items-list">
         @for (item of carrito(); track item.id_producto) {
-          <div class="carrito-item">
+          <div class="carrito-item-row">
             <div class="item-info">
               <span class="item-name">{{ item.nombre_producto }}</span>
               <span class="item-unit-price">{{ formatCurrency(item.precio_unitario_historico ?? 0) }} c/u</span>
             </div>
 
-            <div class="qty-controls">
-              <button class="qty-btn" (click)="quitar(item.id_producto)" title="Disminuir">
-                <span class="material-icons">remove</span>
+            <div class="qty-stepper">
+              <button class="stepper-btn" (click)="quitar(item.id_producto)" title="Disminuir">
+                <i class="pi pi-minus"></i>
               </button>
               <span class="qty-num">{{ item.cantidad }}</span>
-              <button class="qty-btn add" (click)="agregarById(item.id_producto)" title="Aumentar">
-                <span class="material-icons">add</span>
+              <button class="stepper-btn add" (click)="agregarById(item.id_producto)" title="Aumentar">
+                <i class="pi pi-plus"></i>
               </button>
             </div>
 
@@ -97,19 +97,24 @@
       </div>
 
       <div class="carrito-notes">
-        <label>Observaciones de cocina</label>
+        <label><i class="pi pi-file-edit"></i> Observaciones para Cocina</label>
         <textarea class="form-control" rows="2" placeholder="Sin cebolla, término medio, etc." [value]="notas()" (input)="notas.set($any($event.target).value)"></textarea>
       </div>
 
-      <div class="carrito-total">
+      <div class="carrito-total-box">
         <span>Total Comanda</span>
         <span class="total-amount">{{ formatCurrency(total()) }}</span>
       </div>
     }
 
-    <button class="btn btn-gold send-btn" [disabled]="!carrito().length || sending()" (click)="enviar()">
-      <span class="material-icons">send</span>
-      {{ sending() ? 'Enviando comanda...' : 'Enviar a Cocina' }}
+    <button class="btn btn-primary send-btn" [disabled]="!carrito().length || sending()" (click)="enviar()">
+      @if (sending()) {
+        <i class="pi pi-spin pi-spinner"></i>
+        <span>Enviando Comanda...</span>
+      } @else {
+        <i class="pi pi-send"></i>
+        <span>Enviar a Cocina</span>
+      }
     </button>
   </div>
 </div>

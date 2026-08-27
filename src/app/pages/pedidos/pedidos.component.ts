@@ -1,4 +1,4 @@
-﻿import { Component, signal, OnInit } from '@angular/core';
+import { Component, signal, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MenuService } from '../../core/services/menu.service';
@@ -126,16 +126,16 @@ export class PedidosComponent implements OnInit {
   getCatIcon(catId: number): string {
     const cat = this.categorias().find(c => c.id_categoria === catId)?.nombre_categoria ?? '';
     const m: Record<string, string> = {
-      'Bebidas': 'local_bar',
-      'Postres': 'cake',
-      'Entradas': 'tapas',
-      'Sopas': 'ramen_dining',
-      'Mariscos': 'set_meal',
-      'Carnes': 'kebab_dining',
-      'Pastas': 'dinner_dining',
-      'Pizzas': 'local_pizza'
+      'Bebidas': 'pi pi-glass',
+      'Postres': 'pi pi-sparkles',
+      'Entradas': 'pi pi-tag',
+      'Sopas': 'pi pi-compass',
+      'Mariscos': 'pi pi-star',
+      'Carnes': 'pi pi-box',
+      'Pastas': 'pi pi-palette',
+      'Pizzas': 'pi pi-circle'
     };
-    return m[cat] ?? 'restaurant';
+    return m[cat] ?? 'pi pi-book';
   }
 
   formatCurrency(n: number) {

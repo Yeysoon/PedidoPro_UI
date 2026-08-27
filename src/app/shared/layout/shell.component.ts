@@ -1,20 +1,21 @@
-﻿import { Component, computed, signal } from '@angular/core';
+import { Component, computed, signal, inject } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { AlertService } from '../../core/services/alert.service';
+import { ThemeService } from '../../core/services/theme.service';
 import { SidebarItem } from '../../core/models';
 
 const ALL_ITEMS: SidebarItem[] = [
-  { label: 'Dashboard',    icon: 'space_dashboard',   route: '/dashboard', roles: ['Administrador'] },
-  { label: 'Mesas',        icon: 'table_restaurant',  route: '/mesas',     roles: ['Mesero','Administrador'] },
-  { label: 'Tomar Pedido', icon: 'receipt_long',      route: '/pedidos',   roles: ['Mesero'] },
-  { label: 'Menú',         icon: 'restaurant_menu',   route: '/menu',      roles: ['Mesero','Cajero','Administrador'] },
-  { label: 'Cocina',       icon: 'soup_kitchen',      route: '/cocina',    roles: ['Cocinero'] },
-  { label: 'Caja',         icon: 'point_of_sale',     route: '/caja',      roles: ['Cajero'] },
-  { label: 'Clientes',     icon: 'groups',            route: '/clientes',  roles: ['Cajero','Administrador'] },
-  { label: 'Usuarios',     icon: 'manage_accounts',   route: '/usuarios',  roles: ['Administrador'] },
-  { label: 'Inventario',   icon: 'inventory_2',       route: '/inventario',roles: ['Administrador','Cocinero'] },
-  { label: 'Reportes',     icon: 'analytics',         route: '/reportes',  roles: ['Administrador'] },
+  { label: 'Dashboard',    icon: 'pi pi-th-large',    route: '/dashboard', roles: ['Administrador'] },
+  { label: 'Mesas',        icon: 'pi pi-table',       route: '/mesas',     roles: ['Mesero','Administrador'] },
+  { label: 'Tomar Pedido', icon: 'pi pi-shopping-bag',route: '/pedidos',   roles: ['Mesero'] },
+  { label: 'Menú',         icon: 'pi pi-book',        route: '/menu',      roles: ['Mesero','Cajero','Administrador'] },
+  { label: 'Cocina',       icon: 'pi pi-bell',        route: '/cocina',    roles: ['Cocinero'] },
+  { label: 'Caja',         icon: 'pi pi-credit-card', route: '/caja',      roles: ['Cajero'] },
+  { label: 'Clientes',     icon: 'pi pi-users',       route: '/clientes',  roles: ['Cajero','Administrador'] },
+  { label: 'Usuarios',     icon: 'pi pi-user',        route: '/usuarios',  roles: ['Administrador'] },
+  { label: 'Inventario',   icon: 'pi pi-box',         route: '/inventario',roles: ['Administrador','Cocinero'] },
+  { label: 'Reportes',     icon: 'pi pi-chart-bar',   route: '/reportes',  roles: ['Administrador'] },
 ];
 
 @Component({
@@ -26,20 +27,24 @@ const ALL_ITEMS: SidebarItem[] = [
 })
 export class ShellComponent {
   sidebarOpen = signal(true);
+  themeService = inject(ThemeService);
+  auth = inject(AuthService);
+  alert = inject(AlertService);
+
   user = computed(() => this.auth.currentUser());
   role = computed(() => this.auth.getRole());
+  isDark = computed(() => this.themeService.isDark());
 
   navItems = computed(() =>
     ALL_ITEMS.filter(i => i.roles.includes(this.auth.getRole()))
   );
 
-  constructor(
-    private auth: AuthService,
-    private alert: AlertService
-  ) {}
-
   toggleSidebar() {
     this.sidebarOpen.update(v => !v);
+  }
+
+  toggleTheme() {
+    this.themeService.toggleTheme();
   }
 
   async logout() {
@@ -51,11 +56,20 @@ export class ShellComponent {
 
   getRoleIcon(): string {
     const map: Record<string, string> = {
-      'Administrador': 'admin_panel_settings',
-      'Mesero':        'room_service',
-      'Cocinero':      'soup_kitchen',
-      'Cajero':        'payments'
+      'Administrador': 'pi pi-shield',
+      'Mesero':        'pi pi-user',
+      'Cocinero':      'pi pi-bell',
+      'Cajero':        'pi pi-credit-card'
     };
-    return map[this.role()] ?? 'person';
+    return map[this.role()] ?? 'pi pi-user';
+  }
+
+  getUserInitials(): string {
+    const name = this.user()?.nombre || 'User';
+    const parts = name.trim().split(' ');
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return name.slice(0, 2).toUpperCase();
   }
 }

@@ -1,29 +1,32 @@
-﻿<div class="fade-in">
+<div class="fade-in">
   <div class="page-header">
-    <h1>Menú del <span>Restaurante</span></h1>
+    <div class="header-left">
+      <h1>Catálogo de <span class="highlight">Menú y Platillos</span></h1>
+      <span class="header-subtitle">Administra los productos gastronómicos, precios y disponibilidad de servicio.</span>
+    </div>
     @if (isAdmin()) {
-      <button class="btn btn-gold" (click)="openCreate()">
-        <span class="material-icons">add_circle_outline</span> Nuevo Platillo
+      <button class="btn btn-primary" (click)="openCreate()">
+        <i class="pi pi-plus"></i> Nuevo Platillo
       </button>
     }
   </div>
 
   <!-- FILTROS -->
   <div class="menu-filters glass-card">
-    <div class="search-box">
-      <span class="material-icons search-icon">search</span>
+    <div class="search-wrap">
+      <i class="pi pi-search search-icon"></i>
       <input class="form-control search-input" placeholder="Buscar por nombre de platillo..." [value]="search()" (input)="search.set($any($event.target).value)"/>
     </div>
 
-    <div class="cats-row">
-      <button class="cat-chip" [class.active]="catActiva()===0" (click)="catActiva.set(0)">
-        <span class="material-icons chip-icon">restaurant_menu</span>
-        Todos
+    <div class="cats-pill-row">
+      <button class="cat-pill" [class.active]="catActiva()===0" (click)="catActiva.set(0)">
+        <i class="pi pi-th-large"></i>
+        <span>Todos</span>
       </button>
       @for (c of categorias(); track c.id_categoria) {
-        <button class="cat-chip" [class.active]="catActiva()===c.id_categoria" (click)="catActiva.set(c.id_categoria)">
-          <span class="material-icons chip-icon">{{ getCatIcon(c.nombre_categoria) }}</span>
-          {{ c.nombre_categoria }}
+        <button class="cat-pill" [class.active]="catActiva()===c.id_categoria" (click)="catActiva.set(c.id_categoria)">
+          <i [class]="getCatIcon(c.nombre_categoria)"></i>
+          <span>{{ c.nombre_categoria }}</span>
         </button>
       }
     </div>
@@ -31,7 +34,7 @@
 
   @if (loading()) {
     <div class="loading-state">
-      <span class="material-icons spin-icon">sync</span>
+      <i class="pi pi-spin pi-spinner spin-icon"></i>
       <p>Cargando menú...</p>
     </div>
   } @else {
@@ -39,28 +42,34 @@
       @for (p of filtrados(); track p.id_producto) {
         <div class="menu-card glass-card" [class.no-disponible]="!p.disponible">
           <div class="card-icon-header">
-            <div class="cat-icon-circle">
-              <span class="material-icons">{{ getCatIcon(getCatNombre(p.id_categoria)) }}</span>
+            <div class="cat-icon-box">
+              <i [class]="getCatIcon(getCatNombre(p.id_categoria))"></i>
             </div>
             @if (!p.disponible) {
-              <span class="badge badge-cancelado">No disponible</span>
+              <span class="status-pill badge-danger">
+                <i class="pi pi-ban"></i> Agotado
+              </span>
+            } @else {
+              <span class="status-pill badge-success">
+                <i class="pi pi-check"></i> Disponible
+              </span>
             }
           </div>
 
           <div class="card-body">
             <span class="cat-tag">{{ getCatNombre(p.id_categoria) }}</span>
             <h3 class="prod-name">{{ p.nombre_producto }}</h3>
-            <p class="prod-desc">{{ p.descripcion || 'Sin descripción' }}</p>
+            <p class="prod-desc">{{ p.descripcion || 'Sin descripción detallada.' }}</p>
 
             <div class="card-footer">
-              <span class="price">{{ formatCurrency(p.precio) }}</span>
+              <span class="price-tag">{{ formatCurrency(p.precio) }}</span>
               @if (isAdmin()) {
-                <div class="actions">
+                <div class="actions-group">
                   <button class="action-btn edit" (click)="openEdit(p)" title="Editar platillo">
-                    <span class="material-icons">edit</span>
+                    <i class="pi pi-pencil"></i>
                   </button>
                   <button class="action-btn del" (click)="delete(p.id_producto)" title="Eliminar platillo">
-                    <span class="material-icons">delete_outline</span>
+                    <i class="pi pi-trash"></i>
                   </button>
                 </div>
               }
@@ -77,7 +86,9 @@
     <div class="modal-box" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h2>{{ isEdit() ? 'Editar Platillo' : 'Nuevo Platillo' }}</h2>
-        <button class="close-btn" (click)="showModal.set(false)">×</button>
+        <button class="close-btn" (click)="showModal.set(false)">
+          <i class="pi pi-times"></i>
+        </button>
       </div>
 
       <div class="form-grid">
@@ -106,13 +117,13 @@
         </div>
 
         <div class="form-group full">
-          <label>Disponibilidad</label>
+          <label>Disponibilidad en Cocina</label>
           <div class="toggle-row">
             <input type="checkbox" id="disp" [checked]="editProd().disponible" (change)="update('disponible', $any($event.target).checked)"/>
             <label for="disp" class="toggle-label">
-              <span class="badge" [class.badge-listo]="editProd().disponible" [class.badge-cancelado]="!editProd().disponible">
-                <span class="material-icons badge-icon">{{ editProd().disponible ? 'check_circle' : 'cancel' }}</span>
-                {{ editProd().disponible ? 'Disponible en menú' : 'Agotado temporalmente' }}
+              <span class="status-pill" [class.badge-success]="editProd().disponible" [class.badge-danger]="!editProd().disponible">
+                <i [class]="editProd().disponible ? 'pi pi-check' : 'pi pi-ban'"></i>
+                {{ editProd().disponible ? 'Disponible para pedidos' : 'Agotado temporalmente' }}
               </span>
             </label>
           </div>
@@ -121,7 +132,7 @@
 
       <div class="modal-footer">
         <button class="btn btn-ghost" (click)="showModal.set(false)">Cancelar</button>
-        <button class="btn btn-gold" (click)="save()">Guardar</button>
+        <button class="btn btn-primary" (click)="save()">Guardar Platillo</button>
       </div>
     </div>
   </div>

@@ -1,124 +1,153 @@
-﻿.empty-state {
-  padding: 60px 20px;
-  text-align: center;
+.loading-state {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  gap: 12px;
+  padding: 60px 0;
+  color: var(--text-muted);
 
-  .material-icons {
-    font-size: 3.5rem;
-    color: var(--gold);
-    margin-bottom: 8px;
+  .spin-icon {
+    font-size: 1.8rem;
+    color: var(--primary-color);
+  }
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 10px;
+  padding: 60px 20px;
+
+  .empty-icon {
+    font-size: 2.5rem;
+    color: var(--emerald-text);
   }
 
-  h3 { font-family: var(--font-serif); font-size: 1.25rem; }
-  p { color: var(--text-muted); font-size: 0.85rem; }
+  h3 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-color);
+  }
+
+  p {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
 }
 
 .pedidos-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 18px;
-}
+  gap: 16px;
 
-.pedido-card {
-  padding: 20px;
-  cursor: pointer;
-  transition: transform 0.2s ease;
-
-  &:hover {
-    transform: translateY(-2px);
-  }
-}
-
-.pedido-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 14px;
-
-  .mesa-info {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-
-    .mesa-icon {
-      color: var(--gold);
-      font-size: 1.3rem;
-    }
-
-    .mesa-num {
-      font-family: var(--font-serif);
-      font-size: 1.15rem;
-      font-weight: 600;
-    }
-  }
-}
-
-.pedido-items {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 18px;
-}
-
-.item-pill {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-}
-
-.pedido-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-top: 14px;
-  border-top: 1px solid var(--border-subtle);
-
-  .total-group {
+  .pedido-card {
+    padding: 20px;
     display: flex;
     flex-direction: column;
+    gap: 14px;
+    cursor: pointer;
+    border-radius: var(--radius-md);
 
-    .total-label {
-      font-size: 0.7rem;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.03em;
+    .pedido-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      .mesa-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+
+        .mesa-icon-box {
+          width: 34px;
+          height: 34px;
+          border-radius: var(--radius-xs);
+          background: var(--surface-subtle);
+          border: 1px solid var(--surface-border);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1rem;
+          color: var(--text-secondary);
+        }
+
+        .mesa-num {
+          font-size: 1rem;
+          font-weight: 700;
+          color: var(--text-color);
+        }
+      }
     }
 
-    .pedido-total {
-      font-family: var(--font-serif);
-      font-size: 1.3rem;
-      font-weight: 700;
-      color: var(--gold);
+    .pedido-items-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 8px 0;
+      border-top: 1px solid var(--surface-border);
+      border-bottom: 1px solid var(--surface-border);
+
+      .item-pill {
+        font-size: 0.75rem;
+        background: var(--surface-subtle);
+        border: 1px solid var(--surface-border);
+        padding: 3px 8px;
+        border-radius: var(--radius-pill);
+        color: var(--text-secondary);
+      }
+    }
+
+    .pedido-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      .total-group {
+        display: flex;
+        flex-direction: column;
+
+        .total-label {
+          font-size: 0.72rem;
+          color: var(--text-muted);
+        }
+
+        .pedido-total {
+          font-size: 1.2rem;
+          font-weight: 800;
+          color: var(--text-color);
+        }
+      }
     }
   }
 }
 
-.resumen-items {
+.resumen-items-card {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-bottom: 20px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--border-subtle);
-}
+  padding: 12px 14px;
+  background: var(--surface-subtle);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 14px;
 
-.resumen-row {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.85rem;
-  color: var(--text-secondary);
+  .resumen-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.82rem;
 
-  &.subtotal {
-    font-weight: 600;
-    color: var(--text-primary);
-    padding-top: 8px;
-    border-top: 1px solid var(--border-subtle);
+    .d-item-name { color: var(--text-color); }
+    .d-item-price { font-weight: 600; }
+
+    &.subtotal-row {
+      font-weight: 700;
+      padding-top: 8px;
+      border-top: 1px solid var(--surface-border);
+      color: var(--text-color);
+    }
   }
 }
 
@@ -126,46 +155,27 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 14px;
-  .full { grid-column: 1 / -1; }
+
+  .full {
+    grid-column: 1 / -1;
+  }
 }
 
-.total-final {
+.total-final-banner {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 0;
-  margin-top: 8px;
-  border-top: 1px solid var(--border-card);
-
-  span {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-  }
+  padding: 14px 16px;
+  background: var(--surface-subtle);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-sm);
+  margin-top: 16px;
+  font-size: 0.95rem;
+  font-weight: 700;
 
   .total-val {
-    font-family: var(--font-serif);
-    font-size: 1.6rem;
-    font-weight: 700;
-    color: var(--gold);
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--text-color);
   }
-}
-
-.loading-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 60px;
-  gap: 12px;
-  color: var(--text-muted);
-
-  .spin-icon {
-    font-size: 2rem;
-    animation: spin 1s linear infinite;
-    color: var(--gold);
-  }
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
 }
