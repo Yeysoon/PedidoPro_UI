@@ -91,6 +91,7 @@ export class MesasComponent implements OnInit {
     this.svc.updateEstado(mesa.id_mesa, estado).subscribe({
       next: () => {
         this.alert.successToast(`Mesa ${mesa.numero_mesa} marcada como ${estado}`);
+        this.mesas.update(list => list.map(m => m.id_mesa === mesa.id_mesa ? { ...m, estado: estado as any } : m));
         this.load();
       },
       error: e => this.alert.error('Error', e.error?.message)
@@ -127,7 +128,7 @@ export class MesasComponent implements OnInit {
       id_zona: +(d.id_zona || 1),
       numero_mesa: +d.numero_mesa,
       capacidad: +(d.capacidad || 4),
-      estado: d.estado || 'Libre'
+      estado: (d.estado as any) || 'Libre'
     };
 
     const obs = this.isEdit()
@@ -138,6 +139,10 @@ export class MesasComponent implements OnInit {
       next: () => {
         this.alert.successToast(this.isEdit() ? 'Mesa actualizada' : 'Mesa creada');
         this.showModal.set(false);
+        if (this.isEdit() && d.id_mesa) {
+          const zonaNombre = this.getZonaNombre(payload.id_zona);
+          this.mesas.update(list => list.map(m => m.id_mesa === d.id_mesa ? { ...m, ...payload, nombre_zona: zonaNombre } : m));
+        }
         this.load();
       },
       error: e => this.alert.error('Error al guardar', e.error?.message)
