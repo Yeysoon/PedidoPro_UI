@@ -1,4 +1,5 @@
 import { Component, signal, OnInit, inject, computed } from '@angular/core';
+import { Router } from '@angular/router';
 import { SlicePipe, CommonModule } from '@angular/common';
 import { ReportesService } from '../../core/services/reportes.service';
 import { MesasService } from '../../core/services/mesas.service';
@@ -56,14 +57,133 @@ export class DashboardComponent implements OnInit {
     return Math.round((ocupadas / total) * 100) + '%';
   });
 
-  // Sample recent operational transactions matching the PrimeNG table style
+  private router = inject(Router);
+
+  // Recent activity dataset
   recentActivity = signal<TransactionActivity[]>([
     { id: '#1254', initials: 'AE', initialClass: 'avatar-indigo', name: 'Amy Elsner', mesaTipo: 'Mesa 04 (Salón)', date: 'Hoy, 13:45', status: 'Pagado', statusType: 'success', amount: 'Q 345.00' },
     { id: '#2355', initials: 'AF', initialClass: 'avatar-sky', name: 'Anna Fali', mesaTipo: 'Mesa 12 (Terraza)', date: 'Hoy, 13:20', status: 'En Cocina', statusType: 'info', amount: 'Q 180.50' },
     { id: '#1235', initials: 'SS', initialClass: 'avatar-emerald', name: 'Stephen Shaw', mesaTipo: 'Para Llevar', date: 'Hoy, 12:50', status: 'Listo', statusType: 'success', amount: 'Q 95.00' },
     { id: '#4512', initials: 'MR', initialClass: 'avatar-amber', name: 'Marcos Ruiz', mesaTipo: 'Mesa 02 (Salón)', date: 'Hoy, 12:15', status: 'Pendiente', statusType: 'warning', amount: 'Q 260.00' },
-    { id: '#5621', initials: 'CL', initialClass: 'avatar-rose', name: 'Carmen López', mesaTipo: 'Mesa 08 (VIP)', date: 'Hoy, 11:30', status: 'Cancelado', statusType: 'danger', amount: 'Q 520.00' }
+    { id: '#5621', initials: 'CL', initialClass: 'avatar-rose', name: 'Carmen López', mesaTipo: 'Mesa 08 (VIP)', date: 'Hoy, 11:30', status: 'Cancelado', statusType: 'danger', amount: 'Q 520.00' },
+    { id: '#3421', initials: 'DR', initialClass: 'avatar-indigo', name: 'David Ramos', mesaTipo: 'Mesa 01 (Salón)', date: 'Hoy, 11:15', status: 'Pagado', statusType: 'success', amount: 'Q 410.00' },
+    { id: '#7812', initials: 'SP', initialClass: 'avatar-emerald', name: 'Sofía Portillo', mesaTipo: 'Mesa 06 (Terraza)', date: 'Hoy, 10:45', status: 'En Cocina', statusType: 'info', amount: 'Q 195.00' },
+    { id: '#9012', initials: 'JC', initialClass: 'avatar-sky', name: 'Julio Castillo', mesaTipo: 'Barra 02', date: 'Hoy, 10:30', status: 'Listo', statusType: 'success', amount: 'Q 85.00' },
+    { id: '#6543', initials: 'LG', initialClass: 'avatar-amber', name: 'Laura Gómez', mesaTipo: 'Mesa 03 (VIP)', date: 'Hoy, 10:05', status: 'Pendiente', statusType: 'warning', amount: 'Q 310.00' },
+    { id: '#8821', initials: 'PA', initialClass: 'avatar-rose', name: 'Pedro Alvarado', mesaTipo: 'Para Llevar', date: 'Hoy, 09:40', status: 'Pagado', statusType: 'success', amount: 'Q 120.00' },
+    { id: '#4432', initials: 'EM', initialClass: 'avatar-indigo', name: 'Elena Morales', mesaTipo: 'Mesa 05 (Salón)', date: 'Hoy, 09:15', status: 'Pagado', statusType: 'success', amount: 'Q 275.50' },
+    { id: '#1122', initials: 'RA', initialClass: 'avatar-sky', name: 'Rodrigo Aguilar', mesaTipo: 'Mesa 07 (Terraza)', date: 'Hoy, 08:50', status: 'Listo', statusType: 'success', amount: 'Q 160.00' },
+    { id: '#7733', initials: 'VB', initialClass: 'avatar-emerald', name: 'Valeria Blanco', mesaTipo: 'Barra 01', date: 'Hoy, 08:30', status: 'Pagado', statusType: 'success', amount: 'Q 95.00' },
+    { id: '#9988', initials: 'HG', initialClass: 'avatar-amber', name: 'Héctor Guerra', mesaTipo: 'Mesa 09 (VIP)', date: 'Hoy, 08:15', status: 'Pendiente', statusType: 'warning', amount: 'Q 380.00' },
+    { id: '#3321', initials: 'MB', initialClass: 'avatar-rose', name: 'Mariana Barrios', mesaTipo: 'Para Llevar', date: 'Hoy, 08:00', status: 'Pagado', statusType: 'success', amount: 'Q 145.00' }
   ]);
+
+  // Pagination & Filtering for Activity Table
+  activityFilter = signal<string>('all');
+  currentPage = signal<number>(1);
+  pageSize = signal<number>(5);
+
+  pendientesCount = computed(() => this.recentActivity().filter(a => a.status === 'Pendiente').length);
+
+  filteredActivity = computed(() => {
+    const f = this.activityFilter();
+    let list = this.recentActivity();
+    if (f !== 'all') {
+      list = list.filter(a => a.status === f);
+    }
+    return list;
+  });
+
+  totalPages = computed(() => Math.max(1, Math.ceil(this.filteredActivity().length / this.pageSize())));
+
+  paginatedActivity = computed(() => {
+    const start = (this.currentPage() - 1) * this.pageSize();
+    return this.filteredActivity().slice(start, start + this.pageSize());
+  });
+
+  pagesList = computed(() => Array.from({ length: this.totalPages() }, (_, i) => i + 1));
+
+  startEntry = computed(() => this.filteredActivity().length ? (this.currentPage() - 1) * this.pageSize() + 1 : 0);
+  endEntry = computed(() => Math.min(this.currentPage() * this.pageSize(), this.filteredActivity().length));
+
+  setPage(page: number) {
+    if (page >= 1 && page <= this.totalPages()) {
+      this.currentPage.set(page);
+    }
+  }
+
+  togglePendientesFilter() {
+    if (this.activityFilter() === 'Pendiente') {
+      this.activityFilter.set('all');
+      this.alert.infoToast('Mostrando todas las transacciones');
+    } else {
+      this.activityFilter.set('Pendiente');
+      this.alert.warningToast('Filtrado: solo comandas pendientes');
+    }
+    this.currentPage.set(1);
+  }
+
+  async openActivityOptions() {
+    const { value: option } = await Swal.fire({
+      title: 'Opciones de Actividad',
+      text: 'Selecciona una acción rápida o filtro:',
+      icon: 'question',
+      input: 'radio',
+      inputOptions: {
+        'all': '🔍 Ver Todas las Transacciones',
+        'Pendiente': '⏳ Filtrar solo Pendientes (' + this.pendientesCount() + ')',
+        'En Cocina': '🍳 Filtrar solo En Cocina',
+        'Listo': '✅ Filtrar solo Listos para entrega',
+        'Pagado': '💵 Filtrar solo Pagados',
+        'cocina': '👨‍🍳 Ir al Módulo de Cocina',
+        'caja': '🧾 Ir al Módulo de Caja'
+      },
+      inputValue: this.activityFilter() === 'all' ? 'all' : this.activityFilter(),
+      showCancelButton: true,
+      confirmButtonText: 'Aplicar',
+      cancelButtonText: 'Cancelar',
+      customClass: {
+        popup: 'swal-pedidopro-modal',
+        confirmButton: 'btn btn-primary',
+        cancelButton: 'btn btn-ghost'
+      },
+      buttonsStyling: false
+    });
+
+    if (option) {
+      if (option === 'cocina') {
+        this.router.navigate(['/cocina']);
+      } else if (option === 'caja') {
+        this.router.navigate(['/caja']);
+      } else {
+        this.activityFilter.set(option);
+        this.currentPage.set(1);
+        this.alert.successToast('Filtro de actividad actualizado');
+      }
+    }
+  }
+
+  viewActivityDetail(item: TransactionActivity) {
+    Swal.fire({
+      title: `Detalle ${item.id}`,
+      html: `
+        <div style="text-align: left; font-size: 0.95rem; line-height: 1.8; color: #cbd5e1; padding: 10px 0;">
+          <div style="margin-bottom: 8px;"><strong>Atendido por:</strong> ${item.name}</div>
+          <div style="margin-bottom: 8px;"><strong>Ubicación:</strong> ${item.mesaTipo}</div>
+          <div style="margin-bottom: 8px;"><strong>Hora de registro:</strong> ${item.date}</div>
+          <div style="margin-bottom: 8px;"><strong>Estado actual:</strong> <span class="badge badge-${item.statusType}" style="padding: 3px 8px; border-radius: 6px;">${item.status}</span></div>
+          <div style="margin-top: 12px; font-size: 1.1rem; color: #38bdf8;"><strong>Total:</strong> ${item.amount}</div>
+        </div>
+      `,
+      icon: 'info',
+      confirmButtonText: 'Cerrar',
+      customClass: {
+        popup: 'swal-pedidopro-modal',
+        confirmButton: 'btn btn-primary'
+      },
+      buttonsStyling: false
+    });
+  }
 
   ngOnInit() {
     this.load();
@@ -72,9 +192,10 @@ export class DashboardComponent implements OnInit {
   load() {
     this.loading.set(true);
     this.reportesSvc.getVentas().subscribe({
-      next: v => {
-        this.ventas.set(v);
-        const lastVenta = v[v.length - 1];
+      next: (v: any) => {
+        const list = Array.isArray(v) ? v : (v?.data || []);
+        this.ventas.set(list);
+        const lastVenta = list[list.length - 1];
         this.totalHoy.set(lastVenta ? lastVenta.total_ventas : 2840.50);
         this.loading.set(false);
       },
@@ -82,7 +203,10 @@ export class DashboardComponent implements OnInit {
     });
 
     this.reportesSvc.getProductosTop().subscribe({
-      next: p => this.productosTop.set(p.slice(0, 5))
+      next: (p: any) => {
+        const list = Array.isArray(p) ? p : [];
+        this.productosTop.set(list.slice(0, 5));
+      }
     });
 
     this.mesasSvc.getMesas().subscribe({

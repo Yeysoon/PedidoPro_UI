@@ -220,8 +220,11 @@
           <span class="card-subtitle">Transacciones y comandas en tiempo real</span>
         </div>
         <div class="table-header-tags">
-          <span class="badge badge-warning">5 pendientes</span>
-          <button class="btn-icon-more" title="Más">
+          <button type="button" class="badge badge-warning" style="cursor: pointer; border: none;" (click)="togglePendientesFilter()" [title]="activityFilter() === 'Pendiente' ? 'Quitar filtro de pendientes' : 'Filtrar solo pendientes'">
+            <i class="pi pi-filter"></i>
+            {{ pendientesCount() }} pendientes
+          </button>
+          <button class="btn-icon-more" title="Opciones de actividad" (click)="openActivityOptions()">
             <i class="pi pi-ellipsis-h"></i>
           </button>
         </div>
@@ -240,8 +243,8 @@
             </tr>
           </thead>
           <tbody>
-            @for (item of recentActivity(); track item.id) {
-              <tr>
+            @for (item of paginatedActivity(); track item.id) {
+              <tr (click)="viewActivityDetail(item)" style="cursor: pointer;" title="Click para ver detalle">
                 <td class="font-mono text-muted">{{ item.id }}</td>
                 <td>
                   <div class="user-row-cell">
@@ -260,19 +263,31 @@
                 </td>
                 <td class="font-bold">{{ item.amount }}</td>
               </tr>
+            } @empty {
+              <tr>
+                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                  No hay transacciones registradas con este filtro.
+                </td>
+              </tr>
             }
           </tbody>
         </table>
       </div>
 
       <div class="table-pagination-row">
-        <span class="pagination-info">Mostrando 1 a 5 de 20 entradas</span>
+        <span class="pagination-info">Mostrando {{ startEntry() }} a {{ endEntry() }} de {{ filteredActivity().length }} entradas</span>
         <div class="pagination-pills">
-          <button class="pag-btn"><i class="pi pi-chevron-left"></i></button>
-          <button class="pag-btn active">1</button>
-          <button class="pag-btn">2</button>
-          <button class="pag-btn">3</button>
-          <button class="pag-btn"><i class="pi pi-chevron-right"></i></button>
+          <button class="pag-btn" [disabled]="currentPage() === 1" (click)="setPage(currentPage() - 1)" title="Página anterior">
+            <i class="pi pi-chevron-left"></i>
+          </button>
+          @for (p of pagesList(); track p) {
+            <button class="pag-btn" [class.active]="currentPage() === p" (click)="setPage(p)">
+              {{ p }}
+            </button>
+          }
+          <button class="pag-btn" [disabled]="currentPage() === totalPages()" (click)="setPage(currentPage() + 1)" title="Página siguiente">
+            <i class="pi pi-chevron-right"></i>
+          </button>
         </div>
       </div>
     </div>
