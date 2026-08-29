@@ -5,6 +5,17 @@ import { AuthService } from '../../core/services/auth.service';
 import { AlertService } from '../../core/services/alert.service';
 import { Producto, Categoria } from '../../core/models';
 
+const DEFAULT_CATEGORIAS: Categoria[] = [
+  { id_categoria: 1, nombre_categoria: 'Platos Fuertes' },
+  { id_categoria: 2, nombre_categoria: 'Bebidas' },
+  { id_categoria: 3, nombre_categoria: 'Postres' },
+  { id_categoria: 4, nombre_categoria: 'Entradas' },
+  { id_categoria: 5, nombre_categoria: 'Pastas' },
+  { id_categoria: 6, nombre_categoria: 'Pizzas' },
+  { id_categoria: 7, nombre_categoria: 'Sopas' },
+  { id_categoria: 8, nombre_categoria: 'Mariscos' }
+];
+
 @Component({
   selector: 'app-menu',
   standalone: true,
@@ -14,7 +25,7 @@ import { Producto, Categoria } from '../../core/models';
 })
 export class MenuComponent implements OnInit {
   productos  = signal<Producto[]>([]);
-  categorias = signal<Categoria[]>([]);
+  categorias = signal<Categoria[]>(DEFAULT_CATEGORIAS);
   loading    = signal(true);
   catActiva  = signal(0);
   search     = signal('');
@@ -45,11 +56,23 @@ export class MenuComponent implements OnInit {
       next: p => { this.productos.set(p); this.loading.set(false); },
       error: e => { this.alert.error('Error al cargar menú', e.error?.message); this.loading.set(false); }
     });
-    this.svc.getCategorias().subscribe({ next: c => this.categorias.set(c) });
+    this.svc.getCategorias().subscribe({
+      next: c => {
+        if (c && c.length > 0) {
+          this.categorias.set(c);
+        } else {
+          this.categorias.set(DEFAULT_CATEGORIAS);
+        }
+      },
+      error: () => {
+        this.categorias.set(DEFAULT_CATEGORIAS);
+      }
+    });
   }
 
   openCreate() {
-    this.editProd.set({ disponible: true, precio: 0, id_categoria: this.categorias()[0]?.id_categoria || 1 });
+    const firstCat = this.categorias()[0]?.id_categoria || 1;
+    this.editProd.set({ disponible: true, precio: 0, id_categoria: firstCat });
     this.isEdit.set(false);
     this.showModal.set(true);
   }
