@@ -33,7 +33,7 @@ export class MesasComponent implements OnInit {
 
   filteredMesas = computed(() => {
     let list = this.mesas();
-    if (this.filterZona()) list = list.filter(m => m.id_zona === this.filterZona());
+    if (this.filterZona()) list = list.filter(m => +m.id_zona === +this.filterZona());
     if (this.filterEstado()) list = list.filter(m => m.estado === this.filterEstado());
     return list;
   });
@@ -98,14 +98,20 @@ export class MesasComponent implements OnInit {
   }
 
   openCreate() {
-    const defaultZona = this.zonas()[0]?.id_zona || 1;
+    const defaultZona = +(this.zonas()[0]?.id_zona || 1);
     this.editMesa.set({ estado: 'Libre', capacidad: 4, id_zona: defaultZona });
     this.isEdit.set(false);
     this.showModal.set(true);
   }
 
   openEdit(m: Mesa) {
-    this.editMesa.set({ ...m, id_zona: m.id_zona || 1 });
+    this.editMesa.set({
+      id_mesa: m.id_mesa,
+      numero_mesa: m.numero_mesa,
+      capacidad: m.capacidad,
+      id_zona: +(m.id_zona || 1),
+      estado: m.estado || 'Libre'
+    });
     this.isEdit.set(true);
     this.showModal.set(true);
   }
@@ -116,9 +122,17 @@ export class MesasComponent implements OnInit {
       this.alert.warningToast('Ingresa el número de mesa');
       return;
     }
+    const payload = {
+      ...d,
+      id_zona: +(d.id_zona || 1),
+      numero_mesa: +d.numero_mesa,
+      capacidad: +(d.capacidad || 4),
+      estado: d.estado || 'Libre'
+    };
+
     const obs = this.isEdit()
-      ? this.svc.updateMesa(d.id_mesa!, d)
-      : this.svc.createMesa(d);
+      ? this.svc.updateMesa(d.id_mesa!, payload)
+      : this.svc.createMesa(payload);
 
     obs.subscribe({
       next: () => {
@@ -143,8 +157,9 @@ export class MesasComponent implements OnInit {
     });
   }
 
-  getZonaNombre(id: number) {
-    return this.zonas().find(z => z.id_zona === id)?.nombre_zona ?? 'Salón Principal';
+  getZonaNombre(id?: number) {
+    if (!id) return 'Salón Principal';
+    return this.zonas().find(z => +z.id_zona === +id)?.nombre_zona ?? 'Salón Principal';
   }
 
   getBadge(e: string) {

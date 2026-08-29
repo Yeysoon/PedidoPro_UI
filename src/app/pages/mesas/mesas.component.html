@@ -82,7 +82,7 @@
             </div>
             <div class="mesa-info-pill">
               <i class="pi pi-map-marker"></i>
-              <span>{{ getZonaNombre(mesa.id_zona) }}</span>
+              <span>{{ mesa.nombre_zona || getZonaNombre(mesa.id_zona) }}</span>
             </div>
           </div>
 
@@ -142,10 +142,10 @@
           <label>Zona o Ambiente</label>
           <div class="selector-pills-grid">
             @for (z of zonas(); track z.id_zona) {
-              <button type="button" class="selector-pill-card" [class.selected]="editMesa().id_zona === z.id_zona" (click)="update('id_zona', z.id_zona)">
+              <button type="button" class="selector-pill-card" [class.selected]="+(editMesa().id_zona || 0) === +z.id_zona" (click)="update('id_zona', +z.id_zona)">
                 <i class="pi pi-map-marker"></i>
                 <span class="pill-label">{{ z.nombre_zona }}</span>
-                @if (editMesa().id_zona === z.id_zona) {
+                @if (+(editMesa().id_zona || 0) === +z.id_zona) {
                   <i class="pi pi-check check-icon"></i>
                 }
               </button>
