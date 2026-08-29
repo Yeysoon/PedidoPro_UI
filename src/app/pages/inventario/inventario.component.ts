@@ -1,4 +1,4 @@
-﻿import { Component, signal, OnInit } from '@angular/core';
+import { Component, signal, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { InventarioService } from '../../core/services/inventario.service';
 import { AlertService } from '../../core/services/alert.service';
@@ -42,7 +42,11 @@ export class InventarioComponent implements OnInit {
   }
 
   openCreate() {
-    this.editItem.set({ stock_actual: 0 });
+    this.editItem.set({
+      nombre_ingrediente: '',
+      unidad_medida: '',
+      stock_actual: 0
+    });
     this.isEdit.set(false);
     this.showModal.set(true);
   }

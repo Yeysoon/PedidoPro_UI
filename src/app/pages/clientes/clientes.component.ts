@@ -1,4 +1,4 @@
-﻿import { Component, signal, OnInit } from '@angular/core';
+import { Component, signal, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ClientesService } from '../../core/services/clientes.service';
 import { AlertService } from '../../core/services/alert.service';
@@ -44,7 +44,12 @@ export class ClientesComponent implements OnInit {
   }
 
   openCreate() {
-    this.editItem.set({});
+    this.editItem.set({
+      nombre_completo: '',
+      nit_documento: '',
+      telefono: '',
+      correo_electronico: ''
+    });
     this.isEdit.set(false);
     this.showModal.set(true);
   }

@@ -1,4 +1,4 @@
-﻿import { SlicePipe } from '@angular/common';
+import { SlicePipe } from '@angular/common';
 import { Component, signal, OnInit } from '@angular/core';
 import { ReportesService } from '../../core/services/reportes.service';
 import { VentaReporte, ProductoTop } from '../../core/models';
@@ -15,14 +15,27 @@ export class ReportesComponent implements OnInit {
   constructor(private svc: ReportesService) {}
   ngOnInit() { this.load(); }
   load() {
-    this.svc.getVentas().subscribe({ next: v => {
-      this.ventas.set(v);
-      const total = v.reduce((s, x) => s + +x.total_ventas, 0);
-      this.totalGeneral.set(total);
-      this.avgDiario.set(v.length ? total / v.length : 0);
-      this.loading.set(false);
-    }});
-    this.svc.getProductosTop().subscribe({ next: p => this.productosTop.set(p) });
+    this.loading.set(true);
+    this.svc.getVentas().subscribe({
+      next: (v: any) => {
+        const list: VentaReporte[] = Array.isArray(v) ? v : (v?.data || []);
+        this.ventas.set(list);
+        const total = list.reduce((s, x) => s + +x.total_ventas, 0);
+        this.totalGeneral.set(total);
+        this.avgDiario.set(list.length ? total / list.length : 0);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.loading.set(false);
+      }
+    });
+    this.svc.getProductosTop().subscribe({
+      next: (p: any) => {
+        const list = Array.isArray(p) ? p : [];
+        this.productosTop.set(list);
+      },
+      error: () => {}
+    });
   }
   getBarH(val: number): string {
     const max = Math.max(...this.ventas().map(v => +v.total_ventas), 1);

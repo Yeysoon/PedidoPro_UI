@@ -72,7 +72,13 @@ export class MenuComponent implements OnInit {
 
   openCreate() {
     const firstCat = this.categorias()[0]?.id_categoria || 1;
-    this.editProd.set({ disponible: true, precio: 0, id_categoria: firstCat });
+    this.editProd.set({
+      nombre_producto: '',
+      descripcion: '',
+      disponible: true,
+      precio: 0,
+      id_categoria: firstCat
+    });
     this.isEdit.set(false);
     this.showModal.set(true);
   }

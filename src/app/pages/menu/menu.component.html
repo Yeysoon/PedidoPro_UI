@@ -94,22 +94,22 @@
       <div class="form-grid">
         <div class="form-group full">
           <label>Nombre del Platillo *</label>
-          <input class="form-control" [value]="editProd().nombre_producto" (input)="update('nombre_producto', $any($event.target).value)" placeholder="Ej. Lomo en Salsa de Champiñones"/>
+          <input class="form-control" [value]="editProd().nombre_producto || ''" (input)="update('nombre_producto', $any($event.target).value)" placeholder="Ej. Lomo en Salsa de Champiñones / Pizza Margarita"/>
         </div>
 
         <div class="form-group full">
           <label>Descripción</label>
-          <textarea class="form-control" rows="2" [value]="editProd().descripcion" (input)="update('descripcion', $any($event.target).value)" placeholder="Detalle de ingredientes y preparación..."></textarea>
+          <textarea class="form-control" rows="2" [value]="editProd().descripcion || ''" (input)="update('descripcion', $any($event.target).value)" placeholder="Ej. Corte de lomo 250g con salsa de champiñones frescos y papas..."></textarea>
         </div>
 
         <div class="form-group">
           <label>Precio (Q) *</label>
-          <input class="form-control" type="number" step="0.01" [value]="editProd().precio" (input)="update('precio', +$any($event.target).value)"/>
+          <input class="form-control" type="number" step="0.01" placeholder="Ej. 65.00" [value]="editProd().precio ?? ''" (input)="update('precio', +$any($event.target).value)"/>
         </div>
 
         <div class="form-group">
           <label>Categoría</label>
-          <select class="form-control" [value]="editProd().id_categoria" (change)="update('id_categoria', +$any($event.target).value)">
+          <select class="form-control" [value]="editProd().id_categoria || (categorias()[0]?.id_categoria || 1)" (change)="update('id_categoria', +$any($event.target).value)">
             @for (c of categorias(); track c.id_categoria) {
               <option [value]="c.id_categoria">{{ c.nombre_categoria }}</option>
             }

@@ -125,7 +125,7 @@
           <label>Número de Mesa *</label>
           <div class="input-icon-wrap">
             <i class="pi pi-table input-icon"></i>
-            <input class="form-control" type="number" placeholder="Ej. 5" [value]="editMesa().numero_mesa" (input)="update('numero_mesa', +$any($event.target).value)"/>
+            <input class="form-control" type="number" placeholder="Ej. 1, 2, 10..." [value]="editMesa().numero_mesa ?? ''" (input)="update('numero_mesa', +$any($event.target).value)"/>
           </div>
         </div>
 
@@ -133,7 +133,7 @@
           <label>Capacidad (personas) *</label>
           <div class="input-icon-wrap">
             <i class="pi pi-users input-icon"></i>
-            <input class="form-control" type="number" placeholder="4" [value]="editMesa().capacidad" (input)="update('capacidad', +$any($event.target).value)"/>
+            <input class="form-control" type="number" placeholder="Ej. 2, 4, 8 personas" [value]="editMesa().capacidad ?? ''" (input)="update('capacidad', +$any($event.target).value)"/>
           </div>
         </div>
 

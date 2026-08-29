@@ -88,17 +88,17 @@
       <div class="form-grid">
         <div class="form-group full">
           <label>Nombre del Insumo *</label>
-          <input class="form-control" [value]="editItem().nombre_ingrediente" (input)="update('nombre_ingrediente', $any($event.target).value)" placeholder="Ej. Tomate Roma"/>
+          <input class="form-control" [value]="editItem().nombre_ingrediente || ''" (input)="update('nombre_ingrediente', $any($event.target).value)" placeholder="Ej. Tomate Roma / Queso Mozzarella"/>
         </div>
 
         <div class="form-group">
           <label>Unidad de Medida</label>
-          <input class="form-control" placeholder="kg, lb, litros, unidades..." [value]="editItem().unidad_medida" (input)="update('unidad_medida', $any($event.target).value)"/>
+          <input class="form-control" placeholder="Ej. kg, lb, litros, unidades..." [value]="editItem().unidad_medida || ''" (input)="update('unidad_medida', $any($event.target).value)"/>
         </div>
 
         <div class="form-group">
           <label>Stock Disponible</label>
-          <input class="form-control" type="number" step="0.1" [value]="editItem().stock_actual" (input)="update('stock_actual', +$any($event.target).value)"/>
+          <input class="form-control" type="number" step="0.1" placeholder="Ej. 10.5" [value]="editItem().stock_actual ?? 0" (input)="update('stock_actual', +$any($event.target).value)"/>
         </div>
       </div>
 
