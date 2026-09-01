@@ -2,11 +2,19 @@
   <div class="page-header">
     <div class="header-left">
       <h1>Control de <span class="highlight">Inventario e Insumos</span></h1>
-      <span class="header-subtitle">Monitoreo de existencias de almacén, niveles críticos y reabastecimiento.</span>
+      <span class="header-subtitle">
+        @if (isAdmin()) {
+          Monitoreo de existencias de almacén, niveles críticos, registro y reabastecimiento.
+        } @else {
+          Consulta de existencias de ingredientes, niveles de stock y recetas oficiales.
+        }
+      </span>
     </div>
-    <button class="btn btn-primary" (click)="openCreate()">
-      <i class="pi pi-plus"></i> Nuevo Insumo
-    </button>
+    @if (isAdmin()) {
+      <button class="btn btn-primary" (click)="openCreate()">
+        <i class="pi pi-plus"></i> Nuevo Insumo
+      </button>
+    }
   </div>
 
   <div class="toolbar glass-card">
@@ -30,7 +38,9 @@
             <th>Unidad de Medida</th>
             <th>Stock Disponible</th>
             <th>Nivel de Existencia</th>
-            <th style="text-align: right;">Acciones</th>
+            @if (isAdmin()) {
+              <th style="text-align: right;">Acciones</th>
+            }
           </tr>
         </thead>
         <tbody>
@@ -57,16 +67,18 @@
                   </span>
                 </div>
               </td>
-              <td style="text-align: right;">
-                <div class="row-actions">
-                  <button class="action-btn edit" (click)="openEdit(i)" title="Editar insumo">
-                    <i class="pi pi-pencil"></i>
-                  </button>
-                  <button class="action-btn del" (click)="delete(i.id_ingrediente)" title="Eliminar insumo">
-                    <i class="pi pi-trash"></i>
-                  </button>
-                </div>
-              </td>
+              @if (isAdmin()) {
+                <td style="text-align: right;">
+                  <div class="row-actions">
+                    <button class="action-btn edit" (click)="openEdit(i)" title="Editar insumo">
+                      <i class="pi pi-pencil"></i>
+                    </button>
+                    <button class="action-btn del" (click)="delete(i.id_ingrediente)" title="Eliminar insumo">
+                      <i class="pi pi-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              }
             </tr>
           }
         </tbody>

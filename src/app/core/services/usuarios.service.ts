@@ -1,4 +1,4 @@
-﻿import { Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { ApiService } from './api.service';
 import { Usuario } from '../models';
 
@@ -10,4 +10,13 @@ export class UsuariosService {
   createUsuario(d: any)             { return this.api.post<Usuario>('/api/usuarios', d); }
   updateUsuario(id: number, d: any) { return this.api.put<Usuario>(`/api/usuarios/${id}`, d); }
   toggleUser(id: number, activo?: boolean) { return this.api.patch<any>(`/api/usuarios/${id}/estado`, { activo }); }
+  changePassword(id: number, nueva_password: string, user?: any) {
+    const payload = user?.nombre && user?.email ? {
+      nombre: user.nombre,
+      email: user.email,
+      id_rol: user.id_rol || 1,
+      password: nueva_password
+    } : { password: nueva_password };
+    return this.api.put<any>(`/api/usuarios/${id}`, payload);
+  }
 }

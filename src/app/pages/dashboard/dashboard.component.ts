@@ -1,10 +1,14 @@
 import { Component, signal, OnInit, inject, computed } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { SlicePipe, CommonModule } from '@angular/common';
 import { ReportesService } from '../../core/services/reportes.service';
 import { MesasService } from '../../core/services/mesas.service';
 import { UsuariosService } from '../../core/services/usuarios.service';
-import { VentaReporte, ProductoTop, Mesa } from '../../core/models';
+import { CocinaService } from '../../core/services/cocina.service';
+import { CajaService } from '../../core/services/caja.service';
+import { InventarioService } from '../../core/services/inventario.service';
+import { DashboardService, AdminStats, MeseroStats, CocinaStats, CajaStats } from '../../core/services/dashboard.service';
+import { VentaReporte, ProductoTop, Mesa, Comanda, Pedido, Ingrediente } from '../../core/models';
 import { AuthService } from '../../core/services/auth.service';
 import { AlertService } from '../../core/services/alert.service';
 import Swal from 'sweetalert2';
@@ -24,7 +28,7 @@ interface TransactionActivity {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [SlicePipe, CommonModule],
+  imports: [SlicePipe, CommonModule, RouterLink],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })
@@ -34,17 +38,33 @@ export class DashboardComponent implements OnInit {
   private reportesSvc = inject(ReportesService);
   private mesasSvc = inject(MesasService);
   private usuariosSvc = inject(UsuariosService);
+  private cocinaSvc = inject(CocinaService);
+  private cajaSvc = inject(CajaService);
+  private inventarioSvc = inject(InventarioService);
+  private dashboardSvc = inject(DashboardService);
+  private router = inject(Router);
 
   user = signal(this.auth.getUser());
+  role = computed(() => this.auth.getRole());
   loading = signal(true);
 
   // Period filter
   selectedPeriod = signal<'weekly' | 'monthly' | 'yearly'>('monthly');
 
+  // Role metrics
+  adminStats = signal<AdminStats | null>(null);
+  meseroStats = signal<MeseroStats | null>(null);
+  cocinaStats = signal<CocinaStats | null>(null);
+  cajaStats = signal<CajaStats | null>(null);
+
+  // General datasets
   ventas = signal<VentaReporte[]>([]);
   productosTop = signal<ProductoTop[]>([]);
   mesas = signal<Mesa[]>([]);
   usuariosCount = signal<number>(0);
+  comandasCocina = signal<Comanda[]>([]);
+  pedidosListosCaja = signal<Pedido[]>([]);
+  insumosCriticos = signal<Ingrediente[]>([]);
 
   totalHoy = signal(0);
   mesasLibres = signal(0);
@@ -56,8 +76,6 @@ export class DashboardComponent implements OnInit {
     const ocupadas = this.mesasOcupadas();
     return Math.round((ocupadas / total) * 100) + '%';
   });
-
-  private router = inject(Router);
 
   // Recent activity dataset
   recentActivity = signal<TransactionActivity[]>([
@@ -191,35 +209,116 @@ export class DashboardComponent implements OnInit {
 
   load() {
     this.loading.set(true);
-    this.reportesSvc.getVentas().subscribe({
-      next: (v: any) => {
-        const list = Array.isArray(v) ? v : (v?.data || []);
-        this.ventas.set(list);
-        const lastVenta = list[list.length - 1];
-        this.totalHoy.set(lastVenta ? lastVenta.total_ventas : 2840.50);
-        this.loading.set(false);
-      },
-      error: () => this.loading.set(false)
-    });
+    const r = this.role();
 
-    this.reportesSvc.getProductosTop().subscribe({
-      next: (p: any) => {
-        const list = Array.isArray(p) ? p : [];
-        this.productosTop.set(list.slice(0, 5));
-      }
-    });
+    // Administrador: Cargar dashboard general y stats completos
+    if (r === 'Administrador') {
+      this.dashboardSvc.getAdminStats().subscribe({
+        next: res => {
+          if (res?.data) {
+            this.adminStats.set(res.data);
+            if (res.data.ventas_hoy !== undefined) this.totalHoy.set(res.data.ventas_hoy);
+          }
+        },
+        error: () => {}
+      });
 
-    this.mesasSvc.getMesas().subscribe({
-      next: m => {
-        this.mesas.set(m);
-        this.mesasLibres.set(m.filter(x => x.estado === 'Libre').length);
-        this.mesasOcupadas.set(m.filter(x => x.estado === 'Ocupada').length);
-      }
-    });
+      this.reportesSvc.getVentas().subscribe({
+        next: (v: any) => {
+          const list = Array.isArray(v) ? v : (v?.data || []);
+          this.ventas.set(list);
+          const lastVenta = list[list.length - 1];
+          if (!this.totalHoy()) this.totalHoy.set(lastVenta ? lastVenta.total_ventas : 2840.50);
+          this.loading.set(false);
+        },
+        error: () => this.loading.set(false)
+      });
 
-    this.usuariosSvc.getUsuarios().subscribe({
-      next: u => this.usuariosCount.set(u.length)
-    });
+      this.reportesSvc.getProductosTop().subscribe({
+        next: (p: any) => {
+          const list = Array.isArray(p) ? p : [];
+          this.productosTop.set(list.slice(0, 5));
+        }
+      });
+
+      this.mesasSvc.getMesas().subscribe({
+        next: m => {
+          this.mesas.set(m);
+          this.mesasLibres.set(m.filter(x => x.estado === 'Libre').length);
+          this.mesasOcupadas.set(m.filter(x => x.estado === 'Ocupada').length);
+        }
+      });
+
+      this.usuariosSvc.getUsuarios().subscribe({
+        next: u => this.usuariosCount.set(u.length)
+      });
+
+    } else if (r === 'Mesero') {
+      // Mesero: Cargar estado del salón, mis pedidos y ocupación
+      this.dashboardSvc.getMeseroStats().subscribe({
+        next: res => {
+          if (res?.data) {
+            this.meseroStats.set(res.data);
+          }
+        },
+        error: () => {}
+      });
+
+      this.mesasSvc.getMesas().subscribe({
+        next: m => {
+          this.mesas.set(m);
+          this.mesasLibres.set(m.filter(x => x.estado === 'Libre').length);
+          this.mesasOcupadas.set(m.filter(x => x.estado === 'Ocupada').length);
+          this.loading.set(false);
+        },
+        error: () => this.loading.set(false)
+      });
+
+    } else if (r === 'Cocinero') {
+      // Cocinero: Cargar comandas activas y alertas de stock bajo
+      this.dashboardSvc.getCocinaStats().subscribe({
+        next: res => {
+          if (res?.data) {
+            this.cocinaStats.set(res.data);
+          }
+        },
+        error: () => {}
+      });
+
+      this.cocinaSvc.getComandas().subscribe({
+        next: c => {
+          this.comandasCocina.set(c);
+          this.loading.set(false);
+        },
+        error: () => this.loading.set(false)
+      });
+
+      this.inventarioSvc.getIngredientes().subscribe({
+        next: ings => {
+          this.insumosCriticos.set(ings.filter(i => i.stock_actual <= 10));
+        }
+      });
+
+    } else if (r === 'Cajero') {
+      // Cajero: Cargar ingresos diarios y pedidos listos por cobrar
+      this.dashboardSvc.getCajaStats().subscribe({
+        next: res => {
+          if (res?.data) {
+            this.cajaStats.set(res.data);
+            this.totalHoy.set(res.data.ingresos_hoy || 0);
+          }
+        },
+        error: () => {}
+      });
+
+      this.cajaSvc.getPedidosListos().subscribe({
+        next: p => {
+          this.pedidosListosCaja.set(p);
+          this.loading.set(false);
+        },
+        error: () => this.loading.set(false)
+      });
+    }
   }
 
   setPeriod(period: 'weekly' | 'monthly' | 'yearly') {

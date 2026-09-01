@@ -1,3 +1,55 @@
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 14px;
+  margin-bottom: 20px;
+  border-radius: var(--radius-pill);
+}
+
+.filter-pill-cluster {
+  display: flex;
+  align-items: center;
+  background: var(--surface-subtle);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-pill);
+  padding: 4px;
+  gap: 4px;
+
+  .filter-chip-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    border: none;
+    padding: 8px 16px;
+    border-radius: var(--radius-pill);
+    font-family: var(--font-main);
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+    i {
+      font-size: 0.88rem;
+    }
+
+    &.active {
+      background: var(--primary-color, #6366f1);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+      font-weight: 700;
+    }
+
+    &:hover:not(.active) {
+      color: var(--text-color);
+      background: var(--surface-hover);
+    }
+  }
+}
+
 .loading-state {
   display: flex;
   flex-direction: column;
@@ -44,19 +96,33 @@
     background: var(--surface-subtle);
     border: 1px solid var(--surface-border);
     color: var(--text-secondary);
-    width: 30px;
-    height: 30px;
+    width: 32px;
+    height: 32px;
     border-radius: var(--radius-xs);
     display: inline-flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     transition: all 0.15s ease;
 
     &.edit:hover {
       background: var(--primary-color);
       color: var(--primary-contrast);
+      border-color: var(--primary-color);
+    }
+
+    &.key:hover {
+      background: #818cf8;
+      color: #ffffff;
+      border-color: #818cf8;
+      box-shadow: 0 2px 8px rgba(129, 140, 248, 0.4);
+    }
+
+    &.del:hover {
+      background: var(--rose, #ef4444);
+      color: #ffffff;
+      border-color: var(--rose, #ef4444);
     }
 
     &.active-toggle {
@@ -73,4 +139,9 @@
   display: grid;
   grid-template-columns: 1fr;
   gap: 14px;
+}
+
+.permissions-checklist {
+  scrollbar-width: thin;
+  scrollbar-color: var(--surface-border) transparent;
 }

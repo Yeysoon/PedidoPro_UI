@@ -86,23 +86,23 @@
             </div>
           </div>
 
-          @if (isAdmin()) {
-            <div class="mesa-actions" (click)="$event.stopPropagation()">
-              <div class="mini-state-actions">
-                @for (e of estadoOpts; track e) {
-                  <button type="button" class="mini-state-dot" [class.current]="mesa.estado === e" [class]="'state-dot-' + getBadge(e)" [title]="'Cambiar a ' + e" (click)="setEstado(mesa, e)">
-                    <span>{{ e.slice(0,1) }}</span>
-                  </button>
-                }
-              </div>
-              <button class="action-btn edit" (click)="openEdit(mesa)" title="Editar mesa">
+          <div class="mesa-actions" (click)="$event.stopPropagation()">
+            <div class="mini-state-actions">
+              @for (e of estadoOpts; track e) {
+                <button type="button" class="mini-state-dot" [class.current]="mesa.estado === e" [class]="'state-dot-' + getBadge(e)" [title]="'Marcar como ' + e" (click)="setEstado(mesa, e)">
+                  <span>{{ e.slice(0,1) }}</span>
+                </button>
+              }
+            </div>
+            @if (isAdmin()) {
+              <button class="action-btn edit" (click)="openEdit(mesa)" title="Editar configuración de mesa">
                 <i class="pi pi-pencil"></i>
               </button>
               <button class="action-btn del" (click)="deleteMesa(mesa.id_mesa)" title="Eliminar mesa">
                 <i class="pi pi-trash"></i>
               </button>
-            </div>
-          }
+            }
+          </div>
         </div>
       }
     </div>

@@ -1,226 +1,412 @@
 <div class="dashboard-root fade-in">
-  <!-- DASHBOARD TOP HEADER (PrimeNG style) -->
+  <!-- DASHBOARD TOP HEADER -->
   <header class="dashboard-header">
     <div class="header-main-info">
-      <h1 class="page-title">Gestión Operativa y Financiera</h1>
-      <p class="page-desc">Monitorea ingresos en caja, ocupación de mesas, flujo de comandas y métricas de servicio.</p>
+      <div class="header-tag-row">
+        <span class="overview-tag">PEDIDOPRO SUITE</span>
+        <span class="live-pill">
+          <span class="dot-pulse"></span>
+          @switch (role()) {
+            @case ('Administrador') { <i class="pi pi-shield"></i> Administrador General }
+            @case ('Mesero') { <i class="pi pi-user"></i> Módulo Salón y Atención }
+            @case ('Cocinero') { <i class="pi pi-bell"></i> Módulo Cocina y Producción }
+            @case ('Cajero') { <i class="pi pi-credit-card"></i> Módulo Financiero y Caja }
+            @default { {{ role() }} }
+          }
+        </span>
+      </div>
+
+      <h1 class="page-title">
+        @switch (role()) {
+          @case ('Administrador') { Gestión Operativa y Financiera }
+          @case ('Mesero') { Control de Salón y Comandas }
+          @case ('Cocinero') { Monitoreo de Producción y Cocina }
+          @case ('Cajero') { Control de Caja y Facturación }
+          @default { Dashboard Principal }
+        }
+      </h1>
+      <p class="page-desc">
+        @switch (role()) {
+          @case ('Administrador') { Monitorea ingresos globales, ocupación de mesas, flujo de comandas y métricas de personal. }
+          @case ('Mesero') { Consulta disponibilidad de mesas, estado de tus comensales y registra pedidos en tiempo real. }
+          @case ('Cocinero') { Administra las comandas entrantes, avanza los platillos y vigila las existencias de ingredientes. }
+          @case ('Cajero') { Factura pedidos listos para entrega, gestiona comprobantes de pago y atiende clientes. }
+          @default { Resumen operativo del sistema. }
+        }
+      </p>
     </div>
 
-    <!-- Filters & Actions -->
+    <!-- Filters & Role Actions -->
     <div class="header-controls">
-      <!-- Period Selector Pills -->
-      <div class="period-pill-group">
-        <button class="pill-btn" [class.active]="selectedPeriod() === 'weekly'" (click)="setPeriod('weekly')">
-          Semanal
-        </button>
-        <button class="pill-btn" [class.active]="selectedPeriod() === 'monthly'" (click)="setPeriod('monthly')">
-          Mensual
-        </button>
-        <button class="pill-btn" [class.active]="selectedPeriod() === 'yearly'" (click)="setPeriod('yearly')">
-          Anual
-        </button>
-      </div>
-
-      <!-- Action Buttons -->
-      <div class="action-buttons-group">
-        <button class="btn btn-primary btn-sm" (click)="openExportModal()">
-          <i class="pi pi-download"></i>
-          <span>Exportar</span>
-        </button>
-
-        <div class="date-range-badge">
-          <i class="pi pi-calendar"></i>
-          <span>Hoy · Turno Actual</span>
+      @if (role() === 'Administrador') {
+        <!-- Period Selector Pills -->
+        <div class="period-pill-group">
+          <button class="pill-btn" [class.active]="selectedPeriod() === 'weekly'" (click)="setPeriod('weekly')">
+            Semanal
+          </button>
+          <button class="pill-btn" [class.active]="selectedPeriod() === 'monthly'" (click)="setPeriod('monthly')">
+            Mensual
+          </button>
+          <button class="pill-btn" [class.active]="selectedPeriod() === 'yearly'" (click)="setPeriod('yearly')">
+            Anual
+          </button>
         </div>
-      </div>
+
+        <div class="action-buttons-group">
+          <button class="btn btn-primary btn-sm" (click)="openExportModal()">
+            <i class="pi pi-download"></i>
+            <span>Exportar</span>
+          </button>
+          <div class="date-range-badge">
+            <i class="pi pi-calendar"></i>
+            <span>Hoy · Turno Actual</span>
+          </div>
+        </div>
+      } @else if (role() === 'Mesero') {
+        <div class="action-buttons-group">
+          <a routerLink="/mesas" class="btn btn-primary btn-sm">
+            <i class="pi pi-table"></i>
+            <span>Ver Salón de Mesas</span>
+          </a>
+          <a routerLink="/pedidos" class="btn btn-secondary btn-sm">
+            <i class="pi pi-shopping-bag"></i>
+            <span>Tomar Pedido</span>
+          </a>
+        </div>
+      } @else if (role() === 'Cocinero') {
+        <div class="action-buttons-group">
+          <a routerLink="/cocina" class="btn btn-primary btn-sm">
+            <i class="pi pi-bell"></i>
+            <span>Ver Comandas</span>
+          </a>
+          <a routerLink="/inventario" class="btn btn-secondary btn-sm">
+            <i class="pi pi-box"></i>
+            <span>Ver Alertas de Stock</span>
+          </a>
+        </div>
+      } @else if (role() === 'Cajero') {
+        <div class="action-buttons-group">
+          <a routerLink="/caja" class="btn btn-primary btn-sm">
+            <i class="pi pi-credit-card"></i>
+            <span>Cobrar Pedidos</span>
+          </a>
+          <a routerLink="/clientes" class="btn btn-secondary btn-sm">
+            <i class="pi pi-users"></i>
+            <span>Directorio Clientes</span>
+          </a>
+        </div>
+      }
     </div>
   </header>
 
-  <!-- KPI METRICS GRID (4 Modern PrimeNG Cards) -->
+  <!-- KPI METRICS GRID (Tailored per Role) -->
   <section class="kpi-grid">
-    <!-- Card 1: Total Ventas -->
-    <div class="kpi-card glass-card">
-      <div class="kpi-card-top">
-        <span class="kpi-title">Ventas del Día</span>
-        <div class="kpi-icon-box icon-emerald">
-          <i class="pi pi-wallet"></i>
+    @if (role() === 'Administrador') {
+      <!-- Card 1: Total Ventas -->
+      <div class="kpi-card glass-card">
+        <div class="kpi-card-top">
+          <span class="kpi-title">Ventas del Día</span>
+          <div class="kpi-icon-box icon-emerald"><i class="pi pi-wallet"></i></div>
+        </div>
+        <div class="kpi-card-bottom">
+          <span class="kpi-number">{{ formatCurrency(adminStats()?.ventas_hoy !== undefined ? adminStats()!.ventas_hoy : totalHoy()) }}</span>
+          <span class="trend-badge trend-up"><i class="pi pi-arrow-up-right"></i> Facturado</span>
         </div>
       </div>
-      <div class="kpi-card-bottom">
-        <span class="kpi-number">{{ formatCurrency(totalHoy()) }}</span>
-        <span class="trend-badge trend-up">
-          <i class="pi pi-arrow-up-right"></i> +12.4%
-        </span>
-      </div>
-    </div>
 
-    <!-- Card 2: Mesas Libres -->
-    <div class="kpi-card glass-card">
-      <div class="kpi-card-top">
-        <span class="kpi-title">Mesas Disponibles</span>
-        <div class="kpi-icon-box icon-sky">
-          <i class="pi pi-table"></i>
+      <!-- Card 2: Mesas Libres -->
+      <div class="kpi-card glass-card">
+        <div class="kpi-card-top">
+          <span class="kpi-title">Mesas Disponibles</span>
+          <div class="kpi-icon-box icon-sky"><i class="pi pi-table"></i></div>
+        </div>
+        <div class="kpi-card-bottom">
+          <span class="kpi-number">{{ mesasLibres() }}</span>
+          <span class="trend-badge trend-neutral"><i class="pi pi-check"></i> Libres</span>
         </div>
       </div>
-      <div class="kpi-card-bottom">
-        <span class="kpi-number">{{ mesasLibres() }}</span>
-        <span class="trend-badge trend-neutral">
-          <i class="pi pi-check"></i> {{ mesasLibres() }} Libres
-        </span>
-      </div>
-    </div>
 
-    <!-- Card 3: Mesas Ocupadas -->
-    <div class="kpi-card glass-card">
-      <div class="kpi-card-top">
-        <span class="kpi-title">Mesas Ocupadas</span>
-        <div class="kpi-icon-box icon-amber">
-          <i class="pi pi-bolt"></i>
+      <!-- Card 3: Mesas Ocupadas -->
+      <div class="kpi-card glass-card">
+        <div class="kpi-card-top">
+          <span class="kpi-title">Mesas Ocupadas</span>
+          <div class="kpi-icon-box icon-amber"><i class="pi pi-bolt"></i></div>
+        </div>
+        <div class="kpi-card-bottom">
+          <span class="kpi-number">{{ adminStats()?.mesas_ocupadas !== undefined ? adminStats()!.mesas_ocupadas : mesasOcupadas() }}</span>
+          <span class="trend-badge trend-live"><span class="dot-indicator"></span> Activas</span>
         </div>
       </div>
-      <div class="kpi-card-bottom">
-        <span class="kpi-number">{{ mesasOcupadas() }}</span>
-        <span class="trend-badge trend-live">
-          <span class="dot-indicator"></span> Activas
-        </span>
-      </div>
-    </div>
 
-    <!-- Card 4: Ocupación del Salón -->
-    <div class="kpi-card glass-card">
-      <div class="kpi-card-top">
-        <span class="kpi-title">Tasa de Ocupación</span>
-        <div class="kpi-icon-box icon-indigo">
-          <i class="pi pi-chart-pie"></i>
+      <!-- Card 4: Alertas Inventario -->
+      <div class="kpi-card glass-card">
+        <div class="kpi-card-top">
+          <span class="kpi-title">Alertas Stock Inventario</span>
+          <div class="kpi-icon-box icon-indigo"><i class="pi pi-exclamation-triangle"></i></div>
+        </div>
+        <div class="kpi-card-bottom">
+          <span class="kpi-number">{{ adminStats()?.alertas_inventario ?? 0 }}</span>
+          <span class="trend-badge trend-optimal"><i class="pi pi-box"></i> Insumos Bajos</span>
         </div>
       </div>
-      <div class="kpi-card-bottom">
-        <span class="kpi-number">{{ occupancyRate() }}</span>
-        <span class="trend-badge trend-optimal">
-          <i class="pi pi-sparkles"></i> Óptimo
-        </span>
+
+    } @else if (role() === 'Mesero') {
+      <!-- Mesero Card 1 -->
+      <div class="kpi-card glass-card">
+        <div class="kpi-card-top">
+          <span class="kpi-title">Mesas Disponibles</span>
+          <div class="kpi-icon-box icon-sky"><i class="pi pi-check-circle"></i></div>
+        </div>
+        <div class="kpi-card-bottom">
+          <span class="kpi-number">{{ mesasLibres() }}</span>
+          <span class="trend-badge trend-neutral"><i class="pi pi-table"></i> Para Asignar</span>
+        </div>
       </div>
-    </div>
+
+      <!-- Mesero Card 2 -->
+      <div class="kpi-card glass-card">
+        <div class="kpi-card-top">
+          <span class="kpi-title">Mesas Ocupadas</span>
+          <div class="kpi-icon-box icon-amber"><i class="pi pi-users"></i></div>
+        </div>
+        <div class="kpi-card-bottom">
+          <span class="kpi-number">{{ mesasOcupadas() }}</span>
+          <span class="trend-badge trend-live"><span class="dot-indicator"></span> En Servicio</span>
+        </div>
+      </div>
+
+      <!-- Mesero Card 3 -->
+      <div class="kpi-card glass-card">
+        <div class="kpi-card-top">
+          <span class="kpi-title">Mis Pedidos Activos</span>
+          <div class="kpi-icon-box icon-emerald"><i class="pi pi-shopping-bag"></i></div>
+        </div>
+        <div class="kpi-card-bottom">
+          <span class="kpi-number">{{ meseroStats()?.mis_pedidos_activos ?? 0 }}</span>
+          <span class="trend-badge trend-up"><i class="pi pi-clock"></i> En Marcha</span>
+        </div>
+      </div>
+
+      <!-- Mesero Card 4 -->
+      <div class="kpi-card glass-card">
+        <div class="kpi-card-top">
+          <span class="kpi-title">Tasa de Ocupación</span>
+          <div class="kpi-icon-box icon-indigo"><i class="pi pi-chart-pie"></i></div>
+        </div>
+        <div class="kpi-card-bottom">
+          <span class="kpi-number">{{ occupancyRate() }}</span>
+          <span class="trend-badge trend-optimal"><i class="pi pi-sparkles"></i> Salón</span>
+        </div>
+      </div>
+
+    } @else if (role() === 'Cocinero') {
+      <!-- Cocina Card 1 -->
+      <div class="kpi-card glass-card">
+        <div class="kpi-card-top">
+          <span class="kpi-title">Comandas Pendientes</span>
+          <div class="kpi-icon-box icon-amber"><i class="pi pi-clock"></i></div>
+        </div>
+        <div class="kpi-card-bottom">
+          <span class="kpi-number">{{ cocinaStats()?.comandas_pendientes ?? comandasCocina().length }}</span>
+          <span class="trend-badge trend-live"><span class="dot-indicator"></span> Por Iniciar</span>
+        </div>
+      </div>
+
+      <!-- Cocina Card 2 -->
+      <div class="kpi-card glass-card">
+        <div class="kpi-card-top">
+          <span class="kpi-title">En Preparación</span>
+          <div class="kpi-icon-box icon-sky"><i class="pi pi-bolt"></i></div>
+        </div>
+        <div class="kpi-card-bottom">
+          <span class="kpi-number">{{ cocinaStats()?.comandas_en_preparacion ?? 0 }}</span>
+          <span class="trend-badge trend-neutral"><i class="pi pi-sync"></i> En Fogón</span>
+        </div>
+      </div>
+
+      <!-- Cocina Card 3 -->
+      <div class="kpi-card glass-card">
+        <div class="kpi-card-top">
+          <span class="kpi-title">Total Comandas Activas</span>
+          <div class="kpi-icon-box icon-emerald"><i class="pi pi-bell"></i></div>
+        </div>
+        <div class="kpi-card-bottom">
+          <span class="kpi-number">{{ (cocinaStats()?.comandas_pendientes ?? 0) + (cocinaStats()?.comandas_en_preparacion ?? 0) }}</span>
+          <span class="trend-badge trend-up"><i class="pi pi-list"></i> En Curso</span>
+        </div>
+      </div>
+
+      <!-- Cocina Card 4 -->
+      <div class="kpi-card glass-card">
+        <div class="kpi-card-top">
+          <span class="kpi-title">Insumos con Stock Bajo</span>
+          <div class="kpi-icon-box icon-indigo"><i class="pi pi-exclamation-triangle"></i></div>
+        </div>
+        <div class="kpi-card-bottom">
+          <span class="kpi-number">{{ insumosCriticos().length }}</span>
+          <span class="trend-badge trend-optimal"><i class="pi pi-box"></i> Alertas</span>
+        </div>
+      </div>
+
+    } @else if (role() === 'Cajero') {
+      <!-- Caja Card 1 -->
+      <div class="kpi-card glass-card">
+        <div class="kpi-card-top">
+          <span class="kpi-title">Ingresos en Caja Hoy</span>
+          <div class="kpi-icon-box icon-emerald"><i class="pi pi-wallet"></i></div>
+        </div>
+        <div class="kpi-card-bottom">
+          <span class="kpi-number">{{ formatCurrency(cajaStats()?.ingresos_hoy !== undefined ? cajaStats()!.ingresos_hoy : totalHoy()) }}</span>
+          <span class="trend-badge trend-up"><i class="pi pi-arrow-up-right"></i> Total Cobrado</span>
+        </div>
+      </div>
+
+      <!-- Caja Card 2 -->
+      <div class="kpi-card glass-card">
+        <div class="kpi-card-top">
+          <span class="kpi-title">Facturas Emitidas</span>
+          <div class="kpi-icon-box icon-sky"><i class="pi pi-file"></i></div>
+        </div>
+        <div class="kpi-card-bottom">
+          <span class="kpi-number">{{ cajaStats()?.facturas_emitidas_hoy ?? 0 }}</span>
+          <span class="trend-badge trend-neutral"><i class="pi pi-check"></i> Comprobantes</span>
+        </div>
+      </div>
+
+      <!-- Caja Card 3 -->
+      <div class="kpi-card glass-card">
+        <div class="kpi-card-top">
+          <span class="kpi-title">Pedidos Listos por Cobrar</span>
+          <div class="kpi-icon-box icon-amber"><i class="pi pi-credit-card"></i></div>
+        </div>
+        <div class="kpi-card-bottom">
+          <span class="kpi-number">{{ cajaStats()?.pedidos_listos !== undefined ? cajaStats()!.pedidos_listos : pedidosListosCaja().length }}</span>
+          <span class="trend-badge trend-live"><span class="dot-indicator"></span> Pendientes</span>
+        </div>
+      </div>
+
+      <!-- Caja Card 4 -->
+      <div class="kpi-card glass-card">
+        <div class="kpi-card-top">
+          <span class="kpi-title">Estado de Facturación</span>
+          <div class="kpi-icon-box icon-indigo"><i class="pi pi-shield"></i></div>
+        </div>
+        <div class="kpi-card-bottom">
+          <span class="kpi-number">Activo</span>
+          <span class="trend-badge trend-optimal"><i class="pi pi-sparkles"></i> PDF Habilitado</span>
+        </div>
+      </div>
+    }
   </section>
 
-  <!-- CHARTS & OPERATIONAL MIX ROW -->
-  <section class="charts-row">
-    <!-- Activity Chart (PrimeNG Multi-Layer Pillar Bars) -->
-    <div class="chart-box glass-card activity-chart-card">
-      <div class="card-header-row">
-        <div class="card-title-group">
-          <h3 class="card-title">Actividad de Ventas e Ingresos</h3>
-          <span class="card-subtitle">Flujo por servicio en los últimos días</span>
-        </div>
-        <div class="chart-legend">
-          <span class="legend-item"><span class="legend-dot dot-layer-1"></span> Salón</span>
-          <span class="legend-item"><span class="legend-dot dot-layer-2"></span> Para Llevar</span>
-          <span class="legend-item"><span class="legend-dot dot-layer-3"></span> Delivery</span>
-        </div>
-      </div>
-
-      <div class="chart-content-area">
-        @if (loading()) {
-          <div class="loading-box">
-            <i class="pi pi-spin pi-spinner"></i>
-            <span>Cargando datos...</span>
+  <!-- ADMIN CHARTS & OPERATIONAL MIX -->
+  @if (role() === 'Administrador') {
+    <section class="charts-row">
+      <!-- Activity Chart -->
+      <div class="chart-box glass-card activity-chart-card">
+        <div class="card-header-row">
+          <div class="card-title-group">
+            <h3 class="card-title">Actividad de Ventas e Ingresos</h3>
+            <span class="card-subtitle">Flujo por servicio en los últimos días</span>
           </div>
-        } @else {
-          <div class="prime-bar-chart">
-            @for (v of (ventas().length ? ventas().slice(-7) : [
-              { fecha: '2026-08-21', total_ventas: 1800, cantidad_facturas: 12 },
-              { fecha: '2026-08-22', total_ventas: 2400, cantidad_facturas: 18 },
-              { fecha: '2026-08-23', total_ventas: 1950, cantidad_facturas: 14 },
-              { fecha: '2026-08-24', total_ventas: 2100, cantidad_facturas: 16 },
-              { fecha: '2026-08-25', total_ventas: 2850, cantidad_facturas: 22 },
-              { fecha: '2026-08-26', total_ventas: 2300, cantidad_facturas: 17 },
-              { fecha: '2026-08-27', total_ventas: 3100, cantidad_facturas: 25 }
-            ]); track v.fecha) {
-              <div class="chart-bar-column">
-                <div class="layered-pill-bar" [style.height]="getBarHeight(v.total_ventas)" [title]="formatCurrency(v.total_ventas)">
-                  <div class="bar-segment segment-top"></div>
-                  <div class="bar-segment segment-mid"></div>
-                  <div class="bar-segment segment-base"></div>
+          <div class="chart-legend">
+            <span class="legend-item"><span class="legend-dot dot-layer-1"></span> Salón</span>
+            <span class="legend-item"><span class="legend-dot dot-layer-2"></span> Para Llevar</span>
+            <span class="legend-item"><span class="legend-dot dot-layer-3"></span> Delivery</span>
+          </div>
+        </div>
+
+        <div class="chart-content-area">
+          @if (loading()) {
+            <div class="loading-box">
+              <i class="pi pi-spin pi-spinner"></i>
+              <span>Cargando datos...</span>
+            </div>
+          } @else {
+            <div class="prime-bar-chart">
+              @for (v of (ventas().length ? ventas().slice(-7) : [
+                { fecha: '2026-08-21', total_ventas: 1800, cantidad_facturas: 12 },
+                { fecha: '2026-08-22', total_ventas: 2400, cantidad_facturas: 18 },
+                { fecha: '2026-08-23', total_ventas: 1950, cantidad_facturas: 14 },
+                { fecha: '2026-08-24', total_ventas: 2100, cantidad_facturas: 16 },
+                { fecha: '2026-08-25', total_ventas: 2850, cantidad_facturas: 22 },
+                { fecha: '2026-08-26', total_ventas: 2300, cantidad_facturas: 17 },
+                { fecha: '2026-08-27', total_ventas: 3100, cantidad_facturas: 25 }
+              ]); track v.fecha) {
+                <div class="chart-bar-column">
+                  <div class="layered-pill-bar" [style.height]="getBarHeight(v.total_ventas)" [title]="formatCurrency(v.total_ventas)">
+                    <div class="bar-segment segment-top"></div>
+                    <div class="bar-segment segment-mid"></div>
+                    <div class="bar-segment segment-base"></div>
+                  </div>
+                  <span class="column-date">{{ v.fecha | slice:5:10 }}</span>
                 </div>
-                <span class="column-date">{{ v.fecha | slice:5:10 }}</span>
-              </div>
-            }
-          </div>
-        }
-      </div>
-    </div>
-
-    <!-- Operational / Category Mix Card (Wallet mix style) -->
-    <div class="chart-box glass-card mix-card">
-      <div class="card-header-row">
-        <div class="card-title-group">
-          <h3 class="card-title">Mix de Facturación</h3>
-          <span class="card-subtitle">Distribución por categoría</span>
-        </div>
-        <button class="btn-icon-more" title="Opciones">
-          <i class="pi pi-ellipsis-h"></i>
-        </button>
-      </div>
-
-      <div class="mix-total-row">
-        <span class="mix-amount">{{ formatCurrency(totalHoy() * 1.5 || 4250.00) }}</span>
-        <span class="trend-badge trend-up">+12.4%</span>
-      </div>
-
-      <!-- Segmented Multi-Color Progress Bar -->
-      <div class="multi-progress-bar">
-        <div class="progress-segment seg-platillos" style="width: 48%;"></div>
-        <div class="progress-segment seg-bebidas" style="width: 32%;"></div>
-        <div class="progress-segment seg-postres" style="width: 20%;"></div>
-      </div>
-
-      <!-- Category Legend Breakdown -->
-      <div class="category-breakdown-list">
-        <div class="category-item">
-          <div class="cat-left">
-            <span class="cat-dot dot-platillos"></span>
-            <span class="cat-name">Platos Fuertes (48%)</span>
-          </div>
-          <span class="cat-val">Q 2,040.00</span>
-        </div>
-
-        <div class="category-item">
-          <div class="cat-left">
-            <span class="cat-dot dot-bebidas"></span>
-            <span class="cat-name">Bebidas y Cocteles (32%)</span>
-          </div>
-          <span class="cat-val">Q 1,360.00</span>
-        </div>
-
-        <div class="category-item">
-          <div class="cat-left">
-            <span class="cat-dot dot-postres"></span>
-            <span class="cat-name">Postres y Entradas (20%)</span>
-          </div>
-          <span class="cat-val">Q 850.00</span>
+              }
+            </div>
+          }
         </div>
       </div>
 
-      <div class="mix-card-footer">
-        <a routerLink="/reportes" class="view-ledger-link">
-          <span>Ver Reporte Detallado</span>
-          <i class="pi pi-arrow-right"></i>
-        </a>
-      </div>
-    </div>
-  </section>
+      <!-- Operational / Category Mix Card -->
+      <div class="chart-box glass-card mix-card">
+        <div class="card-header-row">
+          <div class="card-title-group">
+            <h3 class="card-title">Mix de Facturación</h3>
+            <span class="card-subtitle">Distribución por categoría</span>
+          </div>
+        </div>
 
-  <!-- RECENT ACTIVITY TABLE & MESAS FLOOR STATUS -->
+        <div class="mix-total-row">
+          <span class="mix-amount">{{ formatCurrency(totalHoy() * 1.5 || 4250.00) }}</span>
+          <span class="trend-badge trend-up">+12.4%</span>
+        </div>
+
+        <div class="multi-progress-bar">
+          <div class="progress-segment seg-platillos" style="width: 48%;"></div>
+          <div class="progress-segment seg-bebidas" style="width: 32%;"></div>
+          <div class="progress-segment seg-postres" style="width: 20%;"></div>
+        </div>
+
+        <div class="category-breakdown-list">
+          <div class="category-item">
+            <div class="cat-left"><span class="cat-dot dot-platillos"></span><span class="cat-name">Platos Fuertes (48%)</span></div>
+            <span class="cat-val">Q 2,040.00</span>
+          </div>
+          <div class="category-item">
+            <div class="cat-left"><span class="cat-dot dot-bebidas"></span><span class="cat-name">Bebidas y Cocteles (32%)</span></div>
+            <span class="cat-val">Q 1,360.00</span>
+          </div>
+          <div class="category-item">
+            <div class="cat-left"><span class="cat-dot dot-postres"></span><span class="cat-name">Postres y Entradas (20%)</span></div>
+            <span class="cat-val">Q 850.00</span>
+          </div>
+        </div>
+
+        <div class="mix-card-footer">
+          <a routerLink="/reportes" class="view-ledger-link">
+            <span>Ver Reporte Detallado</span>
+            <i class="pi pi-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+    </section>
+  }
+
+  <!-- RECENT ACTIVITY TABLE & FLOOR STATUS -->
   <section class="bottom-tables-row">
-    <!-- Recent Activity Table (PrimeNG style) -->
+    <!-- Recent Activity Table -->
     <div class="glass-card table-section-card">
       <div class="card-header-row">
         <div class="card-title-group">
-          <h3 class="card-title">Actividad Reciente</h3>
-          <span class="card-subtitle">Transacciones y comandas en tiempo real</span>
+          <h3 class="card-title">
+            @if (role() === 'Cajero') { Pedidos Listos para Cobro }
+            @else if (role() === 'Cocinero') { Comandas Recientes en Cocina }
+            @else { Actividad Reciente de Comandas }
+          </h3>
+          <span class="card-subtitle">Flujo de servicio en tiempo real</span>
         </div>
         <div class="table-header-tags">
-          <button type="button" class="badge badge-warning" style="cursor: pointer; border: none;" (click)="togglePendientesFilter()" [title]="activityFilter() === 'Pendiente' ? 'Quitar filtro de pendientes' : 'Filtrar solo pendientes'">
+          <button type="button" class="badge badge-warning" style="cursor: pointer; border: none;" (click)="togglePendientesFilter()">
             <i class="pi pi-filter"></i>
             {{ pendientesCount() }} pendientes
           </button>
@@ -296,33 +482,58 @@
     <div class="glass-card side-widgets-card">
       <div class="card-header-row">
         <div class="card-title-group">
-          <h3 class="card-title">Platillos Más Pedidos</h3>
-          <span class="card-subtitle">Favoritos del menú</span>
+          <h3 class="card-title">
+            @if (role() === 'Cocinero') { Alertas de Insumos }
+            @else { Platillos Más Pedidos }
+          </h3>
+          <span class="card-subtitle">
+            @if (role() === 'Cocinero') { Existencias críticas de despensa }
+            @else { Favoritos del menú }
+          </span>
         </div>
       </div>
 
-      <div class="top-dishes-stack">
-        @for (p of (productosTop().length ? productosTop() : [
-          { nombre_producto: 'Hamburguesa Artesanal Pro', total_vendido: 45 },
-          { nombre_producto: 'Pizza Cuatro Quesos', total_vendido: 38 },
-          { nombre_producto: 'Limonada Imperial', total_vendido: 31 },
-          { nombre_producto: 'Pasta Fettuccine Alfredo', total_vendido: 26 },
-          { nombre_producto: 'Cheesecake de Frutos Rojos', total_vendido: 20 }
-        ]); track p.nombre_producto; let i = $index) {
-          <div class="top-dish-item">
-            <span class="dish-rank">{{ i + 1 }}</span>
-            <div class="dish-meta">
-              <div class="dish-title-row">
-                <span class="dish-name">{{ p.nombre_producto }}</span>
-                <span class="dish-count">{{ p.total_vendido }} pedidos</span>
-              </div>
-              <div class="dish-progress-track">
-                <div class="dish-progress-fill" [style.width]="getTopWidth(p.total_vendido)"></div>
+      @if (role() === 'Cocinero' && insumosCriticos().length > 0) {
+        <div class="top-dishes-stack">
+          @for (ing of insumosCriticos().slice(0, 5); track ing.id_ingrediente) {
+            <div class="top-dish-item">
+              <span class="dish-rank" style="color: var(--rose); border-color: var(--rose-border);">!</span>
+              <div class="dish-meta">
+                <div class="dish-title-row">
+                  <span class="dish-name">{{ ing.nombre_ingrediente }}</span>
+                  <span class="dish-count" style="color: var(--rose);">{{ ing.stock_actual }} {{ ing.unidad_medida }}</span>
+                </div>
+                <div class="dish-progress-track">
+                  <div class="dish-progress-fill" style="background: var(--rose);" [style.width]="(ing.stock_actual <= 5 ? 25 : 50) + '%'"></div>
+                </div>
               </div>
             </div>
-          </div>
-        }
-      </div>
+          }
+        </div>
+      } @else {
+        <div class="top-dishes-stack">
+          @for (p of (productosTop().length ? productosTop() : [
+            { nombre_producto: 'Hamburguesa Artesanal Pro', total_vendido: 45 },
+            { nombre_producto: 'Pizza Cuatro Quesos', total_vendido: 38 },
+            { nombre_producto: 'Limonada Imperial', total_vendido: 31 },
+            { nombre_producto: 'Pasta Fettuccine Alfredo', total_vendido: 26 },
+            { nombre_producto: 'Cheesecake de Frutos Rojos', total_vendido: 20 }
+          ]); track p.nombre_producto; let i = $index) {
+            <div class="top-dish-item">
+              <span class="dish-rank">{{ i + 1 }}</span>
+              <div class="dish-meta">
+                <div class="dish-title-row">
+                  <span class="dish-name">{{ p.nombre_producto }}</span>
+                  <span class="dish-count">{{ p.total_vendido }} pedidos</span>
+                </div>
+                <div class="dish-progress-track">
+                  <div class="dish-progress-fill" [style.width]="getTopWidth(p.total_vendido)"></div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
 
       <!-- Quick Mesas Floor Status Grid -->
       <div class="floor-mini-section">
@@ -351,3 +562,4 @@
     </div>
   </section>
 </div>
+

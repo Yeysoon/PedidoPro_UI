@@ -1,20 +1,43 @@
 <div class="fade-in">
   <div class="page-header">
     <div class="header-left">
-      <h1>Gestión del <span class="highlight">Personal y Accesos</span></h1>
-      <span class="header-subtitle">Administración de colaboradores, asignación de roles y estados de cuenta.</span>
+      <h1>Gestión del <span class="highlight">Personal y Roles</span></h1>
+      <span class="header-subtitle">Administración de colaboradores, estados de acceso y configuración de roles con permisos.</span>
     </div>
-    <button class="btn btn-primary" (click)="openCreate()">
-      <i class="pi pi-user-plus"></i> Nuevo Colaborador
-    </button>
+    <div class="header-actions">
+      @if (activeTab() === 'usuarios') {
+        <button class="btn btn-primary" (click)="openCreate()">
+          <i class="pi pi-user-plus"></i> Nuevo Colaborador
+        </button>
+      } @else {
+        <button class="btn btn-primary" (click)="openCreateRol()">
+          <i class="pi pi-shield"></i> Nuevo Rol
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- TAB SWITCHER -->
+  <div class="toolbar glass-card" style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+    <div class="filter-pill-cluster">
+      <button class="filter-chip-btn" [class.active]="activeTab() === 'usuarios'" (click)="activeTab.set('usuarios')">
+        <i class="pi pi-users"></i>
+        <span>Colaboradores ({{ usuarios().length }})</span>
+      </button>
+      <button class="filter-chip-btn" [class.active]="activeTab() === 'roles'" (click)="activeTab.set('roles')">
+        <i class="pi pi-shield"></i>
+        <span>Roles y Permisos ({{ roles().length }})</span>
+      </button>
+    </div>
   </div>
 
   @if (loading()) {
     <div class="loading-state">
       <i class="pi pi-spin pi-spinner spin-icon"></i>
-      <p>Cargando lista de colaboradores...</p>
+      <p>Cargando información del sistema...</p>
     </div>
-  } @else {
+  } @else if (activeTab() === 'usuarios') {
+    <!-- TAB 1: GESTION DE USUARIOS -->
     <div class="glass-card data-table-container">
       <table class="data-table">
         <thead>
@@ -58,6 +81,9 @@
                   <button class="action-btn edit" (click)="openEdit(u)" title="Editar colaborador">
                     <i class="pi pi-pencil"></i>
                   </button>
+                  <button class="action-btn key" (click)="openChangePassword(u)" title="Cambiar contraseña">
+                    <i class="pi pi-key"></i>
+                  </button>
                   <button class="action-btn" [class.active-toggle]="u.activo" (click)="toggle(u)" [title]="u.activo ? 'Desactivar acceso' : 'Activar acceso'">
                     <i [class]="u.activo ? 'pi pi-lock-open' : 'pi pi-lock'"></i>
                   </button>
@@ -68,9 +94,64 @@
         </tbody>
       </table>
     </div>
+
+  } @else {
+    <!-- TAB 2: GESTION DE ROLES Y PERMISOS -->
+    <div class="glass-card data-table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Nombre del Rol</th>
+            <th>Nivel de Acceso</th>
+            <th>Permisos Asignados</th>
+            <th style="text-align: right;">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (r of roles(); track r.id_rol) {
+            <tr>
+              <td>
+                <div class="user-row-cell">
+                  <div class="avatar-initials avatar-sky">
+                    <i class="pi pi-shield"></i>
+                  </div>
+                  <div class="user-name-col">
+                    <strong class="user-cell-name">{{ r.nombre_rol }}</strong>
+                    <span class="user-id font-mono text-muted">Rol ID #{{ r.id_rol }}</span>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="status-pill" [class.badge-primary]="r.nombre_rol === 'Administrador'" [class.badge-neutral]="r.nombre_rol !== 'Administrador'">
+                  {{ r.nombre_rol === 'Administrador' ? 'Acceso Total (11 Módulos)' : 'Acceso Operativo Específico' }}
+                </span>
+              </td>
+              <td>
+                <button class="btn btn-ghost btn-sm" (click)="openEditRol(r)" style="font-size: 0.8rem;">
+                  <i class="pi pi-list"></i> Ver y Configurar Permisos
+                </button>
+              </td>
+              <td style="text-align: right;">
+                <div class="row-actions">
+                  <button class="action-btn edit" (click)="openEditRol(r)" title="Editar rol y permisos">
+                    <i class="pi pi-pencil"></i>
+                  </button>
+                  @if (r.nombre_rol !== 'Administrador' && r.nombre_rol !== 'Mesero' && r.nombre_rol !== 'Cocinero' && r.nombre_rol !== 'Cajero') {
+                    <button class="action-btn del" (click)="deleteRol(r.id_rol)" title="Eliminar rol">
+                      <i class="pi pi-trash"></i>
+                    </button>
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
   }
 </div>
 
+<!-- MODAL USUARIO -->
 @if (showModal()) {
   <div class="modal-overlay" (click)="showModal.set(false)">
     <div class="modal-box" (click)="$event.stopPropagation()">
@@ -106,6 +187,13 @@
             <label>Contraseña de Acceso *</label>
             <input class="form-control" type="password" [value]="editItem().password || ''" (input)="updateField('password', $any($event.target).value)" placeholder="•••••••• (mínimo 6 caracteres)"/>
           </div>
+        } @else {
+          <div class="form-group full" style="padding-top: 6px;">
+            <button type="button" class="btn btn-ghost btn-sm" style="border: 1px dashed var(--surface-border); width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; color: #6366f1;" (click)="showModal.set(false); openChangePassword(editItem())">
+              <i class="pi pi-key"></i>
+              <span>¿Deseas cambiar la contraseña de este colaborador?</span>
+            </button>
+          </div>
         }
       </div>
 
@@ -122,3 +210,132 @@
     </div>
   </div>
 }
+
+<!-- MODAL ROL & PERMISOS -->
+@if (showRolModal()) {
+  <div class="modal-overlay" (click)="showRolModal.set(false)">
+    <div class="modal-box" style="max-width: 600px;" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ isEditRol() ? 'Editar Rol y Permisos' : 'Nuevo Rol del Sistema' }}</h2>
+        <button class="close-btn" (click)="showRolModal.set(false)">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Nombre del Rol *</label>
+          <input class="form-control" [value]="editRol().nombre_rol" (input)="editRol.set({ ...editRol(), nombre_rol: $any($event.target).value })" placeholder="Ej. Supervisor de Salón / Bartender / Jefe de Cocina"/>
+        </div>
+
+        <div class="form-group full">
+          <label>Permisos y Módulos Autorizados</label>
+          <div class="permissions-checklist" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; max-height: 250px; overflow-y: auto; padding: 10px; background: var(--surface-subtle); border-radius: var(--radius-sm); border: 1px solid var(--surface-border);">
+            @for (p of (permisos().length ? permisos() : [
+              { id_permiso: 1, nombre_permiso: 'Dashboard Admin', descripcion: 'Resumen financiero' },
+              { id_permiso: 2, nombre_permiso: 'Gestionar Usuarios', descripcion: 'Crear y desactivar' },
+              { id_permiso: 3, nombre_permiso: 'Roles y Permisos', descripcion: 'Configurar accesos' },
+              { id_permiso: 4, nombre_permiso: 'Mantenimiento Menú', descripcion: 'Platillos y precios' },
+              { id_permiso: 5, nombre_permiso: 'Mantenimiento Mesas', descripcion: 'Plano y zonas' },
+              { id_permiso: 6, nombre_permiso: 'Inventario Completo', descripcion: 'Compras y recetas' },
+              { id_permiso: 7, nombre_permiso: 'Reportes y Exportación', descripcion: 'Métricas y Excel' },
+              { id_permiso: 8, nombre_permiso: 'Tomar Pedidos', descripcion: 'Comandas de mesero' },
+              { id_permiso: 9, nombre_permiso: 'Comandas Cocina', descripcion: 'Despacho de platillos' },
+              { id_permiso: 10, nombre_permiso: 'Caja y Facturación', descripcion: 'Cobro y tickets PDF' },
+              { id_permiso: 11, nombre_permiso: 'Directorio Clientes', descripcion: 'Registro y NIT' }
+            ]); track p.id_permiso) {
+              <label style="display: flex; align-items: flex-start; gap: 8px; font-size: 0.82rem; cursor: pointer; padding: 6px; border-radius: 4px; background: var(--surface-card);">
+                <input type="checkbox" [checked]="editRol().permisos.includes(p.id_permiso)" (change)="togglePermiso(p.id_permiso)" style="margin-top: 2px;"/>
+                <div>
+                  <strong style="display: block; color: var(--text-color);">{{ p.nombre_permiso }}</strong>
+                  <span style="font-size: 0.72rem; color: var(--text-secondary);">{{ p.descripcion || 'Acceso al módulo' }}</span>
+                </div>
+              </label>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-ghost" (click)="showRolModal.set(false)">Cancelar</button>
+        <button class="btn btn-primary" [disabled]="saving()" (click)="saveRol()">
+          @if (saving()) {
+            <i class="pi pi-spin pi-spinner"></i> Guardando...
+          } @else {
+            <i class="pi pi-save"></i> Guardar Rol
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- MODAL CAMBIAR CONTRASEÑA -->
+@if (showPasswordModal()) {
+  <div class="modal-overlay" (click)="showPasswordModal.set(false)">
+    <div class="modal-box" style="max-width: 480px;" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <i class="pi pi-lock" style="color: #6366f1; font-size: 1.25rem;"></i>
+          <h2>Cambiar Contraseña</h2>
+        </div>
+        <button class="close-btn" (click)="showPasswordModal.set(false)">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+
+      <div class="modal-content-body" style="padding: 12px 0;">
+        <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 22px;">
+          Actualizando contraseña para: <strong style="color: var(--text-color);">{{ pwdUser()?.nombre }}</strong>
+          @if (pwdUser()?.email) {
+            <span style="display: block; font-size: 0.78rem; color: var(--text-muted); font-family: monospace; margin-top: 2px;">{{ pwdUser()?.email }}</span>
+          }
+        </p>
+
+        <div class="form-group full">
+          <label style="font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; color: var(--text-secondary); margin-bottom: 8px; display: block;">
+            NUEVA CONTRASEÑA
+          </label>
+          <div class="input-icon-wrap" style="position: relative; display: flex; align-items: center;">
+            <input
+              class="form-control"
+              [type]="showPwdText() ? 'text' : 'password'"
+              placeholder="Mínimo 8 caracteres"
+              [(ngModel)]="newPasswordText"
+              style="padding-right: 44px; font-family: monospace; font-size: 0.95rem; width: 100%;"
+            />
+            <button
+              type="button"
+              (click)="showPwdText.update(v => !v)"
+              style="position: absolute; right: 12px; background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.1rem; padding: 4px;"
+              title="Mostrar / Ocultar contraseña"
+            >
+              <i [class]="showPwdText() ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
+            </button>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px;">
+          <button type="button" class="btn btn-ghost" (click)="generatePassword()" style="border: 1px solid var(--surface-border); display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.82rem;">
+            <i class="pi pi-sync"></i> Generar
+          </button>
+          <button type="button" class="btn btn-ghost" (click)="copyPassword()" style="border: 1px solid var(--surface-border); display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.82rem;">
+            <i class="pi pi-copy"></i> Copiar
+          </button>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="margin-top: 24px;">
+        <button class="btn btn-ghost" (click)="showPasswordModal.set(false)">Cancelar</button>
+        <button class="btn btn-primary" [disabled]="savingPwd()" (click)="savePassword()" style="min-width: 110px;">
+          @if (savingPwd()) {
+            <i class="pi pi-spin pi-spinner"></i> Actualizando...
+          } @else {
+            Actualizar
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+

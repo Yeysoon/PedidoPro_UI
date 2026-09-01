@@ -1,6 +1,7 @@
-import { Component, signal, OnInit } from '@angular/core';
+import { Component, signal, OnInit, computed, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { InventarioService } from '../../core/services/inventario.service';
+import { AuthService } from '../../core/services/auth.service';
 import { AlertService } from '../../core/services/alert.service';
 import { Ingrediente } from '../../core/models';
 
@@ -12,6 +13,11 @@ import { Ingrediente } from '../../core/models';
   styleUrl: './inventario.component.scss'
 })
 export class InventarioComponent implements OnInit {
+  private svc = inject(InventarioService);
+  private auth = inject(AuthService);
+  private alert = inject(AlertService);
+
+  isAdmin = computed(() => this.auth.hasRole(['Administrador']));
   ingredientes = signal<Ingrediente[]>([]);
   loading      = signal(true);
   showModal    = signal(false);
@@ -23,11 +29,6 @@ export class InventarioComponent implements OnInit {
     const s = this.search().toLowerCase();
     return s ? this.ingredientes().filter(i => i.nombre_ingrediente.toLowerCase().includes(s)) : this.ingredientes();
   };
-
-  constructor(
-    private svc: InventarioService,
-    private alert: AlertService
-  ) {}
 
   ngOnInit() {
     this.load();

@@ -6,15 +6,15 @@ import { ThemeService } from '../../core/services/theme.service';
 import { SidebarItem } from '../../core/models';
 
 const ALL_ITEMS: SidebarItem[] = [
-  { label: 'Dashboard',    icon: 'pi pi-th-large',    route: '/dashboard', roles: ['Administrador'] },
-  { label: 'Mesas',        icon: 'pi pi-table',       route: '/mesas',     roles: ['Mesero','Administrador'] },
-  { label: 'Tomar Pedido', icon: 'pi pi-shopping-bag',route: '/pedidos',   roles: ['Mesero'] },
-  { label: 'Menú',         icon: 'pi pi-book',        route: '/menu',      roles: ['Mesero','Cajero','Administrador'] },
-  { label: 'Cocina',       icon: 'pi pi-bell',        route: '/cocina',    roles: ['Cocinero'] },
-  { label: 'Caja',         icon: 'pi pi-credit-card', route: '/caja',      roles: ['Cajero'] },
-  { label: 'Clientes',     icon: 'pi pi-users',       route: '/clientes',  roles: ['Cajero','Administrador'] },
-  { label: 'Usuarios',     icon: 'pi pi-user',        route: '/usuarios',  roles: ['Administrador'] },
-  { label: 'Inventario',   icon: 'pi pi-box',         route: '/inventario',roles: ['Administrador','Cocinero'] },
+  { label: 'Dashboard',    icon: 'pi pi-th-large',    route: '/dashboard', roles: ['Administrador', 'Mesero', 'Cocinero', 'Cajero'] },
+  { label: 'Mesas / Salón',icon: 'pi pi-table',       route: '/mesas',     roles: ['Mesero', 'Administrador'] },
+  { label: 'Tomar Pedido', icon: 'pi pi-shopping-bag',route: '/pedidos',   roles: ['Mesero', 'Administrador'] },
+  { label: 'Menú',         icon: 'pi pi-book',        route: '/menu',      roles: ['Mesero', 'Cajero', 'Administrador'] },
+  { label: 'Cocina',       icon: 'pi pi-bell',        route: '/cocina',    roles: ['Cocinero', 'Administrador'] },
+  { label: 'Caja y Cobro', icon: 'pi pi-credit-card', route: '/caja',      roles: ['Cajero', 'Administrador'] },
+  { label: 'Clientes',     icon: 'pi pi-users',       route: '/clientes',  roles: ['Cajero', 'Administrador'] },
+  { label: 'Usuarios / Roles', icon: 'pi pi-user',    route: '/usuarios',  roles: ['Administrador'] },
+  { label: 'Inventario',   icon: 'pi pi-box',         route: '/inventario',roles: ['Administrador', 'Cocinero'] },
   { label: 'Reportes',     icon: 'pi pi-chart-bar',   route: '/reportes',  roles: ['Administrador'] },
 ];
 
