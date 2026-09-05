@@ -1,19 +1,17 @@
 import { Component, signal, OnInit, inject, computed } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { SlicePipe, CommonModule } from '@angular/common';
-import { ReportesService } from '../../core/services/reportes.service';
 import { MesasService } from '../../core/services/mesas.service';
-import { UsuariosService } from '../../core/services/usuarios.service';
 import { CocinaService } from '../../core/services/cocina.service';
 import { CajaService } from '../../core/services/caja.service';
 import { InventarioService } from '../../core/services/inventario.service';
-import { DashboardService, AdminStats, MeseroStats, CocinaStats, CajaStats } from '../../core/services/dashboard.service';
-import { VentaReporte, ProductoTop, Mesa, Comanda, Pedido, Ingrediente } from '../../core/models';
+import { DashboardService, AdminStats, MeseroStats, CocinaStats, CajaStats, ActividadRecienteItem, MixCategoriaItem, PlatilloTopItem } from '../../core/services/dashboard.service';
+import { Mesa, Comanda, Pedido, Ingrediente } from '../../core/models';
 import { AuthService } from '../../core/services/auth.service';
 import { AlertService } from '../../core/services/alert.service';
 import Swal from 'sweetalert2';
 
-interface TransactionActivity {
+export interface TransactionActivity {
   id: string;
   initials: string;
   initialClass: string;
@@ -25,6 +23,11 @@ interface TransactionActivity {
   amount: string;
 }
 
+const CATEGORY_COLORS = [
+  '#10B981', '#0EA5E9', '#F59E0B', '#6366F1', 
+  '#EC4899', '#8B5CF6', '#14B8A6', '#F97316'
+];
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -35,9 +38,7 @@ interface TransactionActivity {
 export class DashboardComponent implements OnInit {
   private auth = inject(AuthService);
   private alert = inject(AlertService);
-  private reportesSvc = inject(ReportesService);
   private mesasSvc = inject(MesasService);
-  private usuariosSvc = inject(UsuariosService);
   private cocinaSvc = inject(CocinaService);
   private cajaSvc = inject(CajaService);
   private inventarioSvc = inject(InventarioService);
@@ -48,7 +49,7 @@ export class DashboardComponent implements OnInit {
   role = computed(() => this.auth.getRole());
   loading = signal(true);
 
-  // Period filter
+  // Period filter: semanal, mensual, anual
   selectedPeriod = signal<'weekly' | 'monthly' | 'yearly'>('monthly');
 
   // Role metrics
@@ -57,46 +58,14 @@ export class DashboardComponent implements OnInit {
   cocinaStats = signal<CocinaStats | null>(null);
   cajaStats = signal<CajaStats | null>(null);
 
-  // General datasets
-  ventas = signal<VentaReporte[]>([]);
-  productosTop = signal<ProductoTop[]>([]);
+  // Additional live collections
   mesas = signal<Mesa[]>([]);
-  usuariosCount = signal<number>(0);
   comandasCocina = signal<Comanda[]>([]);
   pedidosListosCaja = signal<Pedido[]>([]);
   insumosCriticos = signal<Ingrediente[]>([]);
 
-  totalHoy = signal(0);
-  mesasLibres = signal(0);
-  mesasOcupadas = signal(0);
-
-  occupancyRate = computed(() => {
-    const total = this.mesas().length;
-    if (total === 0) return '0%';
-    const ocupadas = this.mesasOcupadas();
-    return Math.round((ocupadas / total) * 100) + '%';
-  });
-
-  // Recent activity dataset
-  recentActivity = signal<TransactionActivity[]>([
-    { id: '#1254', initials: 'AE', initialClass: 'avatar-indigo', name: 'Amy Elsner', mesaTipo: 'Mesa 04 (Salón)', date: 'Hoy, 13:45', status: 'Pagado', statusType: 'success', amount: 'Q 345.00' },
-    { id: '#2355', initials: 'AF', initialClass: 'avatar-sky', name: 'Anna Fali', mesaTipo: 'Mesa 12 (Terraza)', date: 'Hoy, 13:20', status: 'En Cocina', statusType: 'info', amount: 'Q 180.50' },
-    { id: '#1235', initials: 'SS', initialClass: 'avatar-emerald', name: 'Stephen Shaw', mesaTipo: 'Para Llevar', date: 'Hoy, 12:50', status: 'Listo', statusType: 'success', amount: 'Q 95.00' },
-    { id: '#4512', initials: 'MR', initialClass: 'avatar-amber', name: 'Marcos Ruiz', mesaTipo: 'Mesa 02 (Salón)', date: 'Hoy, 12:15', status: 'Pendiente', statusType: 'warning', amount: 'Q 260.00' },
-    { id: '#5621', initials: 'CL', initialClass: 'avatar-rose', name: 'Carmen López', mesaTipo: 'Mesa 08 (VIP)', date: 'Hoy, 11:30', status: 'Cancelado', statusType: 'danger', amount: 'Q 520.00' },
-    { id: '#3421', initials: 'DR', initialClass: 'avatar-indigo', name: 'David Ramos', mesaTipo: 'Mesa 01 (Salón)', date: 'Hoy, 11:15', status: 'Pagado', statusType: 'success', amount: 'Q 410.00' },
-    { id: '#7812', initials: 'SP', initialClass: 'avatar-emerald', name: 'Sofía Portillo', mesaTipo: 'Mesa 06 (Terraza)', date: 'Hoy, 10:45', status: 'En Cocina', statusType: 'info', amount: 'Q 195.00' },
-    { id: '#9012', initials: 'JC', initialClass: 'avatar-sky', name: 'Julio Castillo', mesaTipo: 'Barra 02', date: 'Hoy, 10:30', status: 'Listo', statusType: 'success', amount: 'Q 85.00' },
-    { id: '#6543', initials: 'LG', initialClass: 'avatar-amber', name: 'Laura Gómez', mesaTipo: 'Mesa 03 (VIP)', date: 'Hoy, 10:05', status: 'Pendiente', statusType: 'warning', amount: 'Q 310.00' },
-    { id: '#8821', initials: 'PA', initialClass: 'avatar-rose', name: 'Pedro Alvarado', mesaTipo: 'Para Llevar', date: 'Hoy, 09:40', status: 'Pagado', statusType: 'success', amount: 'Q 120.00' },
-    { id: '#4432', initials: 'EM', initialClass: 'avatar-indigo', name: 'Elena Morales', mesaTipo: 'Mesa 05 (Salón)', date: 'Hoy, 09:15', status: 'Pagado', statusType: 'success', amount: 'Q 275.50' },
-    { id: '#1122', initials: 'RA', initialClass: 'avatar-sky', name: 'Rodrigo Aguilar', mesaTipo: 'Mesa 07 (Terraza)', date: 'Hoy, 08:50', status: 'Listo', statusType: 'success', amount: 'Q 160.00' },
-    { id: '#7733', initials: 'VB', initialClass: 'avatar-emerald', name: 'Valeria Blanco', mesaTipo: 'Barra 01', date: 'Hoy, 08:30', status: 'Pagado', statusType: 'success', amount: 'Q 95.00' },
-    { id: '#9988', initials: 'HG', initialClass: 'avatar-amber', name: 'Héctor Guerra', mesaTipo: 'Mesa 09 (VIP)', date: 'Hoy, 08:15', status: 'Pendiente', statusType: 'warning', amount: 'Q 380.00' },
-    { id: '#3321', initials: 'MB', initialClass: 'avatar-rose', name: 'Mariana Barrios', mesaTipo: 'Para Llevar', date: 'Hoy, 08:00', status: 'Pagado', statusType: 'success', amount: 'Q 145.00' }
-  ]);
-
-  // Pagination & Filtering for Activity Table
+  // Filtered / Paginated Activity Table
+  recentActivity = signal<TransactionActivity[]>([]);
   activityFilter = signal<string>('all');
   currentPage = signal<number>(1);
   pageSize = signal<number>(5);
@@ -124,6 +93,203 @@ export class DashboardComponent implements OnInit {
   startEntry = computed(() => this.filteredActivity().length ? (this.currentPage() - 1) * this.pageSize() + 1 : 0);
   endEntry = computed(() => Math.min(this.currentPage() * this.pageSize(), this.filteredActivity().length));
 
+  occupancyRate = computed(() => {
+    const total = this.adminStats()?.total_mesas || this.mesas().length;
+    if (!total) return '0%';
+    const ocupadas = this.adminStats()?.mesas_ocupadas ?? this.mesas().filter(m => m.estado === 'Ocupada').length;
+    return Math.round((ocupadas / total) * 100) + '%';
+  });
+
+  ngOnInit() {
+    this.load();
+  }
+
+  load() {
+    this.loading.set(true);
+    const r = this.role();
+    const period = this.selectedPeriod();
+
+    if (r === 'Administrador') {
+      this.dashboardSvc.getAdminStats(period).subscribe({
+        next: res => {
+          if (res?.data) {
+            this.adminStats.set(res.data);
+            if (res.data.actividad_reciente && res.data.actividad_reciente.length > 0) {
+              this.recentActivity.set(this.mapActividadReciente(res.data.actividad_reciente));
+            } else {
+              this.recentActivity.set([]);
+            }
+          }
+          this.loading.set(false);
+        },
+        error: e => {
+          console.error('Error al cargar dashboard admin:', e);
+          this.loading.set(false);
+        }
+      });
+
+      this.mesasSvc.getMesas().subscribe({
+        next: m => this.mesas.set(m),
+        error: () => {}
+      });
+
+    } else if (r === 'Mesero') {
+      this.dashboardSvc.getMeseroStats().subscribe({
+        next: res => {
+          if (res?.data) {
+            this.meseroStats.set(res.data);
+            if (res.data.mis_comandas && res.data.mis_comandas.length > 0) {
+              const mapped = res.data.mis_comandas.map(c => ({
+                id_pedido: c.id_pedido,
+                atendido_por: this.user()?.nombre || 'Mesero',
+                numero_mesa: c.numero_mesa,
+                nombre_zona: c.nombre_zona || 'Salón',
+                fecha_hora: c.fecha_hora,
+                estado: c.estado,
+                total: c.total
+              }));
+              this.recentActivity.set(this.mapActividadReciente(mapped));
+            } else {
+              this.recentActivity.set([]);
+            }
+          }
+          this.loading.set(false);
+        },
+        error: () => this.loading.set(false)
+      });
+
+      this.mesasSvc.getMesas().subscribe({
+        next: m => this.mesas.set(m),
+        error: () => {}
+      });
+
+    } else if (r === 'Cocinero') {
+      this.dashboardSvc.getCocinaStats().subscribe({
+        next: res => {
+          if (res?.data) {
+            this.cocinaStats.set(res.data);
+          }
+          this.loading.set(false);
+        },
+        error: () => this.loading.set(false)
+      });
+
+      this.cocinaSvc.getComandas().subscribe({
+        next: c => {
+          this.comandasCocina.set(c);
+          const mapped: ActividadRecienteItem[] = c.map(item => ({
+            id_pedido: item.id_pedido,
+            atendido_por: 'Comanda Cocina',
+            numero_mesa: item.numero_mesa,
+            nombre_zona: 'Cocina',
+            fecha_hora: item.fecha_hora_creacion,
+            estado: item.nombre_estado,
+            total: item.detalles.reduce((acc, d) => acc + ((d.precio_unitario_historico || 0) * d.cantidad), 0)
+          }));
+          this.recentActivity.set(this.mapActividadReciente(mapped));
+        },
+        error: () => {}
+      });
+
+      this.inventarioSvc.getIngredientes().subscribe({
+        next: ings => {
+          this.insumosCriticos.set(ings.filter(i => i.stock_actual <= 10));
+        },
+        error: () => {}
+      });
+
+    } else if (r === 'Cajero') {
+      this.dashboardSvc.getCajaStats(period).subscribe({
+        next: res => {
+          if (res?.data) {
+            this.cajaStats.set(res.data);
+          }
+          this.loading.set(false);
+        },
+        error: () => this.loading.set(false)
+      });
+
+      this.cajaSvc.getPedidosListos().subscribe({
+        next: p => {
+          this.pedidosListosCaja.set(p);
+          const mapped: ActividadRecienteItem[] = p.map(item => ({
+            id_pedido: item.id_pedido,
+            atendido_por: item.nombre_mesero || 'Mesero',
+            numero_mesa: item.numero_mesa || 0,
+            nombre_zona: 'Salón',
+            fecha_hora: item.fecha_hora_creacion,
+            estado: item.nombre_estado || 'Listo',
+            total: item.detalles?.reduce((acc, d) => acc + ((d.precio_unitario_historico || 0) * d.cantidad), 0) || 0
+          }));
+          this.recentActivity.set(this.mapActividadReciente(mapped));
+        },
+        error: () => {}
+      });
+    }
+  }
+
+  setPeriod(period: 'weekly' | 'monthly' | 'yearly') {
+    if (this.selectedPeriod() === period) return;
+    this.selectedPeriod.set(period);
+    this.load();
+  }
+
+  private mapActividadReciente(items: ActividadRecienteItem[]): TransactionActivity[] {
+    const avatarColors = ['avatar-indigo', 'avatar-sky', 'avatar-emerald', 'avatar-amber', 'avatar-rose'];
+    return items.map((item, idx) => {
+      let statusType: 'success' | 'danger' | 'warning' | 'info' = 'info';
+      if (['Servido', 'Pagado', 'Listo'].includes(item.estado)) {
+        statusType = 'success';
+      } else if (item.estado === 'Pendiente') {
+        statusType = 'warning';
+      } else if (item.estado === 'Cancelado') {
+        statusType = 'danger';
+      } else if (item.estado === 'En Preparación') {
+        statusType = 'info';
+      }
+
+      const name = item.atendido_por || 'Colaborador';
+      const initials = name.slice(0, 2).toUpperCase();
+      const initialClass = avatarColors[idx % avatarColors.length];
+      const mesaTipo = `Mesa ${item.numero_mesa || 'S/N'} (${item.nombre_zona || 'Salón'})`;
+      const date = item.fecha_hora || 'Hoy';
+      const amount = this.formatCurrency(item.total || 0);
+
+      return {
+        id: `#${item.id_pedido}`,
+        initials,
+        initialClass,
+        name,
+        mesaTipo,
+        date,
+        status: item.estado,
+        statusType,
+        amount
+      };
+    });
+  }
+
+  getBarHeight(val: number): string {
+    const items = this.adminStats()?.actividad_ventas || [];
+    const max = Math.max(...items.map(v => +v.total_ventas), 500);
+    const pct = Math.min(Math.max((+val / max) * 100, 15), 100);
+    return pct + '%';
+  }
+
+  getTopWidth(val: number): string {
+    const items = this.adminStats()?.platillos_top || [];
+    const max = Math.max(...items.map(p => +p.total_vendido), 1);
+    return Math.min(Math.max((+val / max) * 100, 12), 100) + '%';
+  }
+
+  getCategoryColor(idx: number): string {
+    return CATEGORY_COLORS[idx % CATEGORY_COLORS.length];
+  }
+
+  formatCurrency(n: number): string {
+    return 'Q ' + (+n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+
   setPage(page: number) {
     if (page >= 1 && page <= this.totalPages()) {
       this.currentPage.set(page);
@@ -150,9 +316,9 @@ export class DashboardComponent implements OnInit {
       inputOptions: {
         'all': '🔍 Ver Todas las Transacciones',
         'Pendiente': '⏳ Filtrar solo Pendientes (' + this.pendientesCount() + ')',
-        'En Cocina': '🍳 Filtrar solo En Cocina',
+        'En Preparación': '🍳 Filtrar solo En Preparación',
         'Listo': '✅ Filtrar solo Listos para entrega',
-        'Pagado': '💵 Filtrar solo Pagados',
+        'Servido': '🍽️ Filtrar solo Servidos',
         'cocina': '👨‍🍳 Ir al Módulo de Cocina',
         'caja': '🧾 Ir al Módulo de Caja'
       },
@@ -203,143 +369,6 @@ export class DashboardComponent implements OnInit {
     });
   }
 
-  ngOnInit() {
-    this.load();
-  }
-
-  load() {
-    this.loading.set(true);
-    const r = this.role();
-
-    // Administrador: Cargar dashboard general y stats completos
-    if (r === 'Administrador') {
-      this.dashboardSvc.getAdminStats().subscribe({
-        next: res => {
-          if (res?.data) {
-            this.adminStats.set(res.data);
-            if (res.data.ventas_hoy !== undefined) this.totalHoy.set(res.data.ventas_hoy);
-          }
-        },
-        error: () => {}
-      });
-
-      this.reportesSvc.getVentas().subscribe({
-        next: (v: any) => {
-          const list = Array.isArray(v) ? v : (v?.data || []);
-          this.ventas.set(list);
-          const lastVenta = list[list.length - 1];
-          if (!this.totalHoy()) this.totalHoy.set(lastVenta ? lastVenta.total_ventas : 2840.50);
-          this.loading.set(false);
-        },
-        error: () => this.loading.set(false)
-      });
-
-      this.reportesSvc.getProductosTop().subscribe({
-        next: (p: any) => {
-          const list = Array.isArray(p) ? p : [];
-          this.productosTop.set(list.slice(0, 5));
-        }
-      });
-
-      this.mesasSvc.getMesas().subscribe({
-        next: m => {
-          this.mesas.set(m);
-          this.mesasLibres.set(m.filter(x => x.estado === 'Libre').length);
-          this.mesasOcupadas.set(m.filter(x => x.estado === 'Ocupada').length);
-        }
-      });
-
-      this.usuariosSvc.getUsuarios().subscribe({
-        next: u => this.usuariosCount.set(u.length)
-      });
-
-    } else if (r === 'Mesero') {
-      // Mesero: Cargar estado del salón, mis pedidos y ocupación
-      this.dashboardSvc.getMeseroStats().subscribe({
-        next: res => {
-          if (res?.data) {
-            this.meseroStats.set(res.data);
-          }
-        },
-        error: () => {}
-      });
-
-      this.mesasSvc.getMesas().subscribe({
-        next: m => {
-          this.mesas.set(m);
-          this.mesasLibres.set(m.filter(x => x.estado === 'Libre').length);
-          this.mesasOcupadas.set(m.filter(x => x.estado === 'Ocupada').length);
-          this.loading.set(false);
-        },
-        error: () => this.loading.set(false)
-      });
-
-    } else if (r === 'Cocinero') {
-      // Cocinero: Cargar comandas activas y alertas de stock bajo
-      this.dashboardSvc.getCocinaStats().subscribe({
-        next: res => {
-          if (res?.data) {
-            this.cocinaStats.set(res.data);
-          }
-        },
-        error: () => {}
-      });
-
-      this.cocinaSvc.getComandas().subscribe({
-        next: c => {
-          this.comandasCocina.set(c);
-          this.loading.set(false);
-        },
-        error: () => this.loading.set(false)
-      });
-
-      this.inventarioSvc.getIngredientes().subscribe({
-        next: ings => {
-          this.insumosCriticos.set(ings.filter(i => i.stock_actual <= 10));
-        }
-      });
-
-    } else if (r === 'Cajero') {
-      // Cajero: Cargar ingresos diarios y pedidos listos por cobrar
-      this.dashboardSvc.getCajaStats().subscribe({
-        next: res => {
-          if (res?.data) {
-            this.cajaStats.set(res.data);
-            this.totalHoy.set(res.data.ingresos_hoy || 0);
-          }
-        },
-        error: () => {}
-      });
-
-      this.cajaSvc.getPedidosListos().subscribe({
-        next: p => {
-          this.pedidosListosCaja.set(p);
-          this.loading.set(false);
-        },
-        error: () => this.loading.set(false)
-      });
-    }
-  }
-
-  setPeriod(period: 'weekly' | 'monthly' | 'yearly') {
-    this.selectedPeriod.set(period);
-  }
-
-  getBarHeight(val: number): string {
-    const max = Math.max(...this.ventas().map(v => +v.total_ventas), 500);
-    const pct = Math.min(Math.max((+val / max) * 100, 15), 100);
-    return pct + '%';
-  }
-
-  getTopWidth(val: number): string {
-    const max = Math.max(...this.productosTop().map(p => +p.total_vendido), 1);
-    return Math.min(Math.max((+val / max) * 100, 10), 100) + '%';
-  }
-
-  formatCurrency(n: number): string {
-    return 'Q ' + (+n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  }
-
   async openExportModal() {
     const result = await Swal.fire({
       title: 'Exportar Reporte Ejecutivo',
@@ -370,6 +399,7 @@ export class DashboardComponent implements OnInit {
     const period = this.selectedPeriod();
     const today = new Date().toLocaleString();
     const userName = this.user()?.nombre || 'Administrador';
+    const stats = this.adminStats();
 
     let csv = '\uFEFF'; // UTF-8 BOM para Excel
     csv += 'PEDIDOPRO - REPORTE EJECUTIVO Y OPERATIVO\n';
@@ -380,26 +410,34 @@ export class DashboardComponent implements OnInit {
     // Resumen KPIs
     csv += '--- RESUMEN DE INDICADORES (KPIs) ---\n';
     csv += 'Métrica,Valor\n';
-    csv += `Ventas del Día,"${this.formatCurrency(this.totalHoy())}"\n`;
-    csv += `Mesas Disponibles,${this.mesasLibres()}\n`;
-    csv += `Mesas Ocupadas,${this.mesasOcupadas()}\n`;
+    csv += `Ventas del Día,"${this.formatCurrency(stats?.ventas_hoy || 0)}"\n`;
+    csv += `Ventas del Período,"${this.formatCurrency(stats?.ventas_periodo || 0)}"\n`;
+    csv += `Facturas Emitidas en Período,${stats?.facturas_periodo || 0}\n`;
+    csv += `Mesas Disponibles,${stats?.mesas_libres || 0}\n`;
+    csv += `Mesas Ocupadas,${stats?.mesas_ocupadas || 0}\n`;
     csv += `Tasa de Ocupación,${this.occupancyRate()}\n\n`;
 
     // Historial de Ventas
-    csv += '--- HISTORIAL DE VENTAS ---\n';
+    csv += '--- ACTIVIDAD DE VENTAS ---\n';
     csv += 'Fecha,Comprobantes Emitidos,Total Ventas (Q)\n';
-    const ventasList = this.ventas().length ? this.ventas() : [];
-    ventasList.forEach(v => {
+    (stats?.actividad_ventas || []).forEach(v => {
       csv += `"${v.fecha}",${v.cantidad_facturas},"${(+v.total_ventas).toFixed(2)}"\n`;
+    });
+    csv += '\n';
+
+    // Mix Categorías
+    csv += '--- MIX DE FACTURACIÓN POR CATEGORÍA ---\n';
+    csv += 'Categoría,Porcentaje,Cantidad Vendida,Total (Q)\n';
+    (stats?.mix_facturacion || []).forEach(m => {
+      csv += `"${m.nombre_categoria}",${m.porcentaje}%,${m.cantidad_vendida},"${(+m.total_categoria).toFixed(2)}"\n`;
     });
     csv += '\n';
 
     // Ranking Productos
     csv += '--- PLATILLOS Y BEBIDAS MÁS VENDIDOS ---\n';
-    csv += 'Posición,Producto,Cantidad Vendida\n';
-    const topList = this.productosTop().length ? this.productosTop() : [];
-    topList.forEach((p, idx) => {
-      csv += `${idx + 1},"${p.nombre_producto}",${p.total_vendido}\n`;
+    csv += 'Posición,Producto,Categoría,Cantidad Vendida,Total Ingresos (Q)\n';
+    (stats?.platillos_top || []).forEach((p, idx) => {
+      csv += `${idx + 1},"${p.nombre_producto}","${p.nombre_categoria || 'Menú'}",${p.total_vendido},"${(+(p.total_ingresos || 0)).toFixed(2)}"\n`;
     });
     csv += '\n';
 
@@ -415,21 +453,23 @@ export class DashboardComponent implements OnInit {
     const link = document.createElement('a');
     const dateStr = new Date().toISOString().slice(0, 10);
     link.setAttribute('href', url);
-    link.setAttribute('download', `PedidoPro_Reporte_Dashboard_${dateStr}.csv`);
+    link.setAttribute('download', `PedidoPro_Reporte_Dashboard_${period}_${dateStr}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
 
-    this.alert.successToast('Reporte CSV generado y descargado exitosamente');
+    this.alert.successToast('Reporte CSV descargado exitosamente');
   }
 
   exportPDF() {
     const dateStr = new Date().toLocaleString();
     const userName = this.user()?.nombre || 'Administrador';
-    const total = this.formatCurrency(this.totalHoy());
-    const libres = this.mesasLibres();
-    const ocupadas = this.mesasOcupadas();
+    const stats = this.adminStats();
+    const totalHoy = this.formatCurrency(stats?.ventas_hoy || 0);
+    const totalPer = this.formatCurrency(stats?.ventas_periodo || 0);
+    const libres = stats?.mesas_libres || 0;
+    const ocupadas = stats?.mesas_ocupadas || 0;
     const tasa = this.occupancyRate();
 
     const printWindow = window.open('', '_blank', 'width=900,height=700');
@@ -438,12 +478,16 @@ export class DashboardComponent implements OnInit {
       return;
     }
 
-    const ventasRows = (this.ventas().length ? this.ventas().slice(-7) : [])
+    const ventasRows = (stats?.actividad_ventas || [])
       .map(v => `<tr><td>${v.fecha}</td><td>${v.cantidad_facturas}</td><td style="text-align:right;">${this.formatCurrency(v.total_ventas)}</td></tr>`)
       .join('');
 
-    const topRows = (this.productosTop().length ? this.productosTop() : [])
-      .map((p, i) => `<tr><td>#${i + 1}</td><td>${p.nombre_producto}</td><td style="text-align:right;">${p.total_vendido} pedidos</td></tr>`)
+    const mixRows = (stats?.mix_facturacion || [])
+      .map(m => `<tr><td>${m.nombre_categoria}</td><td>${m.porcentaje}%</td><td>${m.cantidad_vendida} items</td><td style="text-align:right;">${this.formatCurrency(m.total_categoria)}</td></tr>`)
+      .join('');
+
+    const topRows = (stats?.platillos_top || [])
+      .map((p, i) => `<tr><td>#${i + 1}</td><td>${p.nombre_producto}</td><td>${p.nombre_categoria || 'Menú'}</td><td style="text-align:right;">${p.total_vendido} pedidos</td></tr>`)
       .join('');
 
     const actRows = this.recentActivity()
@@ -489,28 +533,34 @@ export class DashboardComponent implements OnInit {
         </div>
 
         <div class="kpi-grid">
-          <div class="kpi-box"><div class="lbl">Ventas del Día</div><div class="val">${total}</div></div>
+          <div class="kpi-box"><div class="lbl">Ventas del Día</div><div class="val">${totalHoy}</div></div>
+          <div class="kpi-box"><div class="lbl">Ventas Período</div><div class="val">${totalPer}</div></div>
           <div class="kpi-box"><div class="lbl">Mesas Libres</div><div class="val">${libres}</div></div>
-          <div class="kpi-box"><div class="lbl">Mesas Ocupadas</div><div class="val">${ocupadas}</div></div>
           <div class="kpi-box"><div class="lbl">Tasa Ocupación</div><div class="val">${tasa}</div></div>
         </div>
 
-        <h3>Historial de Ventas</h3>
+        <h3>Actividad de Ventas en el Período</h3>
         <table>
           <thead><tr><th>Fecha</th><th>Comprobantes</th><th style="text-align:right;">Total Facturado</th></tr></thead>
-          <tbody>${ventasRows || '<tr><td colspan="3">Sin registros de ventas</td></tr>'}</tbody>
+          <tbody>${ventasRows || '<tr><td colspan="3">Sin registros de ventas en este período</td></tr>'}</tbody>
+        </table>
+
+        <h3>Mix de Facturación por Categoría</h3>
+        <table>
+          <thead><tr><th>Categoría</th><th>Participación</th><th>Cantidad Items</th><th style="text-align:right;">Total</th></tr></thead>
+          <tbody>${mixRows || '<tr><td colspan="4">Sin ventas por categoría registradas</td></tr>'}</tbody>
         </table>
 
         <h3>Platillos Más Pedidos</h3>
         <table>
-          <thead><tr><th>Rank</th><th>Nombre del Producto</th><th style="text-align:right;">Cantidad Vendida</th></tr></thead>
-          <tbody>${topRows || '<tr><td colspan="3">Sin registros</td></tr>'}</tbody>
+          <thead><tr><th>Rank</th><th>Nombre del Producto</th><th>Categoría</th><th style="text-align:right;">Cantidad Vendida</th></tr></thead>
+          <tbody>${topRows || '<tr><td colspan="4">Sin registros de platillos pedidos</td></tr>'}</tbody>
         </table>
 
         <h3>Actividad Reciente</h3>
         <table>
           <thead><tr><th>ID</th><th>Atendido Por</th><th>Mesa / Servicio</th><th>Fecha / Hora</th><th>Estado</th><th style="text-align:right;">Monto</th></tr></thead>
-          <tbody>${actRows}</tbody>
+          <tbody>${actRows || '<tr><td colspan="6">Sin actividad reciente</td></tr>'}</tbody>
         </table>
 
         <script>
@@ -523,4 +573,3 @@ export class DashboardComponent implements OnInit {
     this.alert.successToast('Ventana de impresión generada');
   }
 }
-

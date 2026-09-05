@@ -27,7 +27,7 @@
       </h1>
       <p class="page-desc">
         @switch (role()) {
-          @case ('Administrador') { Monitorea ingresos globales, ocupación de mesas, flujo de comandas y métricas de personal. }
+          @case ('Administrador') { Monitorea ingresos globales, ocupación de mesas, flujo de comandas y métricas en tiempo real. }
           @case ('Mesero') { Consulta disponibilidad de mesas, estado de tus comensales y registra pedidos en tiempo real. }
           @case ('Cocinero') { Administra las comandas entrantes, avanza los platillos y vigila las existencias de ingredientes. }
           @case ('Cajero') { Factura pedidos listos para entrega, gestiona comprobantes de pago y atiende clientes. }
@@ -38,7 +38,7 @@
 
     <!-- Filters & Role Actions -->
     <div class="header-controls">
-      @if (role() === 'Administrador') {
+      @if (role() === 'Administrador' || role() === 'Cajero') {
         <!-- Period Selector Pills -->
         <div class="period-pill-group">
           <button class="pill-btn" [class.active]="selectedPeriod() === 'weekly'" (click)="setPeriod('weekly')">
@@ -59,7 +59,7 @@
           </button>
           <div class="date-range-badge">
             <i class="pi pi-calendar"></i>
-            <span>Hoy · Turno Actual</span>
+            <span>{{ selectedPeriod() === 'weekly' ? 'Últimos 7 días' : (selectedPeriod() === 'yearly' ? 'Último Año' : 'Últimos 30 días') }}</span>
           </div>
         </div>
       } @else if (role() === 'Mesero') {
@@ -84,17 +84,6 @@
             <span>Ver Alertas de Stock</span>
           </a>
         </div>
-      } @else if (role() === 'Cajero') {
-        <div class="action-buttons-group">
-          <a routerLink="/caja" class="btn btn-primary btn-sm">
-            <i class="pi pi-credit-card"></i>
-            <span>Cobrar Pedidos</span>
-          </a>
-          <a routerLink="/clientes" class="btn btn-secondary btn-sm">
-            <i class="pi pi-users"></i>
-            <span>Directorio Clientes</span>
-          </a>
-        </div>
       }
     </div>
   </header>
@@ -102,15 +91,17 @@
   <!-- KPI METRICS GRID (Tailored per Role) -->
   <section class="kpi-grid">
     @if (role() === 'Administrador') {
-      <!-- Card 1: Total Ventas -->
+      <!-- Card 1: Ventas Hoy / Período -->
       <div class="kpi-card glass-card">
         <div class="kpi-card-top">
-          <span class="kpi-title">Ventas del Día</span>
+          <span class="kpi-title">Ventas de Hoy</span>
           <div class="kpi-icon-box icon-emerald"><i class="pi pi-wallet"></i></div>
         </div>
         <div class="kpi-card-bottom">
-          <span class="kpi-number">{{ formatCurrency(adminStats()?.ventas_hoy !== undefined ? adminStats()!.ventas_hoy : totalHoy()) }}</span>
-          <span class="trend-badge trend-up"><i class="pi pi-arrow-up-right"></i> Facturado</span>
+          <span class="kpi-number">{{ formatCurrency(adminStats()?.ventas_hoy ?? 0) }}</span>
+          <span class="trend-badge trend-up">
+            <i class="pi pi-chart-line"></i> {{ formatCurrency(adminStats()?.ventas_periodo ?? 0) }} (Período)
+          </span>
         </div>
       </div>
 
@@ -121,8 +112,8 @@
           <div class="kpi-icon-box icon-sky"><i class="pi pi-table"></i></div>
         </div>
         <div class="kpi-card-bottom">
-          <span class="kpi-number">{{ mesasLibres() }}</span>
-          <span class="trend-badge trend-neutral"><i class="pi pi-check"></i> Libres</span>
+          <span class="kpi-number">{{ adminStats()?.mesas_libres ?? mesas().filter(m => m.estado === 'Libre').length }}</span>
+          <span class="trend-badge trend-neutral"><i class="pi pi-check"></i> Libres para asignar</span>
         </div>
       </div>
 
@@ -133,8 +124,8 @@
           <div class="kpi-icon-box icon-amber"><i class="pi pi-bolt"></i></div>
         </div>
         <div class="kpi-card-bottom">
-          <span class="kpi-number">{{ adminStats()?.mesas_ocupadas !== undefined ? adminStats()!.mesas_ocupadas : mesasOcupadas() }}</span>
-          <span class="trend-badge trend-live"><span class="dot-indicator"></span> Activas</span>
+          <span class="kpi-number">{{ adminStats()?.mesas_ocupadas ?? mesas().filter(m => m.estado === 'Ocupada').length }}</span>
+          <span class="trend-badge trend-live"><span class="dot-indicator"></span> {{ occupancyRate() }} Ocupación</span>
         </div>
       </div>
 
@@ -146,7 +137,9 @@
         </div>
         <div class="kpi-card-bottom">
           <span class="kpi-number">{{ adminStats()?.alertas_inventario ?? 0 }}</span>
-          <span class="trend-badge trend-optimal"><i class="pi pi-box"></i> Insumos Bajos</span>
+          <span class="trend-badge" [class.trend-danger]="(adminStats()?.alertas_inventario ?? 0) > 0" [class.trend-optimal]="(adminStats()?.alertas_inventario ?? 0) === 0">
+            <i class="pi pi-box"></i> {{ (adminStats()?.alertas_inventario ?? 0) > 0 ? 'Insumos Bajos' : 'Stock Óptimo' }}
+          </span>
         </div>
       </div>
 
@@ -158,27 +151,27 @@
           <div class="kpi-icon-box icon-sky"><i class="pi pi-check-circle"></i></div>
         </div>
         <div class="kpi-card-bottom">
-          <span class="kpi-number">{{ mesasLibres() }}</span>
-          <span class="trend-badge trend-neutral"><i class="pi pi-table"></i> Para Asignar</span>
+          <span class="kpi-number">{{ mesas().filter(m => m.estado === 'Libre').length }}</span>
+          <span class="trend-badge trend-neutral"><i class="pi pi-table"></i> Libres</span>
         </div>
       </div>
 
       <!-- Mesero Card 2 -->
       <div class="kpi-card glass-card">
         <div class="kpi-card-top">
-          <span class="kpi-title">Mesas Ocupadas</span>
+          <span class="kpi-title">Mesas en Servicio</span>
           <div class="kpi-icon-box icon-amber"><i class="pi pi-users"></i></div>
         </div>
         <div class="kpi-card-bottom">
-          <span class="kpi-number">{{ mesasOcupadas() }}</span>
-          <span class="trend-badge trend-live"><span class="dot-indicator"></span> En Servicio</span>
+          <span class="kpi-number">{{ mesas().filter(m => m.estado === 'Ocupada').length }}</span>
+          <span class="trend-badge trend-live"><span class="dot-indicator"></span> Activas</span>
         </div>
       </div>
 
       <!-- Mesero Card 3 -->
       <div class="kpi-card glass-card">
         <div class="kpi-card-top">
-          <span class="kpi-title">Mis Pedidos Activos</span>
+          <span class="kpi-title">Mis Pedidos en Curso</span>
           <div class="kpi-icon-box icon-emerald"><i class="pi pi-shopping-bag"></i></div>
         </div>
         <div class="kpi-card-bottom">
@@ -207,7 +200,7 @@
           <div class="kpi-icon-box icon-amber"><i class="pi pi-clock"></i></div>
         </div>
         <div class="kpi-card-bottom">
-          <span class="kpi-number">{{ cocinaStats()?.comandas_pendientes ?? comandasCocina().length }}</span>
+          <span class="kpi-number">{{ cocinaStats()?.comandas_pendientes ?? 0 }}</span>
           <span class="trend-badge trend-live"><span class="dot-indicator"></span> Por Iniciar</span>
         </div>
       </div>
@@ -227,24 +220,24 @@
       <!-- Cocina Card 3 -->
       <div class="kpi-card glass-card">
         <div class="kpi-card-top">
-          <span class="kpi-title">Total Comandas Activas</span>
-          <div class="kpi-icon-box icon-emerald"><i class="pi pi-bell"></i></div>
+          <span class="kpi-title">Despachadas Hoy</span>
+          <div class="kpi-icon-box icon-emerald"><i class="pi pi-check-circle"></i></div>
         </div>
         <div class="kpi-card-bottom">
-          <span class="kpi-number">{{ (cocinaStats()?.comandas_pendientes ?? 0) + (cocinaStats()?.comandas_en_preparacion ?? 0) }}</span>
-          <span class="trend-badge trend-up"><i class="pi pi-list"></i> En Curso</span>
+          <span class="kpi-number">{{ cocinaStats()?.comandas_listas_hoy ?? 0 }}</span>
+          <span class="trend-badge trend-up"><i class="pi pi-bell"></i> Listas / Servidas</span>
         </div>
       </div>
 
       <!-- Cocina Card 4 -->
       <div class="kpi-card glass-card">
         <div class="kpi-card-top">
-          <span class="kpi-title">Insumos con Stock Bajo</span>
+          <span class="kpi-title">Insumos Críticos</span>
           <div class="kpi-icon-box icon-indigo"><i class="pi pi-exclamation-triangle"></i></div>
         </div>
         <div class="kpi-card-bottom">
-          <span class="kpi-number">{{ insumosCriticos().length }}</span>
-          <span class="trend-badge trend-optimal"><i class="pi pi-box"></i> Alertas</span>
+          <span class="kpi-number">{{ cocinaStats()?.insumos_criticos?.length ?? insumosCriticos().length }}</span>
+          <span class="trend-badge trend-optimal"><i class="pi pi-box"></i> Alertas Stock</span>
         </div>
       </div>
 
@@ -256,7 +249,7 @@
           <div class="kpi-icon-box icon-emerald"><i class="pi pi-wallet"></i></div>
         </div>
         <div class="kpi-card-bottom">
-          <span class="kpi-number">{{ formatCurrency(cajaStats()?.ingresos_hoy !== undefined ? cajaStats()!.ingresos_hoy : totalHoy()) }}</span>
+          <span class="kpi-number">{{ formatCurrency(cajaStats()?.ingresos_hoy ?? 0) }}</span>
           <span class="trend-badge trend-up"><i class="pi pi-arrow-up-right"></i> Total Cobrado</span>
         </div>
       </div>
@@ -264,7 +257,7 @@
       <!-- Caja Card 2 -->
       <div class="kpi-card glass-card">
         <div class="kpi-card-top">
-          <span class="kpi-title">Facturas Emitidas</span>
+          <span class="kpi-title">Facturas Emitidas Hoy</span>
           <div class="kpi-icon-box icon-sky"><i class="pi pi-file"></i></div>
         </div>
         <div class="kpi-card-bottom">
@@ -280,7 +273,7 @@
           <div class="kpi-icon-box icon-amber"><i class="pi pi-credit-card"></i></div>
         </div>
         <div class="kpi-card-bottom">
-          <span class="kpi-number">{{ cajaStats()?.pedidos_listos !== undefined ? cajaStats()!.pedidos_listos : pedidosListosCaja().length }}</span>
+          <span class="kpi-number">{{ cajaStats()?.pedidos_listos ?? pedidosListosCaja().length }}</span>
           <span class="trend-badge trend-live"><span class="dot-indicator"></span> Pendientes</span>
         </div>
       </div>
@@ -288,12 +281,12 @@
       <!-- Caja Card 4 -->
       <div class="kpi-card glass-card">
         <div class="kpi-card-top">
-          <span class="kpi-title">Estado de Facturación</span>
-          <div class="kpi-icon-box icon-indigo"><i class="pi pi-shield"></i></div>
+          <span class="kpi-title">Ingresos del Período</span>
+          <div class="kpi-icon-box icon-indigo"><i class="pi pi-chart-bar"></i></div>
         </div>
         <div class="kpi-card-bottom">
-          <span class="kpi-number">Activo</span>
-          <span class="trend-badge trend-optimal"><i class="pi pi-sparkles"></i> PDF Habilitado</span>
+          <span class="kpi-number">{{ formatCurrency(cajaStats()?.ingresos_periodo ?? 0) }}</span>
+          <span class="trend-badge trend-optimal"><i class="pi pi-receipt"></i> {{ cajaStats()?.facturas_periodo ?? 0 }} Facturas</span>
         </div>
       </div>
     }
@@ -307,34 +300,26 @@
         <div class="card-header-row">
           <div class="card-title-group">
             <h3 class="card-title">Actividad de Ventas e Ingresos</h3>
-            <span class="card-subtitle">Flujo por servicio en los últimos días</span>
-          </div>
-          <div class="chart-legend">
-            <span class="legend-item"><span class="legend-dot dot-layer-1"></span> Salón</span>
-            <span class="legend-item"><span class="legend-dot dot-layer-2"></span> Para Llevar</span>
-            <span class="legend-item"><span class="legend-dot dot-layer-3"></span> Delivery</span>
+            <span class="card-subtitle">Facturación registrada en la base de datos ({{ selectedPeriod() === 'weekly' ? 'Semanal' : (selectedPeriod() === 'yearly' ? 'Anual' : 'Mensual') }})</span>
           </div>
         </div>
 
         <div class="chart-content-area">
           @if (loading()) {
-            <div class="loading-box">
+            <div class="loading-box" style="height: 220px; display: flex; align-items: center; justify-content: center; gap: 10px; color: var(--text-muted);">
               <i class="pi pi-spin pi-spinner"></i>
               <span>Cargando datos...</span>
             </div>
+          } @else if ((adminStats()?.actividad_ventas?.length ?? 0) === 0) {
+            <div class="empty-chart-state" style="height: 220px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--text-muted);">
+              <i class="pi pi-chart-bar" style="font-size: 2rem; opacity: 0.5;"></i>
+              <span style="font-size: 0.88rem;">No hay registros de ventas facturadas en este período</span>
+            </div>
           } @else {
             <div class="prime-bar-chart">
-              @for (v of (ventas().length ? ventas().slice(-7) : [
-                { fecha: '2026-08-21', total_ventas: 1800, cantidad_facturas: 12 },
-                { fecha: '2026-08-22', total_ventas: 2400, cantidad_facturas: 18 },
-                { fecha: '2026-08-23', total_ventas: 1950, cantidad_facturas: 14 },
-                { fecha: '2026-08-24', total_ventas: 2100, cantidad_facturas: 16 },
-                { fecha: '2026-08-25', total_ventas: 2850, cantidad_facturas: 22 },
-                { fecha: '2026-08-26', total_ventas: 2300, cantidad_facturas: 17 },
-                { fecha: '2026-08-27', total_ventas: 3100, cantidad_facturas: 25 }
-              ]); track v.fecha) {
+              @for (v of adminStats()!.actividad_ventas; track v.fecha) {
                 <div class="chart-bar-column">
-                  <div class="layered-pill-bar" [style.height]="getBarHeight(v.total_ventas)" [title]="formatCurrency(v.total_ventas)">
+                  <div class="layered-pill-bar" [style.height]="getBarHeight(v.total_ventas)" [title]="v.fecha + ': ' + formatCurrency(v.total_ventas) + ' (' + v.cantidad_facturas + ' comprobantes)'">
                     <div class="bar-segment segment-top"></div>
                     <div class="bar-segment segment-mid"></div>
                     <div class="bar-segment segment-base"></div>
@@ -352,39 +337,47 @@
         <div class="card-header-row">
           <div class="card-title-group">
             <h3 class="card-title">Mix de Facturación</h3>
-            <span class="card-subtitle">Distribución por categoría</span>
+            <span class="card-subtitle">Distribución real por categoría en el período</span>
           </div>
         </div>
 
         <div class="mix-total-row">
-          <span class="mix-amount">{{ formatCurrency(totalHoy() * 1.5 || 4250.00) }}</span>
-          <span class="trend-badge trend-up">+12.4%</span>
+          <span class="mix-amount">{{ formatCurrency(adminStats()?.total_mix_facturacion ?? adminStats()?.ventas_periodo ?? 0) }}</span>
+          <span class="trend-badge trend-up">Facturado</span>
         </div>
 
-        <div class="multi-progress-bar">
-          <div class="progress-segment seg-platillos" style="width: 48%;"></div>
-          <div class="progress-segment seg-bebidas" style="width: 32%;"></div>
-          <div class="progress-segment seg-postres" style="width: 20%;"></div>
-        </div>
+        @if ((adminStats()?.mix_facturacion?.length ?? 0) > 0) {
+          <!-- Progress bar with real segments -->
+          <div class="multi-progress-bar">
+            @for (m of adminStats()!.mix_facturacion; track m.id_categoria; let idx = $index) {
+              <div class="progress-segment" 
+                   [style.width.%]="m.porcentaje" 
+                   [style.background]="getCategoryColor(idx)"
+                   [title]="m.nombre_categoria + ' (' + m.porcentaje + '%): ' + formatCurrency(m.total_categoria)">
+              </div>
+            }
+          </div>
 
-        <div class="category-breakdown-list">
-          <div class="category-item">
-            <div class="cat-left"><span class="cat-dot dot-platillos"></span><span class="cat-name">Platos Fuertes (48%)</span></div>
-            <span class="cat-val">Q 2,040.00</span>
+          <div class="category-breakdown-list">
+            @for (m of adminStats()!.mix_facturacion; track m.id_categoria; let idx = $index) {
+              <div class="category-item">
+                <div class="cat-left">
+                  <span class="cat-dot" [style.background]="getCategoryColor(idx)"></span>
+                  <span class="cat-name">{{ m.nombre_categoria }} ({{ m.porcentaje }}%)</span>
+                </div>
+                <span class="cat-val">{{ formatCurrency(m.total_categoria) }}</span>
+              </div>
+            }
           </div>
-          <div class="category-item">
-            <div class="cat-left"><span class="cat-dot dot-bebidas"></span><span class="cat-name">Bebidas y Cocteles (32%)</span></div>
-            <span class="cat-val">Q 1,360.00</span>
+        } @else {
+          <div style="padding: 20px 0; text-align: center; color: var(--text-muted); font-size: 0.85rem;">
+            No hay consumos por categoría registrados en este período.
           </div>
-          <div class="category-item">
-            <div class="cat-left"><span class="cat-dot dot-postres"></span><span class="cat-name">Postres y Entradas (20%)</span></div>
-            <span class="cat-val">Q 850.00</span>
-          </div>
-        </div>
+        }
 
         <div class="mix-card-footer">
           <a routerLink="/reportes" class="view-ledger-link">
-            <span>Ver Reporte Detallado</span>
+            <span>Ver Reportes Detallados</span>
             <i class="pi pi-arrow-right"></i>
           </a>
         </div>
@@ -401,9 +394,10 @@
           <h3 class="card-title">
             @if (role() === 'Cajero') { Pedidos Listos para Cobro }
             @else if (role() === 'Cocinero') { Comandas Recientes en Cocina }
+            @else if (role() === 'Mesero') { Mis Comandas Recientes }
             @else { Actividad Reciente de Comandas }
           </h3>
-          <span class="card-subtitle">Flujo de servicio en tiempo real</span>
+          <span class="card-subtitle">Flujo en tiempo real desde la base de datos</span>
         </div>
         <div class="table-header-tags">
           <button type="button" class="badge badge-warning" style="cursor: pointer; border: none;" (click)="togglePendientesFilter()">
@@ -422,7 +416,7 @@
             <tr>
               <th>ID</th>
               <th>Atendido Por</th>
-              <th>Ubicación / Tipo</th>
+              <th>Ubicación / Mesa</th>
               <th>Hora</th>
               <th>Estado</th>
               <th>Monto</th>
@@ -452,7 +446,7 @@
             } @empty {
               <tr>
                 <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px;">
-                  No hay transacciones registradas con este filtro.
+                  No hay pedidos registrados en el sistema.
                 </td>
               </tr>
             }
@@ -488,14 +482,14 @@
           </h3>
           <span class="card-subtitle">
             @if (role() === 'Cocinero') { Existencias críticas de despensa }
-            @else { Favoritos del menú }
+            @else { Favoritos del menú (Histórico real) }
           </span>
         </div>
       </div>
 
-      @if (role() === 'Cocinero' && insumosCriticos().length > 0) {
+      @if (role() === 'Cocinero') {
         <div class="top-dishes-stack">
-          @for (ing of insumosCriticos().slice(0, 5); track ing.id_ingrediente) {
+          @for (ing of (cocinaStats()?.insumos_criticos || insumosCriticos()).slice(0, 5); track ing.id_ingrediente) {
             <div class="top-dish-item">
               <span class="dish-rank" style="color: var(--rose); border-color: var(--rose-border);">!</span>
               <div class="dish-meta">
@@ -504,21 +498,20 @@
                   <span class="dish-count" style="color: var(--rose);">{{ ing.stock_actual }} {{ ing.unidad_medida }}</span>
                 </div>
                 <div class="dish-progress-track">
-                  <div class="dish-progress-fill" style="background: var(--rose);" [style.width]="(ing.stock_actual <= 5 ? 25 : 50) + '%'"></div>
+                  <div class="dish-progress-fill" style="background: var(--rose);" [style.width]="(ing.stock_actual <= 5 ? 25 : 60) + '%'"></div>
                 </div>
               </div>
+            </div>
+          } @empty {
+            <div style="padding: 20px 0; text-align: center; color: var(--text-muted); font-size: 0.85rem;">
+              <i class="pi pi-check-circle" style="color: var(--emerald); margin-right: 6px;"></i>
+              Todos los ingredientes tienen stock suficiente.
             </div>
           }
         </div>
       } @else {
         <div class="top-dishes-stack">
-          @for (p of (productosTop().length ? productosTop() : [
-            { nombre_producto: 'Hamburguesa Artesanal Pro', total_vendido: 45 },
-            { nombre_producto: 'Pizza Cuatro Quesos', total_vendido: 38 },
-            { nombre_producto: 'Limonada Imperial', total_vendido: 31 },
-            { nombre_producto: 'Pasta Fettuccine Alfredo', total_vendido: 26 },
-            { nombre_producto: 'Cheesecake de Frutos Rojos', total_vendido: 20 }
-          ]); track p.nombre_producto; let i = $index) {
+          @for (p of (adminStats()?.platillos_top || []); track p.nombre_producto; let i = $index) {
             <div class="top-dish-item">
               <span class="dish-rank">{{ i + 1 }}</span>
               <div class="dish-meta">
@@ -531,6 +524,10 @@
                 </div>
               </div>
             </div>
+          } @empty {
+            <div style="padding: 20px 0; text-align: center; color: var(--text-muted); font-size: 0.85rem;">
+              No hay registros de pedidos aún.
+            </div>
           }
         </div>
       }
@@ -542,24 +539,16 @@
           <a routerLink="/mesas" class="floor-link">Ver Plano <i class="pi pi-arrow-right"></i></a>
         </div>
         <div class="mini-mesas-grid">
-          @for (m of (mesas().length ? mesas().slice(0, 10) : [
-            { id_mesa: 1, numero_mesa: 1, estado: 'Libre' },
-            { id_mesa: 2, numero_mesa: 2, estado: 'Ocupada' },
-            { id_mesa: 3, numero_mesa: 3, estado: 'Libre' },
-            { id_mesa: 4, numero_mesa: 4, estado: 'Ocupada' },
-            { id_mesa: 5, numero_mesa: 5, estado: 'Reservada' },
-            { id_mesa: 6, numero_mesa: 6, estado: 'Libre' },
-            { id_mesa: 7, numero_mesa: 7, estado: 'Libre' },
-            { id_mesa: 8, numero_mesa: 8, estado: 'Ocupada' }
-          ]); track m.id_mesa) {
-            <div class="mini-mesa-pill" [class]="'pill-mesa-' + m.estado.toLowerCase()">
+          @for (m of mesas().slice(0, 10); track m.id_mesa) {
+            <div class="mini-mesa-pill" [class]="'pill-mesa-' + (m.estado || 'Libre').toLowerCase()">
               <span class="m-num">M{{ m.numero_mesa }}</span>
               <span class="m-dot"></span>
             </div>
+          } @empty {
+            <span style="font-size: 0.8rem; color: var(--text-muted);">Sin mesas configuradas</span>
           }
         </div>
       </div>
     </div>
   </section>
 </div>
-
