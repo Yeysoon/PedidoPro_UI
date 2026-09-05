@@ -1,10 +1,11 @@
-import { Component, signal, OnInit } from '@angular/core';
+import { Component, signal, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MenuService } from '../../core/services/menu.service';
 import { PedidosService } from '../../core/services/pedidos.service';
+import { MesasService } from '../../core/services/mesas.service';
 import { AlertService } from '../../core/services/alert.service';
-import { Producto, Categoria, DetallePedido } from '../../core/models';
+import { Producto, Categoria, DetallePedido, Mesa } from '../../core/models';
 
 @Component({
   selector: 'app-pedidos',
@@ -14,8 +15,16 @@ import { Producto, Categoria, DetallePedido } from '../../core/models';
   styleUrl: './pedidos.component.scss'
 })
 export class PedidosComponent implements OnInit {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private menuSvc = inject(MenuService);
+  private pedidosSvc = inject(PedidosService);
+  private mesasSvc = inject(MesasService);
+  private alert = inject(AlertService);
+
   mesaId  = signal(0);
   mesaNum = signal(0);
+  mesas   = signal<Mesa[]>([]);
   productos = signal<Producto[]>([]);
   categorias = signal<Categoria[]>([]);
   carrito   = signal<DetallePedido[]>([]);
@@ -33,21 +42,48 @@ export class PedidosComponent implements OnInit {
   total = () => this.carrito().reduce((s, d) => s + ((d.precio_unitario_historico ?? 0) * d.cantidad), 0);
   cantTotal = () => this.carrito().reduce((s, d) => s + d.cantidad, 0);
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private menuSvc: MenuService,
-    private pedidosSvc: PedidosService,
-    private alert: AlertService
-  ) {}
-
   ngOnInit() {
-    this.route.queryParams.subscribe(p => {
-      this.mesaId.set(+p['mesa'] || 0);
-      this.mesaNum.set(+p['num'] || 0);
+    this.mesasSvc.getMesas().subscribe({
+      next: (m: Mesa[]) => {
+        this.mesas.set(m);
+        // Si no se pasó mesa por query param, preseleccionar la primera mesa libre si existe
+        if (!this.mesaId() && m.length > 0) {
+          const libre = m.find(x => x.estado === 'Libre') || m[0];
+          if (libre) {
+            this.mesaId.set(libre.id_mesa);
+            this.mesaNum.set(libre.numero_mesa);
+          }
+        }
+      }
     });
-    this.menuSvc.getMenu().subscribe({ next: p => { this.productos.set(p); this.loading.set(false); } });
-    this.menuSvc.getCategorias().subscribe({ next: c => this.categorias.set(c) });
+
+    this.route.queryParams.subscribe(p => {
+      const qMesa = +p['mesa'] || 0;
+      const qNum = +p['num'] || 0;
+      if (qMesa) {
+        this.mesaId.set(qMesa);
+        this.mesaNum.set(qNum);
+      }
+    });
+
+    this.menuSvc.getMenu().subscribe({
+      next: p => {
+        this.productos.set(p);
+        this.loading.set(false);
+      },
+      error: () => this.loading.set(false)
+    });
+
+    this.menuSvc.getCategorias().subscribe({
+      next: c => this.categorias.set(c)
+    });
+  }
+
+  onSelectMesa(id: any) {
+    const mId = Number(id);
+    this.mesaId.set(mId);
+    const found = this.mesas().find(m => m.id_mesa === mId);
+    this.mesaNum.set(found ? found.numero_mesa : 0);
   }
 
   agregar(p: Producto) {
@@ -92,7 +128,7 @@ export class PedidosComponent implements OnInit {
 
   enviar() {
     if (!this.mesaId()) {
-      this.alert.warningToast('Selecciona una mesa antes de enviar');
+      this.alert.warningToast('Por favor selecciona una mesa para la orden');
       return;
     }
     if (!this.carrito().length) {
@@ -111,13 +147,14 @@ export class PedidosComponent implements OnInit {
       }))
     }).subscribe({
       next: () => {
-        this.alert.success('Comanda Enviada', `La orden para la Mesa ${this.mesaNum()} fue enviada a Cocina.`);
+        this.alert.success('Comanda Enviada', `La orden para la Mesa ${this.mesaNum() || this.mesaId()} fue enviada a Cocina.`);
         this.carrito.set([]);
+        this.notas.set('');
         this.sending.set(false);
         setTimeout(() => this.router.navigate(['/mesas']), 400);
       },
       error: e => {
-        this.alert.error('Error al enviar comanda', e.error?.message);
+        this.alert.error('Error al enviar comanda', e.error?.message || 'No se pudo registrar la comanda');
         this.sending.set(false);
       }
     });

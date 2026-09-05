@@ -196,6 +196,37 @@
     }
   }
 
+  .mesa-select-box {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px 12px;
+    background: var(--surface-subtle);
+    border: 1px solid var(--surface-border);
+    border-radius: var(--radius-sm);
+
+    label {
+      font-size: 0.74rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+
+      i {
+        color: var(--accent-gold);
+      }
+    }
+
+    .mesa-dropdown {
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 8px 10px;
+    }
+  }
+
   .carrito-empty {
     display: flex;
     flex-direction: column;
