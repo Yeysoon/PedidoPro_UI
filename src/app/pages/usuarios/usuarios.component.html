@@ -165,17 +165,17 @@
       <div class="form-grid">
         <div class="form-group full">
           <label>Nombre Completo *</label>
-          <input class="form-control" [value]="editItem().nombre || ''" (input)="updateField('nombre', $any($event.target).value)" placeholder="Ej. Juan Pérez"/>
+          <input class="form-control" [ngModel]="editItem().nombre || ''" (ngModelChange)="updateField('nombre', $event)" placeholder="Ej. Juan Pérez"/>
         </div>
 
         <div class="form-group full">
           <label>Correo Electrónico *</label>
-          <input class="form-control" type="email" [value]="editItem().email || ''" (input)="updateField('email', $any($event.target).value)" placeholder="Ej. usuario@pedidopro.com"/>
+          <input class="form-control" type="email" [ngModel]="editItem().email || ''" (ngModelChange)="updateField('email', $event)" placeholder="Ej. usuario@pedidopro.com"/>
         </div>
 
         <div class="form-group full">
           <label>Rol Asignado *</label>
-          <select class="form-control" [value]="editItem().id_rol || 1" (change)="updateField('id_rol', +$any($event.target).value)">
+          <select class="form-control" [ngModel]="editItem().id_rol" (ngModelChange)="updateField('id_rol', +$event)">
             @for (r of roles(); track r.id_rol) {
               <option [value]="r.id_rol">{{ r.nombre_rol }}</option>
             }
@@ -185,7 +185,7 @@
         @if (!isEdit()) {
           <div class="form-group full">
             <label>Contraseña de Acceso *</label>
-            <input class="form-control" type="password" [value]="editItem().password || ''" (input)="updateField('password', $any($event.target).value)" placeholder="•••••••• (mínimo 6 caracteres)"/>
+            <input class="form-control" type="password" [ngModel]="editItem().password || ''" (ngModelChange)="updateField('password', $event)" placeholder="•••••••• (mínimo 6 caracteres)"/>
           </div>
         } @else {
           <div class="form-group full" style="padding-top: 6px;">

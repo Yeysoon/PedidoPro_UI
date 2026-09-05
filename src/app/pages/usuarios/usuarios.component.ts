@@ -75,11 +75,12 @@ export class UsuariosComponent implements OnInit {
 
   // --- GESTIÓN DE USUARIOS ---
   openCreate() {
+    const firstRolId = this.roles()[0]?.id_rol ? Number(this.roles()[0].id_rol) : 1;
     this.editItem.set({
       nombre: '',
       email: '',
       password: '',
-      id_rol: this.roles()[0]?.id_rol || 1,
+      id_rol: firstRolId,
       activo: 1
     });
     this.isEdit.set(false);
@@ -87,11 +88,21 @@ export class UsuariosComponent implements OnInit {
   }
 
   openEdit(u: any) {
+    let rolId = u.id_rol;
+    if (!rolId && (u.nombre_rol || u.rol)) {
+      const targetName = u.nombre_rol || u.rol;
+      const found = this.roles().find(r => r.nombre_rol?.toLowerCase() === targetName?.toLowerCase());
+      if (found) rolId = found.id_rol;
+    }
+    if (!rolId && this.roles().length > 0) {
+      rolId = this.roles()[0].id_rol;
+    }
+
     this.editItem.set({
       id_usuario: u.id_usuario,
       nombre: u.nombre,
       email: u.email,
-      id_rol: u.id_rol || this.roles().find(r => r.nombre_rol === u.nombre_rol)?.id_rol || 1,
+      id_rol: Number(rolId || 1),
       activo: u.activo
     });
     this.isEdit.set(true);

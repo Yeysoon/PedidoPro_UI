@@ -85,7 +85,7 @@
       <div class="form-grid">
         <div class="form-group">
           <label>Método de Pago</label>
-          <select class="form-control" [value]="factura().id_metodo_pago" (change)="updateFact('id_metodo_pago', +$any($event.target).value)">
+          <select class="form-control" [ngModel]="factura().id_metodo_pago" (ngModelChange)="updateFact('id_metodo_pago', +$event)">
             @for (m of metodos(); track m.id) {
               <option [value]="m.id">{{ m.nombre_metodo }}</option>
             }

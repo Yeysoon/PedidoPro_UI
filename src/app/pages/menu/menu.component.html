@@ -109,7 +109,7 @@
 
         <div class="form-group">
           <label>Categoría</label>
-          <select class="form-control" [value]="editProd().id_categoria || (categorias()[0]?.id_categoria || 1)" (change)="update('id_categoria', +$any($event.target).value)">
+          <select class="form-control" [ngModel]="editProd().id_categoria" (ngModelChange)="update('id_categoria', +$event)">
             @for (c of categorias(); track c.id_categoria) {
               <option [value]="c.id_categoria">{{ c.nombre_categoria }}</option>
             }
