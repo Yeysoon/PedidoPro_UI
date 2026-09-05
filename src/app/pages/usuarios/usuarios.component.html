@@ -177,7 +177,7 @@
           <label>Rol Asignado *</label>
           <select class="form-control" [ngModel]="editItem().id_rol" (ngModelChange)="updateField('id_rol', +$event)">
             @for (r of roles(); track r.id_rol) {
-              <option [value]="r.id_rol">{{ r.nombre_rol }}</option>
+              <option [ngValue]="r.id_rol">{{ r.nombre_rol }}</option>
             }
           </select>
         </div>
