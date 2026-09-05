@@ -39,8 +39,8 @@ export class LoginComponent implements AfterViewInit, OnDestroy {
 
   isDark = computed(() => this.themeService.isDark());
 
-  email = 'admin@pedidopro.com';
-  password = 'admin123';
+  email = '';
+  password = '';
   loading = signal(false);
   showPwd = signal(false);
 
