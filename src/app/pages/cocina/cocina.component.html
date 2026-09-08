@@ -1,8 +1,17 @@
 <div class="fade-in cocina-page">
+  <!-- Encabezado de la página -->
   <div class="page-header">
     <div class="header-left">
       <h1>Tablero Kanban de <span class="highlight">Cocina</span></h1>
-      <span class="header-subtitle">Control de tiempos y flujo de comandas por estados: arrastra o mueve cada orden.</span>
+      <span class="header-subtitle">
+        @if (isCocinero()) {
+          Modo Cocinero: gestiona comandas desde <strong>Pendientes</strong> hasta <strong>Listo para servir</strong>.
+        } @else if (isMesero()) {
+          Modo Mesero: gestiona pedidos desde <strong>Listo para servir</strong> hasta <strong>Servido en Mesa</strong>.
+        } @else {
+          Control general de comandas por estados. Arrastra las tarjetas o usa las acciones rápidas.
+        }
+      </span>
     </div>
     <div class="header-actions">
       <button class="btn btn-ghost btn-sm" (click)="load(true)" title="Recargar comandas">
@@ -11,7 +20,7 @@
       </button>
       <div class="auto-refresh-pill">
         <span class="pulse-dot"></span>
-        <span>En Vivo (10s)</span>
+        <span>En Vivo (8s)</span>
       </div>
     </div>
   </div>
@@ -22,21 +31,25 @@
       <p>Cargando tablero Kanban de cocina...</p>
     </div>
   } @else {
-    <!-- TABLERO KANBAN DE 3 COLUMNAS -->
+    <!-- TABLERO KANBAN DE 4 COLUMNAS -->
     <div class="kanban-board">
 
-      <!-- COLUMNA 1: PENDIENTE -->
+      <!-- ========================================= -->
+      <!-- COLUMNA 1: PENDIENTES POR INICIAR -->
+      <!-- ========================================= -->
       <div
         class="kanban-column col-pendiente"
-        (dragover)="onDragOver($event)"
+        [class.drag-over]="dragOverColId() === 1"
+        (dragover)="onDragOver($event, 1)"
+        (dragleave)="onDragLeave($event)"
         (drop)="onDrop($event, 1)"
       >
-        <div class="column-header">
+        <div class="column-header header-pendiente">
           <div class="col-title-group">
             <span class="col-dot dot-amber"></span>
-            <h3>Pendiente</h3>
+            <span class="col-title">Pendientes por iniciar</span>
           </div>
-          <span class="col-counter counter-amber">{{ pendientesCount() }}</span>
+          <span class="col-badge badge-amber">{{ pendientesCount() }}/{{ totalCount() }}</span>
         </div>
 
         <div class="column-cards-container">
@@ -48,54 +61,70 @@
           } @else {
             @for (c of pendientesList(); track c.id_pedido) {
               <div
-                class="kanban-card card-pendiente glass-card"
+                class="kanban-card card-pendiente"
                 draggable="true"
                 (dragstart)="onDragStart($event, c)"
                 (dragend)="onDragEnd()"
               >
-                <div class="card-header">
-                  <div class="mesa-badge">
-                    <i class="pi pi-table"></i>
-                    <strong>Mesa {{ c.numero_mesa }}</strong>
-                  </div>
-                  <div class="time-badge">
-                    <i class="pi pi-clock"></i>
-                    <span>{{ tiempoTranscurrido(c.fecha_hora_creacion) }}</span>
-                  </div>
-                </div>
+                <div class="card-color-stripe stripe-amber"></div>
 
-                <div class="card-sub-header">
-                  <span class="comanda-id">Orden #{{ c.id_pedido }}</span>
-                  @if (c.mesero) {
-                    <span class="mesero-tag"><i class="pi pi-user"></i> {{ c.mesero }}</span>
-                  }
-                </div>
-
-                @if (c.notas_generales) {
-                  <div class="card-notes">
-                    <i class="pi pi-info-circle"></i>
-                    <span>{{ c.notas_generales }}</span>
+                <div class="card-main-content">
+                  <div class="card-header-line">
+                    <div class="card-title-wrap">
+                      <span class="status-indicator-dot dot-red"></span>
+                      <h3 class="card-title">Mesa {{ c.numero_mesa }} | Comanda #{{ c.id_pedido }}</h3>
+                    </div>
                   </div>
-                }
 
-                <div class="card-items">
-                  @for (d of c.detalles; track d.id_detalle || d.id_producto) {
-                    <div class="item-line">
-                      <span class="qty-pill">{{ d.cantidad }}x</span>
-                      <span class="item-text">{{ d.nombre_producto }}</span>
-                      @if (d.notas_especiales) {
-                        <span class="item-spec">{{ d.notas_especiales }}</span>
-                      }
+                  <div class="card-subtitle-line">
+                    <span class="waiter-name">Mesero: {{ c.mesero || 'Mesero Asignado' }}</span>
+                  </div>
+
+                  <div class="card-meta-line">
+                    <div class="time-container">
+                      <i class="pi pi-calendar"></i>
+                      <span class="date-text">{{ formatearFechaHora(c.fecha_hora_creacion) }}</span>
+                      <span class="elapsed-badge elapsed-amber">
+                        <i class="pi pi-clock"></i>
+                        {{ tiempoTranscurrido(c.fecha_hora_creacion) }}
+                      </span>
+                    </div>
+                    @if (c.mesero) {
+                      <div class="waiter-avatar" [style.background-color]="getAvatarColor(c.mesero)" [title]="'Mesero: ' + c.mesero">
+                        {{ getInitials(c.mesero) }}
+                      </div>
+                    }
+                  </div>
+
+                  @if (c.notas_generales) {
+                    <div class="card-note-box">
+                      <i class="pi pi-info-circle"></i>
+                      <span>{{ c.notas_generales }}</span>
                     </div>
                   }
-                </div>
 
-                <div class="card-actions">
-                  <button class="btn btn-action btn-start" (click)="cambiarEstado(c, 2)" title="Pasar a En Preparación">
-                    <i class="pi pi-play"></i>
-                    <span>Iniciar Preparación</span>
-                    <i class="pi pi-arrow-right"></i>
-                  </button>
+                  <div class="card-dishes-list">
+                    @for (d of c.detalles; track d.id_detalle || d.id_producto) {
+                      <div class="dish-item">
+                        <span class="dish-qty qty-amber">{{ d.cantidad }}x</span>
+                        <span class="dish-name">{{ d.nombre_producto }}</span>
+                        @if (d.notas_especiales) {
+                          <span class="dish-spec">{{ d.notas_especiales }}</span>
+                        }
+                      </div>
+                    }
+                  </div>
+
+                  <!-- Botones según rol -->
+                  @if (isCocinero() || isAdmin()) {
+                    <div class="card-bottom-actions">
+                      <button class="btn-card btn-forward-amber" (click)="cambiarEstado(c, 2)" title="Iniciar Preparación">
+                        <i class="pi pi-play"></i>
+                        <span>Iniciar Preparación</span>
+                        <i class="pi pi-arrow-right"></i>
+                      </button>
+                    </div>
+                  }
                 </div>
               </div>
             }
@@ -103,81 +132,100 @@
         </div>
       </div>
 
-      <!-- COLUMNA 2: EN PREPARACIÓN / EN CURSO -->
+      <!-- ========================================= -->
+      <!-- COLUMNA 2: PREPARÁNDOSE -->
+      <!-- ========================================= -->
       <div
         class="kanban-column col-preparando"
-        (dragover)="onDragOver($event)"
+        [class.drag-over]="dragOverColId() === 2"
+        (dragover)="onDragOver($event, 2)"
+        (dragleave)="onDragLeave($event)"
         (drop)="onDrop($event, 2)"
       >
-        <div class="column-header">
+        <div class="column-header header-preparando">
           <div class="col-title-group">
             <span class="col-dot dot-sky"></span>
-            <h3>En Preparación</h3>
+            <span class="col-title">Preparándose</span>
           </div>
-          <span class="col-counter counter-sky">{{ preparandoCount() }}</span>
+          <span class="col-badge badge-sky">{{ preparandoCount() }}/{{ totalCount() }}</span>
         </div>
 
         <div class="column-cards-container">
           @if (!preparandoList().length) {
             <div class="column-empty">
-              <i class="pi pi-hourglass"></i>
+              <i class="pi pi-spin pi-spinner"></i>
               <p>Sin comandas en preparación</p>
             </div>
           } @else {
             @for (c of preparandoList(); track c.id_pedido) {
               <div
-                class="kanban-card card-preparando glass-card"
+                class="kanban-card card-preparando"
                 draggable="true"
                 (dragstart)="onDragStart($event, c)"
                 (dragend)="onDragEnd()"
               >
-                <div class="card-header">
-                  <div class="mesa-badge">
-                    <i class="pi pi-table"></i>
-                    <strong>Mesa {{ c.numero_mesa }}</strong>
-                  </div>
-                  <div class="time-badge time-active">
-                    <i class="pi pi-spin pi-spinner"></i>
-                    <span>{{ tiempoTranscurrido(c.fecha_hora_creacion) }}</span>
-                  </div>
-                </div>
+                <div class="card-color-stripe stripe-sky"></div>
 
-                <div class="card-sub-header">
-                  <span class="comanda-id">Orden #{{ c.id_pedido }}</span>
-                  @if (c.mesero) {
-                    <span class="mesero-tag"><i class="pi pi-user"></i> {{ c.mesero }}</span>
-                  }
-                </div>
-
-                @if (c.notas_generales) {
-                  <div class="card-notes">
-                    <i class="pi pi-info-circle"></i>
-                    <span>{{ c.notas_generales }}</span>
+                <div class="card-main-content">
+                  <div class="card-header-line">
+                    <div class="card-title-wrap">
+                      <span class="status-indicator-dot dot-sky"></span>
+                      <h3 class="card-title">Mesa {{ c.numero_mesa }} | Comanda #{{ c.id_pedido }}</h3>
+                    </div>
                   </div>
-                }
 
-                <div class="card-items">
-                  @for (d of c.detalles; track d.id_detalle || d.id_producto) {
-                    <div class="item-line">
-                      <span class="qty-pill">{{ d.cantidad }}x</span>
-                      <span class="item-text">{{ d.nombre_producto }}</span>
-                      @if (d.notas_especiales) {
-                        <span class="item-spec">{{ d.notas_especiales }}</span>
-                      }
+                  <div class="card-subtitle-line">
+                    <span class="waiter-name">Mesero: {{ c.mesero || 'Mesero Asignado' }}</span>
+                  </div>
+
+                  <div class="card-meta-line">
+                    <div class="time-container">
+                      <i class="pi pi-calendar"></i>
+                      <span class="date-text">{{ formatearFechaHora(c.fecha_hora_creacion) }}</span>
+                      <span class="elapsed-badge elapsed-sky">
+                        <i class="pi pi-spin pi-spinner"></i>
+                        {{ tiempoTranscurrido(c.fecha_hora_creacion) }}
+                      </span>
+                    </div>
+                    @if (c.mesero) {
+                      <div class="waiter-avatar" [style.background-color]="getAvatarColor(c.mesero)" [title]="'Mesero: ' + c.mesero">
+                        {{ getInitials(c.mesero) }}
+                      </div>
+                    }
+                  </div>
+
+                  @if (c.notas_generales) {
+                    <div class="card-note-box note-sky">
+                      <i class="pi pi-info-circle"></i>
+                      <span>{{ c.notas_generales }}</span>
                     </div>
                   }
-                </div>
 
-                <div class="card-actions split-actions">
-                  <button class="btn btn-action btn-back" (click)="cambiarEstado(c, 1)" title="Regresar a Pendiente">
-                    <i class="pi pi-arrow-left"></i>
-                    <span>Pendiente</span>
-                  </button>
-                  <button class="btn btn-action btn-done" (click)="cambiarEstado(c, 3)" title="Marcar como Listo">
-                    <i class="pi pi-check"></i>
-                    <span>Marcar Listo</span>
-                    <i class="pi pi-arrow-right"></i>
-                  </button>
+                  <div class="card-dishes-list">
+                    @for (d of c.detalles; track d.id_detalle || d.id_producto) {
+                      <div class="dish-item">
+                        <span class="dish-qty qty-sky">{{ d.cantidad }}x</span>
+                        <span class="dish-name">{{ d.nombre_producto }}</span>
+                        @if (d.notas_especiales) {
+                          <span class="dish-spec">{{ d.notas_especiales }}</span>
+                        }
+                      </div>
+                    }
+                  </div>
+
+                  @if (isCocinero() || isAdmin()) {
+                    <div class="card-bottom-actions split-two">
+                      <button class="btn-card btn-back" (click)="cambiarEstado(c, 1)" title="Regresar a Pendiente">
+                        <i class="pi pi-arrow-left"></i>
+                        <span>Pendiente</span>
+                      </button>
+                      <button class="btn-card btn-forward-emerald" (click)="cambiarEstado(c, 3)" title="Marcar como Listo">
+                        <i class="pi pi-check"></i>
+                        <span>Listo</span>
+                        <i class="pi pi-arrow-right"></i>
+                      </button>
+                    </div>
+                  }
                 </div>
               </div>
             }
@@ -185,73 +233,190 @@
         </div>
       </div>
 
-      <!-- COLUMNA 3: LISTO / HECHO -->
+      <!-- ========================================= -->
+      <!-- COLUMNA 3: LISTO PARA SERVIR -->
+      <!-- ========================================= -->
       <div
         class="kanban-column col-listo"
-        (dragover)="onDragOver($event)"
+        [class.drag-over]="dragOverColId() === 3"
+        (dragover)="onDragOver($event, 3)"
+        (dragleave)="onDragLeave($event)"
         (drop)="onDrop($event, 3)"
       >
-        <div class="column-header">
+        <div class="column-header header-listo">
           <div class="col-title-group">
             <span class="col-dot dot-emerald"></span>
-            <h3>Listo / Despacho</h3>
+            <span class="col-title">Listo para servir</span>
           </div>
-          <span class="col-counter counter-emerald">{{ listosCount() }}</span>
+          <span class="col-badge badge-emerald">{{ listosCount() }}/{{ totalCount() }}</span>
         </div>
 
         <div class="column-cards-container">
           @if (!listosList().length) {
             <div class="column-empty">
               <i class="pi pi-check-circle"></i>
-              <p>Sin pedidos listos pendientes de entrega</p>
+              <p>Sin pedidos por servir</p>
             </div>
           } @else {
             @for (c of listosList(); track c.id_pedido) {
               <div
-                class="kanban-card card-listo glass-card"
+                class="kanban-card card-listo"
                 draggable="true"
                 (dragstart)="onDragStart($event, c)"
                 (dragend)="onDragEnd()"
               >
-                <div class="card-header">
-                  <div class="mesa-badge badge-ready">
-                    <i class="pi pi-check-circle"></i>
-                    <strong>Mesa {{ c.numero_mesa }}</strong>
-                  </div>
-                  <div class="time-badge time-ready">
-                    <i class="pi pi-bell"></i>
-                    <span>Listo</span>
-                  </div>
-                </div>
+                <div class="card-color-stripe stripe-emerald"></div>
 
-                <div class="card-sub-header">
-                  <span class="comanda-id">Orden #{{ c.id_pedido }}</span>
-                  @if (c.mesero) {
-                    <span class="mesero-tag"><i class="pi pi-user"></i> {{ c.mesero }}</span>
-                  }
-                </div>
-
-                @if (c.notas_generales) {
-                  <div class="card-notes">
-                    <i class="pi pi-info-circle"></i>
-                    <span>{{ c.notas_generales }}</span>
+                <div class="card-main-content">
+                  <div class="card-header-line">
+                    <div class="card-title-wrap">
+                      <span class="status-indicator-dot dot-emerald"></span>
+                      <h3 class="card-title">Mesa {{ c.numero_mesa }} | Comanda #{{ c.id_pedido }}</h3>
+                    </div>
                   </div>
-                }
 
-                <div class="card-items">
-                  @for (d of c.detalles; track d.id_detalle || d.id_producto) {
-                    <div class="item-line">
-                      <span class="qty-pill pill-ready">{{ d.cantidad }}x</span>
-                      <span class="item-text">{{ d.nombre_producto }}</span>
+                  <div class="card-subtitle-line">
+                    <span class="waiter-name">Mesero: {{ c.mesero || 'Mesero Asignado' }}</span>
+                  </div>
+
+                  <div class="card-meta-line">
+                    <div class="time-container">
+                      <i class="pi pi-calendar"></i>
+                      <span class="date-text">{{ formatearFechaHora(c.fecha_hora_creacion) }}</span>
+                      <span class="elapsed-badge elapsed-emerald">
+                        <i class="pi pi-bell"></i> Listo para mesa
+                      </span>
+                    </div>
+                    @if (c.mesero) {
+                      <div class="waiter-avatar" [style.background-color]="getAvatarColor(c.mesero)" [title]="'Mesero: ' + c.mesero">
+                        {{ getInitials(c.mesero) }}
+                      </div>
+                    }
+                  </div>
+
+                  @if (c.notas_generales) {
+                    <div class="card-note-box note-emerald">
+                      <i class="pi pi-info-circle"></i>
+                      <span>{{ c.notas_generales }}</span>
                     </div>
                   }
-                </div>
 
-                <div class="card-actions">
-                  <button class="btn btn-action btn-back" (click)="cambiarEstado(c, 2)" title="Regresar a Preparación">
-                    <i class="pi pi-arrow-left"></i>
-                    <span>Regresar a Preparación</span>
-                  </button>
+                  <div class="card-dishes-list">
+                    @for (d of c.detalles; track d.id_detalle || d.id_producto) {
+                      <div class="dish-item">
+                        <span class="dish-qty qty-emerald">{{ d.cantidad }}x</span>
+                        <span class="dish-name">{{ d.nombre_producto }}</span>
+                      </div>
+                    }
+                  </div>
+
+                  <div class="card-bottom-actions" [class.split-two]="isCocinero() || isAdmin()">
+                    @if (isCocinero() || isAdmin()) {
+                      <button class="btn-card btn-back" (click)="cambiarEstado(c, 2)" title="Regresar a Preparándose">
+                        <i class="pi pi-arrow-left"></i>
+                        <span>Cocinar</span>
+                      </button>
+                    }
+                    @if (isMesero() || isAdmin()) {
+                      <button class="btn-card btn-forward-purple" (click)="cambiarEstado(c, 4)" title="Pasar a Servido en Mesa">
+                        <i class="pi pi-send"></i>
+                        <span>Servir en Mesa</span>
+                        <i class="pi pi-arrow-right"></i>
+                      </button>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+          }
+        </div>
+      </div>
+
+      <!-- ========================================= -->
+      <!-- COLUMNA 4: SERVIDO EN MESA -->
+      <!-- ========================================= -->
+      <div
+        class="kanban-column col-servido"
+        [class.drag-over]="dragOverColId() === 4"
+        (dragover)="onDragOver($event, 4)"
+        (dragleave)="onDragLeave($event)"
+        (drop)="onDrop($event, 4)"
+      >
+        <div class="column-header header-servido">
+          <div class="col-title-group">
+            <span class="col-dot dot-purple"></span>
+            <span class="col-title">Servido en Mesa</span>
+          </div>
+          <span class="col-badge badge-purple">{{ servidosCount() }}/{{ totalCount() }}</span>
+        </div>
+
+        <div class="column-cards-container">
+          @if (!servidosList().length) {
+            <div class="column-empty">
+              <i class="pi pi-users"></i>
+              <p>Sin pedidos servidos</p>
+            </div>
+          } @else {
+            @for (c of servidosList(); track c.id_pedido) {
+              <div
+                class="kanban-card card-servido"
+                draggable="true"
+                (dragstart)="onDragStart($event, c)"
+                (dragend)="onDragEnd()"
+              >
+                <div class="card-color-stripe stripe-purple"></div>
+
+                <div class="card-main-content">
+                  <div class="card-header-line">
+                    <div class="card-title-wrap">
+                      <span class="status-indicator-dot dot-purple"></span>
+                      <h3 class="card-title">Mesa {{ c.numero_mesa }} | Comanda #{{ c.id_pedido }}</h3>
+                    </div>
+                  </div>
+
+                  <div class="card-subtitle-line">
+                    <span class="waiter-name">Mesero: {{ c.mesero || 'Mesero Asignado' }}</span>
+                  </div>
+
+                  <div class="card-meta-line">
+                    <div class="time-container">
+                      <i class="pi pi-calendar"></i>
+                      <span class="date-text">{{ formatearFechaHora(c.fecha_hora_creacion) }}</span>
+                      <span class="elapsed-badge elapsed-purple">
+                        <i class="pi pi-check"></i> Entregado
+                      </span>
+                    </div>
+                    @if (c.mesero) {
+                      <div class="waiter-avatar" [style.background-color]="getAvatarColor(c.mesero)" [title]="'Mesero: ' + c.mesero">
+                        {{ getInitials(c.mesero) }}
+                      </div>
+                    }
+                  </div>
+
+                  @if (c.notas_generales) {
+                    <div class="card-note-box note-purple">
+                      <i class="pi pi-info-circle"></i>
+                      <span>{{ c.notas_generales }}</span>
+                    </div>
+                  }
+
+                  <div class="card-dishes-list">
+                    @for (d of c.detalles; track d.id_detalle || d.id_producto) {
+                      <div class="dish-item">
+                        <span class="dish-qty qty-purple">{{ d.cantidad }}x</span>
+                        <span class="dish-name">{{ d.nombre_producto }}</span>
+                      </div>
+                    }
+                  </div>
+
+                  @if (isMesero() || isAdmin()) {
+                    <div class="card-bottom-actions">
+                      <button class="btn-card btn-back" (click)="cambiarEstado(c, 3)" title="Regresar a Listo para servir">
+                        <i class="pi pi-arrow-left"></i>
+                        <span>Regresar a Listo</span>
+                      </button>
+                    </div>
+                  }
                 </div>
               </div>
             }

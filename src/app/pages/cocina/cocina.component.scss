@@ -1,9 +1,9 @@
 .cocina-page {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  height: calc(100vh - 175px);
-  max-height: calc(100vh - 175px);
+  gap: 14px;
+  height: calc(100vh - 120px);
+  max-height: calc(100vh - 120px);
   overflow: hidden;
 }
 
@@ -13,7 +13,7 @@
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 14px;
+  gap: 12px;
 
   .header-actions {
     display: flex;
@@ -38,7 +38,7 @@
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: var(--emerald);
+    background: #10b981;
     box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
     animation: pulse 2s infinite;
   }
@@ -75,21 +75,28 @@
 }
 
 // ----------------------------------------------------
-// KANBAN BOARD 3-COLUMN GRID
+// TABLERO KANBAN (4 COLUMNAS FLUIDAS Y SCROLL INDEPENDIENTE)
 // ----------------------------------------------------
 .kanban-board {
-  flex: 1;
+  flex: 1 1 0;
+  min-height: 0;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 18px;
+  grid-template-columns: repeat(4, minmax(280px, 1fr));
+  gap: 16px;
   align-items: stretch;
   height: 100%;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 6px;
 
-  @media (max-width: 1024px) {
-    grid-template-columns: 1fr;
+  @media (max-width: 1200px) {
+    grid-template-columns: repeat(2, 1fr);
     overflow-y: auto;
     height: auto;
+  }
+
+  @media (max-width: 650px) {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -98,32 +105,30 @@
   flex-direction: column;
   background: var(--surface-subtle);
   border: 1px solid var(--surface-border);
-  border-radius: var(--radius-md);
-  padding: 14px;
-  gap: 12px;
+  border-radius: 14px;
+  padding: 10px;
+  gap: 10px;
   height: 100%;
+  min-height: 0;
   overflow: hidden;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
 
-  &.col-pendiente {
-    border-top: 4px solid var(--amber, #f59e0b);
+  &.drag-over {
+    background: rgba(14, 165, 233, 0.08);
+    border-color: #0ea5e9;
+    box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.3);
   }
 
-  &.col-preparando {
-    border-top: 4px solid #0284c7;
-  }
-
-  &.col-listo {
-    border-top: 4px solid var(--emerald, #10b981);
-  }
-
+  // ENCABEZADOS DE COLUMNA
   .column-header {
     flex-shrink: 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--surface-border);
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-weight: 700;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 
     .col-title-group {
       display: flex;
@@ -131,58 +136,73 @@
       gap: 8px;
 
       .col-dot {
-        width: 10px;
-        height: 10px;
+        width: 8px;
+        height: 8px;
         border-radius: 50%;
 
-        &.dot-amber { background: #f59e0b; box-shadow: 0 0 8px rgba(245, 158, 11, 0.5); }
-        &.dot-sky { background: #0284c7; box-shadow: 0 0 8px rgba(2, 132, 199, 0.5); }
-        &.dot-emerald { background: #10b981; box-shadow: 0 0 8px rgba(16, 185, 129, 0.5); }
+        &.dot-amber   { background: #f59e0b; box-shadow: 0 0 6px #f59e0b; }
+        &.dot-sky     { background: #0284c7; box-shadow: 0 0 6px #0284c7; }
+        &.dot-emerald { background: #10b981; box-shadow: 0 0 6px #10b981; }
+        &.dot-purple  { background: #a855f7; box-shadow: 0 0 6px #a855f7; }
       }
 
-      h3 {
-        font-size: 0.95rem;
+      .col-title {
+        font-size: 0.86rem;
         font-weight: 700;
-        color: var(--text-color);
-        margin: 0;
-        letter-spacing: 0.02em;
+        letter-spacing: -0.01em;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
     }
 
-    .col-counter {
-      padding: 3px 10px;
-      border-radius: var(--radius-pill);
-      font-size: 0.76rem;
+    .col-badge {
+      padding: 3px 9px;
+      border-radius: 12px;
+      font-size: 0.74rem;
       font-weight: 800;
       font-family: var(--font-mono);
+      background: rgba(255, 255, 255, 0.7);
+    }
 
-      &.counter-amber {
-        background: rgba(245, 158, 11, 0.15);
-        color: #f59e0b;
-        border: 1px solid rgba(245, 158, 11, 0.3);
-      }
+    &.header-pendiente {
+      background: #fef08a;
+      color: #854d0e;
+      border: 1px solid #fde047;
+      .badge-amber { background: #fde047; color: #713f12; }
+    }
 
-      &.counter-sky {
-        background: rgba(2, 132, 199, 0.15);
-        color: #38bdf8;
-        border: 1px solid rgba(2, 132, 199, 0.3);
-      }
+    &.header-preparando {
+      background: #e0e7ff;
+      color: #3730a3;
+      border: 1px solid #c7d2fe;
+      .badge-sky { background: #c7d2fe; color: #312e81; }
+    }
 
-      &.counter-emerald {
-        background: rgba(16, 185, 129, 0.15);
-        color: #34d399;
-        border: 1px solid rgba(16, 185, 129, 0.3);
-      }
+    &.header-listo {
+      background: #dcfce7;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+      .badge-emerald { background: #bbf7d0; color: #14532d; }
+    }
+
+    &.header-servido {
+      background: #f3e8ff;
+      color: #6b21a8;
+      border: 1px solid #e9d5ff;
+      .badge-purple { background: #e9d5ff; color: #581c87; }
     }
   }
 
+  // CONTENEDOR DE TARJETAS CON SCROLL VERTICAL FLUIDO
   .column-cards-container {
+    flex: 1 1 0;
+    min-height: 0;
     display: flex;
     flex-direction: column;
     gap: 12px;
-    flex: 1;
     overflow-y: auto;
-    padding-right: 4px;
+    padding: 4px 6px 12px 2px;
     scrollbar-width: thin;
     scrollbar-color: var(--surface-border) transparent;
 
@@ -191,20 +211,21 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 10px;
-      padding: 60px 16px;
+      gap: 8px;
+      padding: 46px 12px;
       color: var(--text-muted);
-      border: 1px dashed var(--surface-border);
-      border-radius: var(--radius-sm);
-      margin-top: 10px;
+      border: 1.5px dashed var(--surface-border);
+      border-radius: 12px;
+      margin-top: 6px;
 
       i {
         font-size: 1.8rem;
-        opacity: 0.6;
+        opacity: 0.45;
       }
 
       p {
         font-size: 0.8rem;
+        font-weight: 500;
         margin: 0;
       }
     }
@@ -212,134 +233,216 @@
 }
 
 // ----------------------------------------------------
-// KANBAN CARDS
+// TARJETAS KANBAN (TAMAÑO NORMAL, SIN ENCOGERSE)
 // ----------------------------------------------------
 .kanban-card {
-  padding: 14px;
+  flex-shrink: 0; /* EVITA QUE SE APLASTEN LAS TARJETAS */
+  width: 100%;
   display: flex;
-  flex-direction: column;
-  gap: 10px;
-  border-radius: var(--radius-sm);
-  cursor: grab;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
-  user-select: none;
+  position: relative;
+  border-radius: 12px;
   background: var(--surface-card);
   border: 1px solid var(--surface-border);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.03);
+  cursor: grab;
+  overflow: hidden;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+  user-select: none;
+  box-sizing: border-box;
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    border-color: rgba(14, 165, 233, 0.4);
   }
 
   &:active {
     cursor: grabbing;
+    transform: scale(1.02) rotate(1deg);
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.18);
   }
 
-  &.card-pendiente {
-    border-left: 4px solid #f59e0b;
+  // Banda lateral izquierda
+  .card-color-stripe {
+    width: 4px;
+    flex-shrink: 0;
+
+    &.stripe-amber   { background: #f59e0b; }
+    &.stripe-sky     { background: #0284c7; }
+    &.stripe-emerald { background: #10b981; }
+    &.stripe-purple  { background: #a855f7; }
   }
 
-  &.card-preparando {
-    border-left: 4px solid #0284c7;
+  .card-main-content {
+    flex: 1 1 auto;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    min-width: 0;
   }
 
-  &.card-listo {
-    border-left: 4px solid #10b981;
+  // 1. Título de la tarjeta
+  .card-header-line {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .card-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      min-width: 0;
+
+      .status-indicator-dot {
+        width: 7px;
+        height: 14px;
+        border-radius: 3px;
+        flex-shrink: 0;
+
+        &.dot-red     { background: #dc2626; }
+        &.dot-sky     { background: #0284c7; }
+        &.dot-emerald { background: #16a34a; }
+        &.dot-purple  { background: #9333ea; }
+      }
+
+      .card-title {
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        letter-spacing: -0.01em;
+      }
+    }
   }
 
-  .card-header {
+  // 2. Subtítulo / Mesero
+  .card-subtitle-line {
+    font-size: 0.74rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    margin-top: -3px;
+
+    .waiter-name {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: block;
+    }
+  }
+
+  // 3. Meta (Fecha, tiempo transcurrido y avatar)
+  .card-meta-line {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 8px;
 
-    .mesa-badge {
+    .time-container {
       display: flex;
       align-items: center;
       gap: 6px;
-      font-size: 0.92rem;
-      color: var(--text-color);
+      font-size: 0.72rem;
+      color: var(--text-secondary);
+      flex-wrap: wrap;
 
       i {
-        color: var(--accent-gold);
-        font-size: 0.9rem;
+        font-size: 0.75rem;
+        color: var(--text-muted);
       }
 
-      &.badge-ready {
-        i {
-          color: var(--emerald-text);
+      .date-text {
+        font-weight: 500;
+      }
+
+      .elapsed-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 0.68rem;
+        font-weight: 700;
+
+        &.elapsed-amber {
+          background: rgba(245, 158, 11, 0.12);
+          color: #d97706;
+        }
+
+        &.elapsed-sky {
+          background: rgba(2, 132, 199, 0.12);
+          color: #0284c7;
+        }
+
+        &.elapsed-emerald {
+          background: rgba(16, 185, 129, 0.12);
+          color: #059669;
+        }
+
+        &.elapsed-purple {
+          background: rgba(168, 85, 247, 0.12);
+          color: #7c3aed;
         }
       }
     }
 
-    .time-badge {
+    .waiter-avatar {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      color: #ffffff;
+      font-size: 0.68rem;
+      font-weight: 800;
       display: flex;
       align-items: center;
-      gap: 4px;
-      font-size: 0.72rem;
-      font-weight: 600;
-      color: var(--text-muted);
-      background: var(--surface-subtle);
-      padding: 3px 8px;
-      border-radius: var(--radius-pill);
-      border: 1px solid var(--surface-border);
-
-      &.time-active {
-        color: #38bdf8;
-        background: rgba(2, 132, 199, 0.15);
-        border-color: rgba(2, 132, 199, 0.3);
-      }
-
-      &.time-ready {
-        color: #34d399;
-        background: rgba(16, 185, 129, 0.15);
-        border-color: rgba(16, 185, 129, 0.3);
-      }
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     }
   }
 
-  .card-sub-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.74rem;
-
-    .comanda-id {
-      color: var(--text-muted);
-      font-family: var(--font-mono);
-      font-weight: 700;
-    }
-
-    .mesero-tag {
-      color: var(--text-secondary);
-      display: flex;
-      align-items: center;
-      gap: 4px;
-
-      i {
-        font-size: 0.75rem;
-      }
-    }
-  }
-
-  .card-notes {
+  // 4. Notas
+  .card-note-box {
     display: flex;
     align-items: flex-start;
     gap: 6px;
-    padding: 6px 10px;
-    border-radius: var(--radius-xs);
-    background: rgba(245, 158, 11, 0.12);
+    padding: 6px 9px;
+    border-radius: 6px;
+    background: rgba(245, 158, 11, 0.1);
     border: 1px solid rgba(245, 158, 11, 0.25);
-    color: #f59e0b;
-    font-size: 0.74rem;
-    line-height: 1.3;
+    color: #b45309;
+    font-size: 0.72rem;
+    line-height: 1.35;
 
     i {
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       margin-top: 1px;
+    }
+
+    &.note-sky {
+      background: rgba(2, 132, 199, 0.1);
+      border-color: rgba(2, 132, 199, 0.25);
+      color: #0369a1;
+    }
+
+    &.note-emerald {
+      background: rgba(16, 185, 129, 0.1);
+      border-color: rgba(16, 185, 129, 0.25);
+      color: #047857;
+    }
+
+    &.note-purple {
+      background: rgba(168, 85, 247, 0.1);
+      border-color: rgba(168, 85, 247, 0.25);
+      color: #6d28d9;
     }
   }
 
-  .card-items {
+  // 5. Lista de platos
+  .card-dishes-list {
     display: flex;
     flex-direction: column;
     gap: 6px;
@@ -347,77 +450,77 @@
     border-top: 1px dashed var(--surface-border);
     border-bottom: 1px dashed var(--surface-border);
 
-    .item-line {
+    .dish-item {
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 0.82rem;
+      gap: 7px;
+      font-size: 0.78rem;
 
-      .qty-pill {
+      .dish-qty {
         font-size: 0.72rem;
         font-weight: 800;
-        color: var(--primary-color);
-        background: var(--surface-subtle);
         padding: 2px 6px;
         border-radius: 4px;
-        border: 1px solid var(--surface-border);
         min-width: 24px;
         text-align: center;
 
-        &.pill-ready {
-          color: #34d399;
-          border-color: rgba(16, 185, 129, 0.3);
-        }
+        &.qty-amber   { color: #d97706; background: rgba(245, 158, 11, 0.14); }
+        &.qty-sky     { color: #0284c7; background: rgba(2, 132, 199, 0.14); }
+        &.qty-emerald { color: #059669; background: rgba(16, 185, 129, 0.14); }
+        &.qty-purple  { color: #7c3aed; background: rgba(168, 85, 247, 0.14); }
       }
 
-      .item-text {
+      .dish-name {
         font-weight: 600;
         color: var(--text-color);
         flex: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
-      .item-spec {
-        font-size: 0.7rem;
+      .dish-spec {
+        font-size: 0.65rem;
         color: var(--rose-text);
         background: var(--rose-bg);
-        padding: 1px 6px;
+        padding: 1px 5px;
         border-radius: 4px;
         border: 1px solid var(--rose-border);
       }
     }
   }
 
-  .card-actions {
+  // 6. Botones de acción rápida
+  .card-bottom-actions {
     display: flex;
     gap: 8px;
-    margin-top: 4px;
+    margin-top: 2px;
 
-    &.split-actions {
+    &.split-two {
       display: grid;
       grid-template-columns: 1fr 1fr;
     }
 
-    .btn-action {
+    .btn-card {
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
-      padding: 8px 10px;
-      font-size: 0.76rem;
+      padding: 7px 10px;
+      font-size: 0.75rem;
       font-weight: 700;
-      border-radius: var(--radius-xs);
+      border-radius: 6px;
       cursor: pointer;
       transition: all 0.15s ease;
       width: 100%;
+      border: 1px solid transparent;
 
-      i {
-        font-size: 0.72rem;
-      }
+      i { font-size: 0.72rem; }
 
-      &.btn-start {
+      &.btn-forward-amber {
         background: rgba(245, 158, 11, 0.15);
-        border: 1px solid rgba(245, 158, 11, 0.3);
-        color: #f59e0b;
+        border-color: rgba(245, 158, 11, 0.35);
+        color: #d97706;
 
         &:hover {
           background: #f59e0b;
@@ -425,10 +528,10 @@
         }
       }
 
-      &.btn-done {
+      &.btn-forward-emerald {
         background: rgba(16, 185, 129, 0.15);
-        border: 1px solid rgba(16, 185, 129, 0.3);
-        color: #34d399;
+        border-color: rgba(16, 185, 129, 0.35);
+        color: #059669;
 
         &:hover {
           background: #10b981;
@@ -436,9 +539,20 @@
         }
       }
 
+      &.btn-forward-purple {
+        background: rgba(168, 85, 247, 0.15);
+        border-color: rgba(168, 85, 247, 0.35);
+        color: #7c3aed;
+
+        &:hover {
+          background: #a855f7;
+          color: #ffffff;
+        }
+      }
+
       &.btn-back {
         background: var(--surface-subtle);
-        border: 1px solid var(--surface-border);
+        border-color: var(--surface-border);
         color: var(--text-secondary);
 
         &:hover {
@@ -446,6 +560,55 @@
           color: var(--text-color);
         }
       }
+    }
+  }
+}
+
+// ----------------------------------------------------
+// DARK MODE
+// ----------------------------------------------------
+html.dark {
+  .kanban-column {
+    background: #0d1322;
+    border-color: rgba(255, 255, 255, 0.08);
+
+    .column-header {
+      &.header-pendiente {
+        background: #3b2803;
+        color: #fef08a;
+        border-color: #713f12;
+        .badge-amber { background: #713f12; color: #fef08a; }
+      }
+
+      &.header-preparando {
+        background: #1e1b4b;
+        color: #c7d2fe;
+        border-color: #3730a3;
+        .badge-sky { background: #3730a3; color: #e0e7ff; }
+      }
+
+      &.header-listo {
+        background: #052e16;
+        color: #bbf7d0;
+        border-color: #166534;
+        .badge-emerald { background: #166534; color: #dcfce7; }
+      }
+
+      &.header-servido {
+        background: #3b0764;
+        color: #e9d5ff;
+        border-color: #6b21a8;
+        .badge-purple { background: #6b21a8; color: #f3e8ff; }
+      }
+    }
+  }
+
+  .kanban-card {
+    background: #131b2e;
+    border-color: rgba(255, 255, 255, 0.08);
+
+    &:hover {
+      border-color: rgba(14, 165, 233, 0.5);
     }
   }
 }

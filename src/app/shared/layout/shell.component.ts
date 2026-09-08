@@ -10,7 +10,7 @@ const ALL_ITEMS: SidebarItem[] = [
   { label: 'Mesas / Salón',icon: 'pi pi-table',       route: '/mesas',     roles: ['Mesero', 'Administrador'] },
   { label: 'Tomar Pedido', icon: 'pi pi-shopping-bag',route: '/pedidos',   roles: ['Mesero', 'Administrador'] },
   { label: 'Menú',         icon: 'pi pi-book',        route: '/menu',      roles: ['Cajero', 'Administrador'] },
-  { label: 'Cocina',       icon: 'pi pi-bell',        route: '/cocina',    roles: ['Cocinero', 'Administrador'] },
+  { label: 'Cocina',       icon: 'pi pi-bell',        route: '/cocina',    roles: ['Cocinero', 'Administrador', 'Mesero'] },
   { label: 'Caja y Cobro', icon: 'pi pi-credit-card', route: '/caja',      roles: ['Cajero', 'Administrador'] },
   { label: 'Clientes',     icon: 'pi pi-users',       route: '/clientes',  roles: ['Cajero', 'Administrador'] },
   { label: 'Usuarios',     icon: 'pi pi-user',        route: '/usuarios',  roles: ['Administrador'] },

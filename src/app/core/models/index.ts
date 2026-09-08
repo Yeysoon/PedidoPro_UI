@@ -1,4 +1,4 @@
-﻿// =============================================
+// =============================================
 // PEDIDOPRO — TypeScript Models / Interfaces
 // =============================================
 
@@ -74,6 +74,9 @@ export interface Comanda {
   numero_mesa: number;
   id_estado: number;
   nombre_estado: string;
+  estado?: string;
+  mesero?: string;
+  mesero_nombre?: string;
   fecha_hora_creacion: string;
   notas_generales?: string;
   detalles: DetallePedido[];
