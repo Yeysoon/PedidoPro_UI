@@ -3,7 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { UsuariosService } from '../../core/services/usuarios.service';
 import { RolesService } from '../../core/services/roles.service';
 import { AlertService } from '../../core/services/alert.service';
-import { Usuario, Rol, Permiso } from '../../core/models';
+import { Usuario, Rol } from '../../core/models';
 
 @Component({
   selector: 'app-usuarios',
@@ -17,11 +17,8 @@ export class UsuariosComponent implements OnInit {
   private rolesSvc = inject(RolesService);
   private alert = inject(AlertService);
 
-  activeTab = signal<'usuarios' | 'roles'>('usuarios');
-
   usuarios   = signal<Usuario[]>([]);
   roles      = signal<Rol[]>([]);
-  permisos   = signal<Permiso[]>([]);
   loading    = signal(true);
   saving     = signal(false);
 
@@ -29,11 +26,6 @@ export class UsuariosComponent implements OnInit {
   showModal = signal(false);
   isEdit    = signal(false);
   editItem  = signal<any>({});
-
-  // Modal Rol & Permisos
-  showRolModal = signal(false);
-  isEditRol    = signal(false);
-  editRol      = signal<{ id_rol?: number; nombre_rol: string; permisos: number[] }>({ nombre_rol: '', permisos: [] });
 
   // Modal Cambiar Contraseña
   showPasswordModal = signal(false);
@@ -61,14 +53,6 @@ export class UsuariosComponent implements OnInit {
 
     this.rolesSvc.getRoles().subscribe({
       next: r => this.roles.set(r),
-      error: () => {}
-    });
-
-    this.rolesSvc.getPermisos().subscribe({
-      next: (p: any) => {
-        const list = Array.isArray(p) ? p : (p?.data || []);
-        this.permisos.set(list);
-      },
       error: () => {}
     });
   }
@@ -178,105 +162,6 @@ export class UsuariosComponent implements OnInit {
     return this.roles().find(r => r.id_rol === u.id_rol)?.nombre_rol ?? 'Usuario';
   }
 
-  // --- GESTIÓN DE ROLES Y PERMISOS ---
-  openCreateRol() {
-    this.editRol.set({ nombre_rol: '', permisos: [] });
-    this.isEditRol.set(false);
-    this.showRolModal.set(true);
-  }
-
-  openEditRol(r: Rol) {
-    this.rolesSvc.getPermisosRol(r.id_rol).subscribe({
-      next: (p: any) => {
-        const list = Array.isArray(p) ? p : (p?.data || []);
-        const ids = list.map((x: any) => x.id_permiso);
-        this.editRol.set({ id_rol: r.id_rol, nombre_rol: r.nombre_rol, permisos: ids });
-        this.isEditRol.set(true);
-        this.showRolModal.set(true);
-      },
-      error: () => {
-        this.editRol.set({ id_rol: r.id_rol, nombre_rol: r.nombre_rol, permisos: [] });
-        this.isEditRol.set(true);
-        this.showRolModal.set(true);
-      }
-    });
-  }
-
-  togglePermiso(id: number) {
-    this.editRol.update(r => {
-      const exists = r.permisos.includes(id);
-      return {
-        ...r,
-        permisos: exists ? r.permisos.filter(p => p !== id) : [...r.permisos, id]
-      };
-    });
-  }
-
-  saveRol() {
-    const d = this.editRol();
-    if (!d.nombre_rol.trim()) {
-      this.alert.warningToast('Ingresa el nombre del rol');
-      return;
-    }
-
-    this.saving.set(true);
-    if (this.isEditRol() && d.id_rol) {
-      this.rolesSvc.updateRol(d.id_rol, { nombre_rol: d.nombre_rol }).subscribe({
-        next: () => {
-          if (d.permisos.length >= 0) {
-            this.rolesSvc.assignPermisos(d.id_rol!, d.permisos).subscribe({
-              next: () => {
-                this.alert.successToast('Rol y permisos actualizados');
-                this.showRolModal.set(false);
-                this.saving.set(false);
-                this.load();
-              },
-              error: () => {
-                this.showRolModal.set(false);
-                this.saving.set(false);
-                this.load();
-              }
-            });
-          }
-        },
-        error: e => {
-          this.alert.error('Error al actualizar rol', e.error?.message);
-          this.saving.set(false);
-        }
-      });
-    } else {
-      this.rolesSvc.createRol({ nombre_rol: d.nombre_rol }).subscribe({
-        next: (created: any) => {
-          const newId = created?.id_rol || created?.data?.id_rol;
-          if (newId && d.permisos.length > 0) {
-            this.rolesSvc.assignPermisos(newId, d.permisos).subscribe(() => {});
-          }
-          this.alert.successToast('Rol creado exitosamente');
-          this.showRolModal.set(false);
-          this.saving.set(false);
-          this.load();
-        },
-        error: e => {
-          this.alert.error('Error al crear rol', e.error?.message);
-          this.saving.set(false);
-        }
-      });
-    }
-  }
-
-  async deleteRol(id: number) {
-    const ok = await this.alert.confirm('¿Eliminar rol?', 'Los usuarios con este rol deberán ser reasignados.', 'Sí, eliminar');
-    if (!ok) return;
-
-    this.rolesSvc.deleteRol(id).subscribe({
-      next: () => {
-        this.alert.successToast('Rol eliminado');
-        this.load();
-      },
-      error: e => this.alert.error('Error al eliminar rol', e.error?.message)
-    });
-  }
-
   // --- GESTIÓN DE CONTRASEÑA ---
   openChangePassword(u: any) {
     if (!u) return;
@@ -379,4 +264,3 @@ export class UsuariosComponent implements OnInit {
     });
   }
 }
-
