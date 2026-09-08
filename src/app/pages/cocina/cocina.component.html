@@ -91,19 +91,21 @@
                       <h3 class="card-title">Mesa {{ c.numero_mesa }} | Pedido #{{ c.id_pedido }}</h3>
                     </div>
                     @if (isMesero() || isAdmin()) {
-                      <button class="btn-edit-order" (click)="editarPedido(c, $event)" title="Editar pedido (solo en estado Pendiente)">
-                        <i class="pi pi-pencil"></i>
-                      </button>
+                      <div class="card-actions-group">
+                        <button class="btn-card-action btn-edit-order" (click)="editarPedido(c, $event)" title="Editar pedido">
+                          <i class="pi pi-pencil"></i>
+                        </button>
+                        <button class="btn-card-action btn-cancel-order" (click)="cancelarPedido(c, $event)" title="Cancelar pedido">
+                          <i class="pi pi-trash"></i>
+                        </button>
+                      </div>
                     }
                   </div>
 
                   <div class="card-subtitle-line">
-                    <span class="waiter-name">Mesero: {{ c.mesero || 'Mesero Asignado' }}</span>
-                    @if (c.cliente_nombre) {
-                      <span class="client-badge" [title]="'NIT: ' + (c.cliente_nit || 'C/F')">
-                        <i class="pi pi-id-card"></i> {{ c.cliente_nombre }}
-                      </span>
-                    }
+                    <span class="client-text">
+                      <i class="pi pi-user"></i> Cliente: <strong>{{ c.cliente_nombre || 'Consumidor Final (C/F)' }}</strong>
+                    </span>
                   </div>
 
                   <div class="card-meta-line">
@@ -197,12 +199,9 @@
                   </div>
 
                   <div class="card-subtitle-line">
-                    <span class="waiter-name">Mesero: {{ c.mesero || 'Mesero Asignado' }}</span>
-                    @if (c.cliente_nombre) {
-                      <span class="client-badge" [title]="'NIT: ' + (c.cliente_nit || 'C/F')">
-                        <i class="pi pi-id-card"></i> {{ c.cliente_nombre }}
-                      </span>
-                    }
+                    <span class="client-text">
+                      <i class="pi pi-user"></i> Cliente: <strong>{{ c.cliente_nombre || 'Consumidor Final (C/F)' }}</strong>
+                    </span>
                   </div>
 
                   <div class="card-meta-line">
@@ -296,12 +295,9 @@
                   </div>
 
                   <div class="card-subtitle-line">
-                    <span class="waiter-name">Mesero: {{ c.mesero || 'Mesero Asignado' }}</span>
-                    @if (c.cliente_nombre) {
-                      <span class="client-badge" [title]="'NIT: ' + (c.cliente_nit || 'C/F')">
-                        <i class="pi pi-id-card"></i> {{ c.cliente_nombre }}
-                      </span>
-                    }
+                    <span class="client-text">
+                      <i class="pi pi-user"></i> Cliente: <strong>{{ c.cliente_nombre || 'Consumidor Final (C/F)' }}</strong>
+                    </span>
                   </div>
 
                   <div class="card-meta-line">
@@ -391,12 +387,9 @@
                   </div>
 
                   <div class="card-subtitle-line">
-                    <span class="waiter-name">Mesero: {{ c.mesero || 'Mesero Asignado' }}</span>
-                    @if (c.cliente_nombre) {
-                      <span class="client-badge" [title]="'NIT: ' + (c.cliente_nit || 'C/F')">
-                        <i class="pi pi-id-card"></i> {{ c.cliente_nombre }}
-                      </span>
-                    }
+                    <span class="client-text">
+                      <i class="pi pi-user"></i> Cliente: <strong>{{ c.cliente_nombre || 'Consumidor Final (C/F)' }}</strong>
+                    </span>
                   </div>
 
                   <div class="card-meta-line">

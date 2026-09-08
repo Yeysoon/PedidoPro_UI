@@ -2,6 +2,7 @@ import { Component, signal, computed, OnInit, OnDestroy, inject } from '@angular
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CocinaService } from '../../core/services/cocina.service';
+import { PedidosService } from '../../core/services/pedidos.service';
 import { AlertService } from '../../core/services/alert.service';
 import { AuthService } from '../../core/services/auth.service';
 import { Comanda } from '../../core/models';
@@ -15,6 +16,7 @@ import { Comanda } from '../../core/models';
 })
 export class CocinaComponent implements OnInit, OnDestroy {
   private svc = inject(CocinaService);
+  private pedidosSvc = inject(PedidosService);
   private alert = inject(AlertService);
   private auth = inject(AuthService);
   private router = inject(Router);
@@ -29,6 +31,26 @@ export class CocinaComponent implements OnInit, OnDestroy {
   editarPedido(c: Comanda, event: Event) {
     event.stopPropagation();
     this.router.navigate(['/pedidos'], { queryParams: { edit: c.id_pedido } });
+  }
+
+  async cancelarPedido(c: Comanda, event: Event) {
+    event.stopPropagation();
+    const confirmed = await this.alert.confirm(
+      '¿Cancelar pedido?',
+      `¿Deseas cancelar el Pedido #${c.id_pedido} de la Mesa ${c.numero_mesa}? Se liberará la mesa y los platillos asociados.`,
+      'Sí, cancelar pedido'
+    );
+    if (!confirmed) return;
+
+    this.pedidosSvc.cancelPedido(c.id_pedido).subscribe({
+      next: () => {
+        this.alert.successToast(`Pedido #${c.id_pedido} cancelado`);
+        this.load();
+      },
+      error: (err: any) => {
+        this.alert.error('Error al cancelar', err.error?.message || 'No se pudo cancelar el pedido');
+      }
+    });
   }
 
   // Roles
