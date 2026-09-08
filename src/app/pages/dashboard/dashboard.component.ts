@@ -173,7 +173,7 @@ export class DashboardComponent implements OnInit {
       });
 
     } else if (r === 'Cocinero') {
-      this.dashboardSvc.getCocinaStats().subscribe({
+      this.dashboardSvc.getCocinaStats(period).subscribe({
         next: res => {
           if (res?.data) {
             this.cocinaStats.set(res.data);

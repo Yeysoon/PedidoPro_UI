@@ -86,8 +86,8 @@ export class DashboardService {
     return this.api.get<{ success: boolean; data: MeseroStats }>(`/api/dashboard/mesero?period=${period}`);
   }
 
-  getCocinaStats(): Observable<{ success: boolean; data: CocinaStats }> {
-    return this.api.get<{ success: boolean; data: CocinaStats }>('/api/dashboard/cocina');
+  getCocinaStats(period: 'weekly' | 'monthly' | 'yearly' = 'monthly'): Observable<{ success: boolean; data: CocinaStats }> {
+    return this.api.get<{ success: boolean; data: CocinaStats }>(`/api/dashboard/cocina?period=${period}`);
   }
 
   getCajaStats(period: 'weekly' | 'monthly' | 'yearly' = 'monthly'): Observable<{ success: boolean; data: CajaStats }> {
