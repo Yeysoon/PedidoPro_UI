@@ -55,6 +55,7 @@ export interface MeseroStats {
   mis_pedidos_activos: number;
   mesas: { id_mesa: number; numero_mesa: number; estado: string; capacidad?: number; nombre_zona: string }[];
   mis_comandas?: { id_pedido: number; numero_mesa: number; nombre_zona: string; fecha_hora: string; estado: string; total: number }[];
+  platillos_top?: PlatilloTopItem[];
 }
 
 export interface CocinaStats {
@@ -81,8 +82,8 @@ export class DashboardService {
     return this.api.get<{ success: boolean; data: AdminStats }>(`/api/dashboard/admin?period=${period}`);
   }
 
-  getMeseroStats(): Observable<{ success: boolean; data: MeseroStats }> {
-    return this.api.get<{ success: boolean; data: MeseroStats }>('/api/dashboard/mesero');
+  getMeseroStats(period: 'weekly' | 'monthly' | 'yearly' = 'monthly'): Observable<{ success: boolean; data: MeseroStats }> {
+    return this.api.get<{ success: boolean; data: MeseroStats }>(`/api/dashboard/mesero?period=${period}`);
   }
 
   getCocinaStats(): Observable<{ success: boolean; data: CocinaStats }> {

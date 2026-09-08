@@ -143,7 +143,7 @@ export class DashboardComponent implements OnInit {
       });
 
     } else if (r === 'Mesero') {
-      this.dashboardSvc.getMeseroStats().subscribe({
+      this.dashboardSvc.getMeseroStats(period).subscribe({
         next: res => {
           if (res?.data) {
             this.meseroStats.set(res.data);
