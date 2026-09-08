@@ -240,12 +240,15 @@ export class PedidosComponent implements OnInit {
         const clientObj: Cliente = {
           id_cliente: newId || Date.now(),
           nombre_completo: nombre,
-          nit_documento: nit
+          nit_documento: nit || undefined
         };
 
-        this.clientes.update(list => [clientObj, ...list]);
+        this.clientes.update(list => {
+          const filtered = list.filter(x => x.id_cliente !== clientObj.id_cliente);
+          return [clientObj, ...filtered];
+        });
         this.clienteId.set(clientObj.id_cliente);
-        this.alert.success('Cliente Registrado', `Cliente "${clientObj.nombre_completo}" registrado y asignado al pedido.`);
+        this.alert.success('Cliente Registrado', created.message || `Cliente "${clientObj.nombre_completo}" registrado y asignado al pedido.`);
         this.guardandoCliente.set(false);
         this.showClienteModal.set(false);
       },
