@@ -59,77 +59,87 @@
 
   <!-- CARRITO / COMANDA TICKET PANEL -->
   <div class="carrito-panel glass-card">
-    <div class="carrito-header">
-      <div class="header-left">
-        <i class="pi pi-receipt header-icon"></i>
-        <h3>Ticket Comanda</h3>
+    <div class="carrito-top">
+      <div class="carrito-header">
+        <div class="header-left">
+          <i class="pi pi-receipt header-icon"></i>
+          <h3>Ticket Comanda</h3>
+        </div>
+        <span class="status-pill badge-neutral">{{ cantTotal() }} items</span>
       </div>
-      <span class="status-pill badge-neutral">{{ cantTotal() }} items</span>
+
+      <!-- Selector de Mesa en Ticket -->
+      <div class="mesa-select-box">
+        <label for="mesaSelect">
+          <i class="pi pi-table"></i> Mesa Asignada *
+        </label>
+        <select id="mesaSelect" class="form-control mesa-dropdown" [ngModel]="mesaId()" (ngModelChange)="onSelectMesa($event)">
+          <option [value]="0" disabled>-- Seleccionar Mesa --</option>
+          @for (m of mesas(); track m.id_mesa) {
+            <option [value]="m.id_mesa">
+              Mesa {{ m.numero_mesa }} ({{ m.nombre_zona || 'Salón' }}) — {{ m.estado }}
+            </option>
+          }
+        </select>
+      </div>
     </div>
 
-    <!-- Selector de Mesa en Ticket -->
-    <div class="mesa-select-box">
-      <label for="mesaSelect">
-        <i class="pi pi-table"></i> Mesa Asignada *
-      </label>
-      <select id="mesaSelect" class="form-control mesa-dropdown" [ngModel]="mesaId()" (ngModelChange)="onSelectMesa($event)">
-        <option [value]="0" disabled>-- Seleccionar Mesa --</option>
-        @for (m of mesas(); track m.id_mesa) {
-          <option [value]="m.id_mesa">
-            Mesa {{ m.numero_mesa }} ({{ m.nombre_zona || 'Salón' }}) — {{ m.estado }}
-          </option>
-        }
-      </select>
-    </div>
-
-    @if (!carrito().length) {
-      <div class="carrito-empty">
-        <i class="pi pi-shopping-cart empty-icon"></i>
-        <p>Selecciona platillos del catálogo para armar la comanda.</p>
-      </div>
-    } @else {
-      <div class="carrito-items-list">
-        @for (item of carrito(); track item.id_producto) {
-          <div class="carrito-item-row">
-            <div class="item-info">
-              <span class="item-name">{{ item.nombre_producto }}</span>
-              <span class="item-unit-price">{{ formatCurrency(item.precio_unitario_historico ?? 0) }} c/u</span>
-            </div>
-
-            <div class="qty-stepper">
-              <button class="stepper-btn" (click)="quitar(item.id_producto)" title="Disminuir">
-                <i class="pi pi-minus"></i>
-              </button>
-              <span class="qty-num">{{ item.cantidad }}</span>
-              <button class="stepper-btn add" (click)="agregarById(item.id_producto)" title="Aumentar">
-                <i class="pi pi-plus"></i>
-              </button>
-            </div>
-
-            <span class="item-price">{{ formatCurrency((item.precio_unitario_historico ?? 0) * item.cantidad) }}</span>
-          </div>
-        }
-      </div>
-
-      <div class="carrito-notes">
-        <label><i class="pi pi-file-edit"></i> Observaciones para Cocina</label>
-        <textarea class="form-control" rows="2" placeholder="Sin cebolla, término medio, etc." [ngModel]="notas()" (ngModelChange)="notas.set($event)"></textarea>
-      </div>
-
-      <div class="carrito-total-box">
-        <span>Total Comanda</span>
-        <span class="total-amount">{{ formatCurrency(total()) }}</span>
-      </div>
-    }
-
-    <button class="btn btn-primary send-btn" [disabled]="!carrito().length || !mesaId() || sending()" (click)="enviar()">
-      @if (sending()) {
-        <i class="pi pi-spin pi-spinner"></i>
-        <span>Enviando Comanda...</span>
+    <!-- CUERPO DE COMANDA (Items o Estado Vacío) -->
+    <div class="carrito-body">
+      @if (!carrito().length) {
+        <div class="carrito-empty">
+          <i class="pi pi-shopping-cart empty-icon"></i>
+          <p>Selecciona platillos del menú para armar la comanda.</p>
+        </div>
       } @else {
-        <i class="pi pi-send"></i>
-        <span>Enviar a Cocina</span>
+        <div class="carrito-items-list">
+          @for (item of carrito(); track item.id_producto) {
+            <div class="carrito-item-row">
+              <div class="item-info">
+                <span class="item-name">{{ item.nombre_producto }}</span>
+                <span class="item-unit-price">{{ formatCurrency(item.precio_unitario_historico ?? 0) }} c/u</span>
+              </div>
+
+              <div class="qty-stepper">
+                <button class="stepper-btn" (click)="quitar(item.id_producto)" title="Disminuir">
+                  <i class="pi pi-minus"></i>
+                </button>
+                <span class="qty-num">{{ item.cantidad }}</span>
+                <button class="stepper-btn add" (click)="agregarById(item.id_producto)" title="Aumentar">
+                  <i class="pi pi-plus"></i>
+                </button>
+              </div>
+
+              <span class="item-price">{{ formatCurrency((item.precio_unitario_historico ?? 0) * item.cantidad) }}</span>
+            </div>
+          }
+        </div>
+
+        <div class="carrito-notes">
+          <label><i class="pi pi-file-edit"></i> Observaciones Cocina</label>
+          <input class="form-control note-input" type="text" placeholder="Ej. Sin cebolla, término medio..." [ngModel]="notas()" (ngModelChange)="notas.set($event)"/>
+        </div>
       }
-    </button>
+    </div>
+
+    <!-- PIE DE TICKET FIJO -->
+    <div class="carrito-bottom">
+      @if (carrito().length > 0) {
+        <div class="carrito-total-box">
+          <span>Total Comanda</span>
+          <span class="total-amount">{{ formatCurrency(total()) }}</span>
+        </div>
+      }
+
+      <button class="btn btn-primary send-btn" [disabled]="!carrito().length || !mesaId() || sending()" (click)="enviar()">
+        @if (sending()) {
+          <i class="pi pi-spin pi-spinner"></i>
+          <span>Enviando Comanda...</span>
+        } @else {
+          <i class="pi pi-send"></i>
+          <span>Enviar a Cocina</span>
+        }
+      </button>
+    </div>
   </div>
 </div>
