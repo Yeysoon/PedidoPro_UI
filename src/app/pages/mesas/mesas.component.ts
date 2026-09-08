@@ -27,7 +27,14 @@ export class MesasComponent implements OnInit {
   showModal = signal(false);
   editMesa = signal<Partial<Mesa>>({});
   isEdit = signal(false);
+  filterEstado = signal('');
   isAdmin = computed(() => this.auth.hasRole(['Administrador']));
+
+  filteredMesas = computed(() => {
+    const estado = this.filterEstado();
+    if (!estado) return this.mesas();
+    return this.mesas().filter(m => m.estado === estado);
+  });
 
   libresCount = computed(() => this.mesas().filter(m => m.estado === 'Libre').length);
   ocupadasCount = computed(() => this.mesas().filter(m => m.estado === 'Ocupada').length);

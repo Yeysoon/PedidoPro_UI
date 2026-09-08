@@ -1,7 +1,56 @@
-.mesas-counters {
+.filters-card {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 10px;
+  padding: 12px 18px;
+  margin-bottom: 20px;
+  gap: 16px;
+  flex-wrap: wrap;
+
+  .filter-pill-cluster {
+    display: flex;
+    align-items: center;
+    background: var(--surface-subtle);
+    border: 1px solid var(--surface-border);
+    border-radius: var(--radius-pill);
+    padding: 3px;
+    gap: 2px;
+    overflow-x: auto;
+
+    .filter-chip-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: transparent;
+      border: none;
+      padding: 6px 14px;
+      border-radius: var(--radius-pill);
+      font-family: var(--font-main);
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+
+      &.active {
+        background: var(--primary-color);
+        color: var(--primary-contrast);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      &:hover:not(.active) {
+        color: var(--text-color);
+        background: var(--surface-hover);
+      }
+    }
+  }
+
+  .mesas-counters {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
 }
 
 
