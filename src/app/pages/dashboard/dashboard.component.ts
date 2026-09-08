@@ -23,6 +23,15 @@ export interface TransactionActivity {
   amount: string;
 }
 
+export interface ChartBarItem {
+  key: string;
+  label: string;
+  fullLabel: string;
+  total_ventas: number;
+  cantidad_facturas: number;
+  isCurrent: boolean;
+}
+
 const CATEGORY_COLORS = [
   '#10B981', '#0EA5E9', '#F59E0B', '#6366F1', 
   '#EC4899', '#8B5CF6', '#14B8A6', '#F97316'
@@ -269,10 +278,120 @@ export class DashboardComponent implements OnInit {
     });
   }
 
+  chartTimelineData = computed<ChartBarItem[]>(() => {
+    const period = this.selectedPeriod();
+    const ventas = this.adminStats()?.actividad_ventas || [];
+    const salesMap = new Map<string, { total: number; facturas: number }>();
+    ventas.forEach(v => {
+      salesMap.set(v.fecha, {
+        total: Number(v.total_ventas) || 0,
+        facturas: Number(v.cantidad_facturas) || 0
+      });
+    });
+
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+    const currentDate = now.getDate();
+
+    if (period === 'weekly') {
+      const dayOfWeek = now.getDay();
+      const distanceToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+      const monday = new Date(now);
+      monday.setDate(now.getDate() + distanceToMonday);
+
+      const dayNames = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+      const items: ChartBarItem[] = [];
+
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(monday);
+        d.setDate(monday.getDate() + i);
+
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        const key = `${yyyy}-${mm}-${dd}`;
+
+        const match = salesMap.get(key) || { total: 0, facturas: 0 };
+        const isToday = d.toDateString() === now.toDateString();
+
+        items.push({
+          key,
+          label: `${dayNames[i]} ${dd}`,
+          fullLabel: `${dayNames[i]} ${dd}/${mm}/${yyyy}`,
+          total_ventas: match.total,
+          cantidad_facturas: match.facturas,
+          isCurrent: isToday
+        });
+      }
+      return items;
+
+    } else if (period === 'yearly') {
+      const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+      const items: ChartBarItem[] = [];
+
+      for (let m = 0; m < 12; m++) {
+        const mm = String(m + 1).padStart(2, '0');
+        const key = `${currentYear}-${mm}`;
+        const match = salesMap.get(key) || { total: 0, facturas: 0 };
+        const isCurrentMonth = m === currentMonth;
+
+        items.push({
+          key,
+          label: monthNames[m],
+          fullLabel: `${monthNames[m]} ${currentYear}`,
+          total_ventas: match.total,
+          cantidad_facturas: match.facturas,
+          isCurrent: isCurrentMonth
+        });
+      }
+      return items;
+
+    } else {
+      // 'monthly': Todos los días del mes actual (1 al último día)
+      const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+      const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+      const monthLabel = monthNames[currentMonth];
+      const items: ChartBarItem[] = [];
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dd = String(day).padStart(2, '0');
+        const mm = String(currentMonth + 1).padStart(2, '0');
+        const key = `${currentYear}-${mm}-${dd}`;
+        const match = salesMap.get(key) || { total: 0, facturas: 0 };
+        const isToday = day === currentDate;
+
+        items.push({
+          key,
+          label: dd,
+          fullLabel: `${dd} ${monthLabel} ${currentYear}`,
+          total_ventas: match.total,
+          cantidad_facturas: match.facturas,
+          isCurrent: isToday
+        });
+      }
+      return items;
+    }
+  });
+
+  chartPeriodSubtitle = computed(() => {
+    const p = this.selectedPeriod();
+    const now = new Date();
+    const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+    if (p === 'weekly') {
+      return 'Semana actual (Lunes a Domingo)';
+    } else if (p === 'yearly') {
+      return `Año ${now.getFullYear()} (12 meses)`;
+    } else {
+      return `Mes de ${monthNames[now.getMonth()]} ${now.getFullYear()} (${new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()} días)`;
+    }
+  });
+
   getBarHeight(val: number): string {
-    const items = this.adminStats()?.actividad_ventas || [];
-    const max = Math.max(...items.map(v => +v.total_ventas), 500);
-    const pct = Math.min(Math.max((+val / max) * 100, 15), 100);
+    const list = this.chartTimelineData();
+    const max = Math.max(...list.map(v => v.total_ventas), 1);
+    if (val <= 0) return '6px';
+    const pct = Math.max((val / max) * 100, 10);
     return pct + '%';
   }
 

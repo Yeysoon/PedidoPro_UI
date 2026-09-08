@@ -141,6 +141,61 @@
     display: flex;
     flex-direction: column;
     gap: 16px;
+    position: relative;
+    overflow: hidden;
+
+    &.kpi-card-watermark {
+      padding: 22px 20px;
+      min-height: 115px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 6px;
+
+      .kpi-card-top {
+        .kpi-title {
+          font-size: 0.76rem;
+          font-weight: 700;
+          letter-spacing: 0.04em;
+          text-transform: uppercase;
+          color: var(--text-secondary);
+        }
+      }
+
+      .kpi-card-bottom {
+        .kpi-number {
+          font-size: 2.1rem;
+          font-weight: 800;
+          letter-spacing: -0.03em;
+          color: var(--text-color);
+          line-height: 1.1;
+        }
+      }
+
+      .kpi-watermark-icon {
+        position: absolute;
+        right: -6px;
+        bottom: -10px;
+        font-size: 5.6rem;
+        opacity: 0.22;
+        transform: rotate(-20deg);
+        pointer-events: none;
+        line-height: 1;
+        transition: transform 0.3s ease, opacity 0.3s ease;
+      }
+
+      &.kpi-watermark-emerald .kpi-watermark-icon { color: #10b981; }
+      &.kpi-watermark-sky .kpi-watermark-icon     { color: #0ea5e9; }
+      &.kpi-watermark-amber .kpi-watermark-icon   { color: #f59e0b; }
+      &.kpi-watermark-indigo .kpi-watermark-icon  { color: #818cf8; }
+
+      &:hover {
+        .kpi-watermark-icon {
+          transform: rotate(-24deg) scale(1.08) translateY(-4px);
+          opacity: 0.38;
+        }
+      }
+    }
 
     .kpi-card-top {
       display: flex;
@@ -226,16 +281,12 @@
 }
 
 // -------------------------------------------------------
-// CHARTS & MIX ROW
+// CHARTS (FULL WIDTH INTERACTIVE)
 // -------------------------------------------------------
 .charts-row {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: 1fr;
   gap: 20px;
-
-  @media (max-width: 1024px) {
-    grid-template-columns: 1fr;
-  }
 
   .chart-box {
     padding: 24px;
@@ -252,95 +303,110 @@
     .card-title-group {
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: 3px;
 
       .card-title {
-        font-size: 1.05rem;
+        font-size: 1.1rem;
         font-weight: 700;
         color: var(--text-color);
       }
 
       .card-subtitle {
-        font-size: 0.75rem;
+        font-size: 0.8rem;
         color: var(--text-secondary);
+        font-weight: 500;
       }
     }
 
-    .chart-legend {
+    .chart-header-kpi {
       display: flex;
-      align-items: center;
-      gap: 12px;
+      align-items: baseline;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: var(--radius-sm);
+      background: var(--surface-subtle);
+      border: 1px solid var(--surface-border);
 
-      .legend-item {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 0.75rem;
-        font-weight: 600;
+      .chart-kpi-label {
+        font-size: 0.78rem;
         color: var(--text-secondary);
-
-        .legend-dot {
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-
-          &.dot-layer-1 { background: #64748B; }
-          &.dot-layer-2 { background: #94A3B8; }
-          &.dot-layer-3 { background: #CBD5E1; }
-        }
+        font-weight: 500;
       }
-    }
 
-    .btn-icon-more {
-      background: transparent;
-      border: none;
-      color: var(--text-muted);
-      cursor: pointer;
-      font-size: 1rem;
-      padding: 4px;
-      &:hover { color: var(--text-color); }
+      .chart-kpi-val {
+        font-size: 1rem;
+        font-weight: 800;
+        color: var(--emerald-text, #10b981);
+      }
     }
   }
 
-  // Pillar Bar Chart
+  // Pillar Bar Chart (Interactive Timeline)
   .prime-bar-chart {
-    height: 220px;
+    height: 230px;
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
-    gap: 14px;
-    padding-top: 20px;
+    gap: 6px;
+    padding-top: 24px;
+    padding-bottom: 8px;
     border-bottom: 1px solid var(--surface-border);
+    overflow-x: auto;
 
     .chart-bar-column {
       flex: 1;
+      min-width: 16px;
       height: 100%;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: flex-end;
-      gap: 10px;
+      gap: 8px;
 
       .layered-pill-bar {
-        width: 32px;
-        max-width: 100%;
+        width: 100%;
+        max-width: 32px;
+        min-height: 6px;
         border-radius: var(--radius-sm);
         display: flex;
         flex-direction: column;
         overflow: hidden;
-        transition: transform 0.2s ease, opacity 0.2s ease;
+        transition: transform 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease;
         cursor: pointer;
 
-        .bar-segment {
-          width: 100%;
-          &.segment-top  { height: 35%; background: #CBD5E1; }
-          &.segment-mid  { height: 35%; background: #94A3B8; }
-          &.segment-base { height: 30%; background: #64748B; }
+        &.bar-zero {
+          background: rgba(148, 163, 184, 0.15);
+          border: 1px dashed rgba(148, 163, 184, 0.25);
+          opacity: 0.5;
+
+          &:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+          }
         }
 
-        &:hover {
-          transform: translateY(-4px);
-          filter: brightness(1.1);
+        &.bar-active {
+          background: linear-gradient(180deg, #38bdf8 0%, #0284c7 60%, #0369a1 100%);
+          box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+          border: 1px solid rgba(56, 189, 248, 0.5);
+
+          .bar-segment {
+            width: 100%;
+            &.segment-top  { height: 30%; background: rgba(255, 255, 255, 0.28); }
+            &.segment-mid  { height: 40%; background: transparent; }
+            &.segment-base { height: 30%; background: rgba(0, 0, 0, 0.18); }
+          }
+
+          &:hover {
+            transform: translateY(-5px);
+            filter: brightness(1.2);
+            box-shadow: 0 6px 16px rgba(14, 165, 233, 0.45);
+          }
+        }
+
+        &.bar-today {
+          outline: 2px solid var(--primary-color, #3b82f6);
+          outline-offset: 2px;
         }
       }
 
@@ -348,101 +414,11 @@
         font-size: 0.72rem;
         font-weight: 600;
         color: var(--text-muted);
-      }
-    }
-  }
+        white-space: nowrap;
 
-  // Mix / Wallet Card
-  .mix-card {
-    .mix-total-row {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-
-      .mix-amount {
-        font-size: 1.8rem;
-        font-weight: 800;
-        letter-spacing: -0.03em;
-        color: var(--text-color);
-      }
-    }
-
-    .multi-progress-bar {
-      height: 10px;
-      border-radius: var(--radius-pill);
-      display: flex;
-      overflow: hidden;
-      background: var(--surface-subtle);
-
-      .progress-segment {
-        height: 100%;
-        transition: width 0.3s ease;
-        &.seg-platillos { background: var(--emerald); }
-        &.seg-bebidas   { background: var(--sky); }
-        &.seg-postres   { background: var(--amber); }
-      }
-    }
-
-    .category-breakdown-list {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-
-      .category-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        font-size: 0.82rem;
-
-        .cat-left {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-
-          .cat-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            &.dot-platillos { background: var(--emerald); }
-            &.dot-bebidas   { background: var(--sky); }
-            &.dot-postres   { background: var(--amber); }
-          }
-
-          .cat-name {
-            color: var(--text-secondary);
-            font-weight: 500;
-          }
-        }
-
-        .cat-val {
-          font-weight: 700;
-          color: var(--text-color);
-        }
-      }
-    }
-
-    .mix-card-footer {
-      padding-top: 14px;
-      border-top: 1px solid var(--surface-border);
-
-      .view-ledger-link {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-        font-size: 0.82rem;
-        font-weight: 600;
-        color: var(--text-color);
-        text-decoration: none;
-        padding: 8px;
-        border-radius: var(--radius-sm);
-        background: var(--surface-subtle);
-        border: 1px solid var(--surface-border);
-        transition: all 0.15s ease;
-
-        &:hover {
-          background: var(--surface-hover);
-          gap: 10px;
+        &.date-today {
+          color: var(--primary-color, #3b82f6);
+          font-weight: 800;
         }
       }
     }

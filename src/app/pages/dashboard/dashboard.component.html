@@ -2,20 +2,6 @@
   <!-- DASHBOARD TOP HEADER -->
   <header class="dashboard-header">
     <div class="header-main-info">
-      <div class="header-tag-row">
-        <span class="overview-tag">PEDIDOPRO SUITE</span>
-        <span class="live-pill">
-          <span class="dot-pulse"></span>
-          @switch (role()) {
-            @case ('Administrador') { <i class="pi pi-shield"></i> Administrador General }
-            @case ('Mesero') { <i class="pi pi-user"></i> Módulo Salón y Atención }
-            @case ('Cocinero') { <i class="pi pi-bell"></i> Módulo Cocina y Producción }
-            @case ('Cajero') { <i class="pi pi-credit-card"></i> Módulo Financiero y Caja }
-            @default { {{ role() }} }
-          }
-        </span>
-      </div>
-
       <h1 class="page-title">
         @switch (role()) {
           @case ('Administrador') { Gestión Operativa y Financiera }
@@ -51,17 +37,6 @@
             Anual
           </button>
         </div>
-
-        <div class="action-buttons-group">
-          <button class="btn btn-primary btn-sm" (click)="openExportModal()">
-            <i class="pi pi-download"></i>
-            <span>Exportar</span>
-          </button>
-          <div class="date-range-badge">
-            <i class="pi pi-calendar"></i>
-            <span>{{ selectedPeriod() === 'weekly' ? 'Últimos 7 días' : (selectedPeriod() === 'yearly' ? 'Último Año' : 'Últimos 30 días') }}</span>
-          </div>
-        </div>
       } @else if (role() === 'Mesero') {
         <div class="action-buttons-group">
           <a routerLink="/mesas" class="btn btn-primary btn-sm">
@@ -91,56 +66,50 @@
   <!-- KPI METRICS GRID (Tailored per Role) -->
   <section class="kpi-grid">
     @if (role() === 'Administrador') {
-      <!-- Card 1: Ventas Hoy / Período -->
-      <div class="kpi-card glass-card">
+      <!-- Card 1: Ventas Período -->
+      <div class="kpi-card glass-card kpi-card-watermark kpi-watermark-emerald">
         <div class="kpi-card-top">
-          <span class="kpi-title">Ventas de Hoy</span>
-          <div class="kpi-icon-box icon-emerald"><i class="pi pi-wallet"></i></div>
-        </div>
-        <div class="kpi-card-bottom">
-          <span class="kpi-number">{{ formatCurrency(adminStats()?.ventas_hoy ?? 0) }}</span>
-          <span class="trend-badge trend-up">
-            <i class="pi pi-chart-line"></i> {{ formatCurrency(adminStats()?.ventas_periodo ?? 0) }} (Período)
+          <span class="kpi-title">
+            {{ selectedPeriod() === 'weekly' ? 'Ventas de la Semana' : (selectedPeriod() === 'yearly' ? 'Ventas del Año' : 'Ventas del Mes') }}
           </span>
         </div>
+        <div class="kpi-card-bottom">
+          <span class="kpi-number">{{ formatCurrency(adminStats()?.ventas_periodo ?? 0) }}</span>
+        </div>
+        <i class="kpi-watermark-icon pi pi-wallet"></i>
       </div>
 
       <!-- Card 2: Mesas Libres -->
-      <div class="kpi-card glass-card">
+      <div class="kpi-card glass-card kpi-card-watermark kpi-watermark-sky">
         <div class="kpi-card-top">
           <span class="kpi-title">Mesas Disponibles</span>
-          <div class="kpi-icon-box icon-sky"><i class="pi pi-table"></i></div>
         </div>
         <div class="kpi-card-bottom">
           <span class="kpi-number">{{ adminStats()?.mesas_libres ?? mesas().filter(m => m.estado === 'Libre').length }}</span>
-          <span class="trend-badge trend-neutral"><i class="pi pi-check"></i> Libres para asignar</span>
         </div>
+        <i class="kpi-watermark-icon pi pi-table"></i>
       </div>
 
       <!-- Card 3: Mesas Ocupadas -->
-      <div class="kpi-card glass-card">
+      <div class="kpi-card glass-card kpi-card-watermark kpi-watermark-amber">
         <div class="kpi-card-top">
           <span class="kpi-title">Mesas Ocupadas</span>
-          <div class="kpi-icon-box icon-amber"><i class="pi pi-bolt"></i></div>
         </div>
         <div class="kpi-card-bottom">
           <span class="kpi-number">{{ adminStats()?.mesas_ocupadas ?? mesas().filter(m => m.estado === 'Ocupada').length }}</span>
-          <span class="trend-badge trend-live"><span class="dot-indicator"></span> {{ occupancyRate() }} Ocupación</span>
         </div>
+        <i class="kpi-watermark-icon pi pi-bolt"></i>
       </div>
 
       <!-- Card 4: Alertas Inventario -->
-      <div class="kpi-card glass-card">
+      <div class="kpi-card glass-card kpi-card-watermark kpi-watermark-indigo">
         <div class="kpi-card-top">
           <span class="kpi-title">Alertas Stock Inventario</span>
-          <div class="kpi-icon-box icon-indigo"><i class="pi pi-exclamation-triangle"></i></div>
         </div>
         <div class="kpi-card-bottom">
           <span class="kpi-number">{{ adminStats()?.alertas_inventario ?? 0 }}</span>
-          <span class="trend-badge" [class.trend-danger]="(adminStats()?.alertas_inventario ?? 0) > 0" [class.trend-optimal]="(adminStats()?.alertas_inventario ?? 0) === 0">
-            <i class="pi pi-box"></i> {{ (adminStats()?.alertas_inventario ?? 0) > 0 ? 'Insumos Bajos' : 'Stock Óptimo' }}
-          </span>
         </div>
+        <i class="kpi-watermark-icon pi pi-exclamation-triangle"></i>
       </div>
 
     } @else if (role() === 'Mesero') {
@@ -292,7 +261,7 @@
     }
   </section>
 
-  <!-- ADMIN CHARTS & OPERATIONAL MIX -->
+  <!-- ADMIN CHARTS (FULL WIDTH INTERACTIVE) -->
   @if (role() === 'Administrador') {
     <section class="charts-row">
       <!-- Activity Chart -->
@@ -300,7 +269,6 @@
         <div class="card-header-row">
           <div class="card-title-group">
             <h3 class="card-title">Actividad de Ventas e Ingresos</h3>
-            <span class="card-subtitle">Facturación registrada en la base de datos ({{ selectedPeriod() === 'weekly' ? 'Semanal' : (selectedPeriod() === 'yearly' ? 'Anual' : 'Mensual') }})</span>
           </div>
         </div>
 
@@ -310,76 +278,25 @@
               <i class="pi pi-spin pi-spinner"></i>
               <span>Cargando datos...</span>
             </div>
-          } @else if ((adminStats()?.actividad_ventas?.length ?? 0) === 0) {
-            <div class="empty-chart-state" style="height: 220px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--text-muted);">
-              <i class="pi pi-chart-bar" style="font-size: 2rem; opacity: 0.5;"></i>
-              <span style="font-size: 0.88rem;">No hay registros de ventas facturadas en este período</span>
-            </div>
           } @else {
             <div class="prime-bar-chart">
-              @for (v of adminStats()!.actividad_ventas; track v.fecha) {
+              @for (d of chartTimelineData(); track d.key) {
                 <div class="chart-bar-column">
-                  <div class="layered-pill-bar" [style.height]="getBarHeight(v.total_ventas)" [title]="v.fecha + ': ' + formatCurrency(v.total_ventas) + ' (' + v.cantidad_facturas + ' comprobantes)'">
+                  <div class="layered-pill-bar" 
+                       [class.bar-active]="d.total_ventas > 0"
+                       [class.bar-zero]="d.total_ventas === 0"
+                       [class.bar-today]="d.isCurrent"
+                       [style.height]="getBarHeight(d.total_ventas)" 
+                       [title]="d.fullLabel + '\nFacturación: ' + formatCurrency(d.total_ventas) + (d.cantidad_facturas ? ' (' + d.cantidad_facturas + ' comprobantes)' : ' (Sin ventas)')">
                     <div class="bar-segment segment-top"></div>
                     <div class="bar-segment segment-mid"></div>
                     <div class="bar-segment segment-base"></div>
                   </div>
-                  <span class="column-date">{{ v.fecha | slice:5:10 }}</span>
+                  <span class="column-date" [class.date-today]="d.isCurrent">{{ d.label }}</span>
                 </div>
               }
             </div>
           }
-        </div>
-      </div>
-
-      <!-- Operational / Category Mix Card -->
-      <div class="chart-box glass-card mix-card">
-        <div class="card-header-row">
-          <div class="card-title-group">
-            <h3 class="card-title">Mix de Facturación</h3>
-            <span class="card-subtitle">Distribución real por categoría en el período</span>
-          </div>
-        </div>
-
-        <div class="mix-total-row">
-          <span class="mix-amount">{{ formatCurrency(adminStats()?.total_mix_facturacion ?? adminStats()?.ventas_periodo ?? 0) }}</span>
-          <span class="trend-badge trend-up">Facturado</span>
-        </div>
-
-        @if ((adminStats()?.mix_facturacion?.length ?? 0) > 0) {
-          <!-- Progress bar with real segments -->
-          <div class="multi-progress-bar">
-            @for (m of adminStats()!.mix_facturacion; track m.id_categoria; let idx = $index) {
-              <div class="progress-segment" 
-                   [style.width.%]="m.porcentaje" 
-                   [style.background]="getCategoryColor(idx)"
-                   [title]="m.nombre_categoria + ' (' + m.porcentaje + '%): ' + formatCurrency(m.total_categoria)">
-              </div>
-            }
-          </div>
-
-          <div class="category-breakdown-list">
-            @for (m of adminStats()!.mix_facturacion; track m.id_categoria; let idx = $index) {
-              <div class="category-item">
-                <div class="cat-left">
-                  <span class="cat-dot" [style.background]="getCategoryColor(idx)"></span>
-                  <span class="cat-name">{{ m.nombre_categoria }} ({{ m.porcentaje }}%)</span>
-                </div>
-                <span class="cat-val">{{ formatCurrency(m.total_categoria) }}</span>
-              </div>
-            }
-          </div>
-        } @else {
-          <div style="padding: 20px 0; text-align: center; color: var(--text-muted); font-size: 0.85rem;">
-            No hay consumos por categoría registrados en este período.
-          </div>
-        }
-
-        <div class="mix-card-footer">
-          <a routerLink="/reportes" class="view-ledger-link">
-            <span>Ver Reportes Detallados</span>
-            <i class="pi pi-arrow-right"></i>
-          </a>
         </div>
       </div>
     </section>
@@ -397,17 +314,21 @@
             @else if (role() === 'Mesero') { Mis Comandas Recientes }
             @else { Actividad Reciente de Comandas }
           </h3>
-          <span class="card-subtitle">Flujo en tiempo real desde la base de datos</span>
+          @if (role() !== 'Administrador') {
+            <span class="card-subtitle">Flujo en tiempo real desde la base de datos</span>
+          }
         </div>
-        <div class="table-header-tags">
-          <button type="button" class="badge badge-warning" style="cursor: pointer; border: none;" (click)="togglePendientesFilter()">
-            <i class="pi pi-filter"></i>
-            {{ pendientesCount() }} pendientes
-          </button>
-          <button class="btn-icon-more" title="Opciones de actividad" (click)="openActivityOptions()">
-            <i class="pi pi-ellipsis-h"></i>
-          </button>
-        </div>
+        @if (role() !== 'Administrador') {
+          <div class="table-header-tags">
+            <button type="button" class="badge badge-warning" style="cursor: pointer; border: none;" (click)="togglePendientesFilter()">
+              <i class="pi pi-filter"></i>
+              {{ pendientesCount() }} pendientes
+            </button>
+            <button class="btn-icon-more" title="Opciones de actividad" (click)="openActivityOptions()">
+              <i class="pi pi-ellipsis-h"></i>
+            </button>
+          </div>
+        }
       </div>
 
       <div class="data-table-container">
@@ -423,7 +344,7 @@
             </tr>
           </thead>
           <tbody>
-            @for (item of paginatedActivity(); track item.id) {
+            @for (item of (role() === 'Administrador' ? recentActivity().slice(0, 5) : paginatedActivity()); track item.id) {
               <tr (click)="viewActivityDetail(item)" style="cursor: pointer;" title="Click para ver detalle">
                 <td class="font-mono text-muted">{{ item.id }}</td>
                 <td>
@@ -454,22 +375,24 @@
         </table>
       </div>
 
-      <div class="table-pagination-row">
-        <span class="pagination-info">Mostrando {{ startEntry() }} a {{ endEntry() }} de {{ filteredActivity().length }} entradas</span>
-        <div class="pagination-pills">
-          <button class="pag-btn" [disabled]="currentPage() === 1" (click)="setPage(currentPage() - 1)" title="Página anterior">
-            <i class="pi pi-chevron-left"></i>
-          </button>
-          @for (p of pagesList(); track p) {
-            <button class="pag-btn" [class.active]="currentPage() === p" (click)="setPage(p)">
-              {{ p }}
+      @if (role() !== 'Administrador') {
+        <div class="table-pagination-row">
+          <span class="pagination-info">Mostrando {{ startEntry() }} a {{ endEntry() }} de {{ filteredActivity().length }} entradas</span>
+          <div class="pagination-pills">
+            <button class="pag-btn" [disabled]="currentPage() === 1" (click)="setPage(currentPage() - 1)" title="Página anterior">
+              <i class="pi pi-chevron-left"></i>
             </button>
-          }
-          <button class="pag-btn" [disabled]="currentPage() === totalPages()" (click)="setPage(currentPage() + 1)" title="Página siguiente">
-            <i class="pi pi-chevron-right"></i>
-          </button>
+            @for (p of pagesList(); track p) {
+              <button class="pag-btn" [class.active]="currentPage() === p" (click)="setPage(p)">
+                {{ p }}
+              </button>
+            }
+            <button class="pag-btn" [disabled]="currentPage() === totalPages()" (click)="setPage(currentPage() + 1)" title="Página siguiente">
+              <i class="pi pi-chevron-right"></i>
+            </button>
+          </div>
         </div>
-      </div>
+      }
     </div>
 
     <!-- Top Platillos & Mesas Status -->
@@ -480,10 +403,9 @@
             @if (role() === 'Cocinero') { Alertas de Insumos }
             @else { Platillos Más Pedidos }
           </h3>
-          <span class="card-subtitle">
-            @if (role() === 'Cocinero') { Existencias críticas de despensa }
-            @else { Favoritos del menú (Histórico real) }
-          </span>
+          @if (role() === 'Cocinero') {
+            <span class="card-subtitle">Existencias críticas de despensa</span>
+          }
         </div>
       </div>
 
@@ -531,24 +453,6 @@
           }
         </div>
       }
-
-      <!-- Quick Mesas Floor Status Grid -->
-      <div class="floor-mini-section">
-        <div class="floor-title-row">
-          <span class="floor-label">Distribución de Mesas</span>
-          <a routerLink="/mesas" class="floor-link">Ver Plano <i class="pi pi-arrow-right"></i></a>
-        </div>
-        <div class="mini-mesas-grid">
-          @for (m of mesas().slice(0, 10); track m.id_mesa) {
-            <div class="mini-mesa-pill" [class]="'pill-mesa-' + (m.estado || 'Libre').toLowerCase()">
-              <span class="m-num">M{{ m.numero_mesa }}</span>
-              <span class="m-dot"></span>
-            </div>
-          } @empty {
-            <span style="font-size: 0.8rem; color: var(--text-muted);">Sin mesas configuradas</span>
-          }
-        </div>
-      </div>
     </div>
   </section>
 </div>
