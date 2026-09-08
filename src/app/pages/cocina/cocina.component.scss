@@ -409,6 +409,34 @@
         letter-spacing: -0.01em;
       }
     }
+
+    .btn-edit-order {
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      color: #d97706;
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      flex-shrink: 0;
+
+      &:hover {
+        background: #f59e0b;
+        color: #ffffff;
+        border-color: #f59e0b;
+        transform: scale(1.15);
+        box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
+      }
+
+      &:active {
+        transform: scale(0.95);
+      }
+    }
   }
 
   .card-subtitle-line {

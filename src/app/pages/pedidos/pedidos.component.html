@@ -62,8 +62,8 @@
     <div class="carrito-top">
       <div class="carrito-header">
         <div class="header-left">
-          <i class="pi pi-receipt header-icon"></i>
-          <h3>Ticket Pedido</h3>
+          <i [class]="isEditing() ? 'pi pi-file-edit header-icon edit-active' : 'pi pi-receipt header-icon'"></i>
+          <h3>{{ isEditing() ? ('Editar Pedido #' + editPedidoId()) : 'Ticket Pedido' }}</h3>
         </div>
         <span class="status-pill badge-neutral">{{ cantTotal() }} items</span>
       </div>
@@ -151,13 +151,20 @@
         </div>
       }
 
-      <button class="btn btn-primary send-btn" [disabled]="!carrito().length || !mesaId() || sending()" (click)="enviar()">
+      @if (isEditing()) {
+        <button class="btn btn-ghost cancel-btn" (click)="cancelarEdicion()">
+          <i class="pi pi-times"></i>
+          <span>Cancelar Edición</span>
+        </button>
+      }
+
+      <button class="btn btn-primary send-btn" [class.btn-edit-mode]="isEditing()" [disabled]="!carrito().length || !mesaId() || sending()" (click)="enviar()">
         @if (sending()) {
           <i class="pi pi-spin pi-spinner"></i>
-          <span>Enviando Pedido...</span>
+          <span>{{ isEditing() ? 'Guardando Cambios...' : 'Enviando Pedido...' }}</span>
         } @else {
-          <i class="pi pi-send"></i>
-          <span>Enviar a Cocina</span>
+          <i [class]="isEditing() ? 'pi pi-check' : 'pi pi-send'"></i>
+          <span>{{ isEditing() ? 'Guardar Cambios' : 'Enviar a Cocina' }}</span>
         }
       </button>
     </div>

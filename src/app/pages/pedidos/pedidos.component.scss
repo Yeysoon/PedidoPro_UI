@@ -227,6 +227,10 @@
         .header-icon {
           color: var(--primary-color);
           font-size: 1.1rem;
+
+          &.edit-active {
+            color: #f59e0b;
+          }
         }
 
         h3 {
@@ -492,6 +496,25 @@
       }
     }
 
+    .cancel-btn {
+      width: 100%;
+      padding: 9px;
+      font-size: 0.84rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      color: var(--text-muted);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--surface-border);
+
+      &:hover {
+        background: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
+        border-color: rgba(239, 68, 68, 0.3);
+      }
+    }
+
     .send-btn {
       width: 100%;
       padding: 10px;
@@ -501,6 +524,15 @@
       justify-content: center;
       gap: 8px;
       font-weight: 700;
+
+      &.btn-edit-mode {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        border-color: #d97706;
+
+        &:hover:not(:disabled) {
+          box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+        }
+      }
     }
   }
 }

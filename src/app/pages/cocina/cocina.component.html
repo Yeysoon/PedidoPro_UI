@@ -90,6 +90,11 @@
                       <span class="status-indicator-dot dot-red"></span>
                       <h3 class="card-title">Mesa {{ c.numero_mesa }} | Pedido #{{ c.id_pedido }}</h3>
                     </div>
+                    @if (isMesero() || isAdmin()) {
+                      <button class="btn-edit-order" (click)="editarPedido(c, $event)" title="Editar pedido (solo en estado Pendiente)">
+                        <i class="pi pi-pencil"></i>
+                      </button>
+                    }
                   </div>
 
                   <div class="card-subtitle-line">

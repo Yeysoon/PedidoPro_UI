@@ -44,6 +44,10 @@ export class PedidosComponent implements OnInit {
   loading   = signal(true);
   sending   = signal(false);
 
+  // Modo edición de pedido
+  isEditing = signal(false);
+  editPedidoId = signal<number | null>(null);
+
   filtrados = computed(() => {
     const p = this.productos();
     const catId = Number(this.catActiva());
@@ -68,8 +72,7 @@ export class PedidosComponent implements OnInit {
     this.mesasSvc.getMesas().subscribe({
       next: (m: Mesa[]) => {
         this.mesas.set(m);
-        // Si no se pasó mesa por query param, preseleccionar la primera mesa libre si existe
-        if (!this.mesaId() && m.length > 0) {
+        if (!this.mesaId() && !this.isEditing() && m.length > 0) {
           const libre = m.find(x => x.estado === 'Libre') || m[0];
           if (libre) {
             this.mesaId.set(libre.id_mesa);
@@ -82,7 +85,13 @@ export class PedidosComponent implements OnInit {
     this.route.queryParams.subscribe(p => {
       const qMesa = +p['mesa'] || 0;
       const qNum = +p['num'] || 0;
-      if (qMesa) {
+      const editId = +p['edit'] || 0;
+
+      if (editId) {
+        this.isEditing.set(true);
+        this.editPedidoId.set(editId);
+        this.cargarPedidoParaEdicion(editId);
+      } else if (qMesa) {
         this.mesaId.set(qMesa);
         this.mesaNum.set(qNum);
       }
@@ -110,6 +119,39 @@ export class PedidosComponent implements OnInit {
         }
       },
       error: () => this.categorias.set(DEFAULT_CATEGORIAS)
+    });
+  }
+
+  cargarPedidoParaEdicion(id_pedido: number) {
+    this.pedidosSvc.getPedido(id_pedido).subscribe({
+      next: (pedido: any) => {
+        if (!pedido) return;
+        if (pedido.id_mesa) {
+          this.mesaId.set(Number(pedido.id_mesa));
+          this.mesaNum.set(Number(pedido.numero_mesa || 0));
+        }
+        if (pedido.id_cliente) {
+          this.clienteId.set(Number(pedido.id_cliente));
+        }
+        if (pedido.notas_generales) {
+          this.notas.set(pedido.notas_generales);
+        }
+        if (pedido.detalles && pedido.detalles.length) {
+          this.carrito.set(pedido.detalles.map((d: any) => ({
+            id_detalle: d.id_detalle,
+            id_producto: d.id_producto,
+            cantidad: Number(d.cantidad),
+            precio_unitario_historico: Number(d.precio_unitario_historico ?? d.precio ?? 0),
+            notas_especiales: d.notas_especiales || '',
+            nombre_producto: d.nombre_producto
+          })));
+        }
+      },
+      error: () => {
+        this.alert.error('Error', 'No se pudo cargar el pedido a editar');
+        this.isEditing.set(false);
+        this.editPedidoId.set(null);
+      }
     });
   }
 
@@ -259,6 +301,10 @@ export class PedidosComponent implements OnInit {
     });
   }
 
+  cancelarEdicion() {
+    this.router.navigate(['/cocina']);
+  }
+
   enviar() {
     if (!this.mesaId()) {
       this.alert.warningToast('Por favor selecciona una mesa para la orden');
@@ -270,6 +316,36 @@ export class PedidosComponent implements OnInit {
     }
 
     this.sending.set(true);
+
+    if (this.isEditing() && this.editPedidoId()) {
+      this.pedidosSvc.updatePedido(this.editPedidoId()!, {
+        id_mesa: this.mesaId(),
+        id_cliente: this.clienteId() || undefined,
+        notas_generales: this.notas(),
+        detalles: this.carrito().map(d => ({
+          id_producto: d.id_producto,
+          cantidad: d.cantidad,
+          notas_especiales: d.notas_especiales
+        }))
+      }).subscribe({
+        next: () => {
+          this.alert.success('Pedido Actualizado', `El pedido #${this.editPedidoId()} fue actualizado exitosamente.`);
+          this.carrito.set([]);
+          this.notas.set('');
+          this.clienteId.set(undefined);
+          this.isEditing.set(false);
+          this.editPedidoId.set(null);
+          this.sending.set(false);
+          setTimeout(() => this.router.navigate(['/cocina']), 400);
+        },
+        error: e => {
+          this.alert.error('Error al actualizar pedido', e.error?.message || 'No se pudo actualizar el pedido');
+          this.sending.set(false);
+        }
+      });
+      return;
+    }
+
     this.pedidosSvc.createPedido({
       id_mesa: this.mesaId(),
       id_cliente: this.clienteId() || undefined,

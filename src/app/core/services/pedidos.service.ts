@@ -5,9 +5,28 @@ import { Pedido, DetallePedido } from '../models';
 @Injectable({ providedIn: 'root' })
 export class PedidosService {
   constructor(private api: ApiService) {}
+  
+  getPedidos(params?: any) {
+    return this.api.get<any>('/api/pedidos', params);
+  }
+
+  getPedido(id: number) {
+    return this.api.get<Pedido>(`/api/pedidos/${id}`);
+  }
+
   createPedido(data: { id_mesa: number; id_cliente?: number; notas_generales?: string; detalles: DetallePedido[] }) {
     return this.api.post<Pedido>('/api/pedidos', data);
   }
-  getCuentaMesa(id_mesa: number) { return this.api.get<Pedido[]>(`/api/pedidos/mesa/${id_mesa}`); }
-  cancelPedido(id: number)       { return this.api.patch<any>(`/api/pedidos/${id}/cancelar`); }
+
+  updatePedido(id: number, data: { id_mesa: number; id_cliente?: number; notas_generales?: string; detalles: DetallePedido[] }) {
+    return this.api.put<any>(`/api/pedidos/${id}`, data);
+  }
+
+  getCuentaMesa(id_mesa: number) { 
+    return this.api.get<Pedido[]>(`/api/pedidos/mesa/${id_mesa}`); 
+  }
+  
+  cancelPedido(id: number) { 
+    return this.api.patch<any>(`/api/pedidos/${id}/cancelar`); 
+  }
 }

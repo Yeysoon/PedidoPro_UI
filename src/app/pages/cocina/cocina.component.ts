@@ -1,5 +1,6 @@
 import { Component, signal, computed, OnInit, OnDestroy, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { CocinaService } from '../../core/services/cocina.service';
 import { AlertService } from '../../core/services/alert.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -16,6 +17,7 @@ export class CocinaComponent implements OnInit, OnDestroy {
   private svc = inject(CocinaService);
   private alert = inject(AlertService);
   private auth = inject(AuthService);
+  private router = inject(Router);
 
   comandas = signal<Comanda[]>([]);
   busqueda = signal('');
@@ -23,6 +25,11 @@ export class CocinaComponent implements OnInit, OnDestroy {
   draggedComanda: Comanda | null = null;
   dragOverColId = signal<number | null>(null);
   private interval: any;
+
+  editarPedido(c: Comanda, event: Event) {
+    event.stopPropagation();
+    this.router.navigate(['/pedidos'], { queryParams: { edit: c.id_pedido } });
+  }
 
   // Roles
   userRole = computed(() => this.auth.getRole() || 'Administrador');
