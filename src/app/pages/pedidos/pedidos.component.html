@@ -83,11 +83,16 @@
         </select>
       </div>
 
-      <!-- Selector de Cliente en Ticket -->
+      <!-- Selector de Cliente en Ticket con botón '+' -->
       <div class="mesa-select-box cliente-select-box">
-        <label for="clienteSelect">
-          <i class="pi pi-user"></i> Cliente Registrado
-        </label>
+        <div class="box-label-row">
+          <label for="clienteSelect">
+            <i class="pi pi-user"></i> Cliente Registrado
+          </label>
+          <button type="button" class="btn-add-client" (click)="abrirModalCliente()" title="Registrar nuevo cliente">
+            <i class="pi pi-plus"></i>
+          </button>
+        </div>
         <select id="clienteSelect" class="form-control mesa-dropdown" [ngModel]="clienteId()" (ngModelChange)="clienteId.set(+$event || undefined)">
           <option [value]="0">Consumidor Final (C/F)</option>
           @for (c of clientes(); track c.id_cliente) {
@@ -158,3 +163,76 @@
     </div>
   </div>
 </div>
+
+@if (showClienteModal()) {
+  <div class="modal-overlay" (click)="cerrarModalCliente()">
+    <div class="modal-box glass-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-header-title">
+          <h2>Registrar Nuevo Cliente</h2>
+          <span class="modal-subtitle">Registra al cliente para asignarlo inmediatamente a este pedido</span>
+        </div>
+        <button class="close-btn" (click)="cerrarModalCliente()">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+
+      <div class="modal-form-grid">
+        <div class="form-group full">
+          <label><i class="pi pi-user"></i> Nombre Completo *</label>
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Ej. Juan Pérez"
+            [value]="nuevoCliente().nombre_completo || ''"
+            (input)="updateNuevoCliente('nombre_completo', $any($event.target).value)"
+          />
+        </div>
+
+        <div class="form-group">
+          <label><i class="pi pi-id-card"></i> NIT / Documento</label>
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Ej. 12345678-9 o C/F"
+            [value]="nuevoCliente().nit_documento || ''"
+            (input)="updateNuevoCliente('nit_documento', $any($event.target).value)"
+          />
+        </div>
+
+        <div class="form-group">
+          <label><i class="pi pi-phone"></i> Teléfono</label>
+          <input
+            type="tel"
+            class="form-control"
+            placeholder="Ej. 5555-1234"
+            [value]="nuevoCliente().telefono || ''"
+            (input)="updateNuevoCliente('telefono', $any($event.target).value)"
+          />
+        </div>
+
+        <div class="form-group full">
+          <label><i class="pi pi-envelope"></i> Correo Electrónico</label>
+          <input
+            type="email"
+            class="form-control"
+            placeholder="Ej. cliente@correo.com"
+            [value]="nuevoCliente().correo_electronico || ''"
+            (input)="updateNuevoCliente('correo_electronico', $any($event.target).value)"
+          />
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-ghost" (click)="cerrarModalCliente()">Cancelar</button>
+        <button class="btn btn-primary" [disabled]="guardandoCliente()" (click)="guardarNuevoCliente()">
+          @if (guardandoCliente()) {
+            <i class="pi pi-spin pi-spinner"></i> Guardando...
+          } @else {
+            <i class="pi pi-check"></i> Registrar y Asignar
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

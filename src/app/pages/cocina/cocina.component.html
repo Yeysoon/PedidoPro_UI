@@ -94,6 +94,11 @@
 
                   <div class="card-subtitle-line">
                     <span class="waiter-name">Mesero: {{ c.mesero || 'Mesero Asignado' }}</span>
+                    @if (c.cliente_nombre) {
+                      <span class="client-badge" [title]="'NIT: ' + (c.cliente_nit || 'C/F')">
+                        <i class="pi pi-id-card"></i> {{ c.cliente_nombre }}
+                      </span>
+                    }
                   </div>
 
                   <div class="card-meta-line">
@@ -188,6 +193,11 @@
 
                   <div class="card-subtitle-line">
                     <span class="waiter-name">Mesero: {{ c.mesero || 'Mesero Asignado' }}</span>
+                    @if (c.cliente_nombre) {
+                      <span class="client-badge" [title]="'NIT: ' + (c.cliente_nit || 'C/F')">
+                        <i class="pi pi-id-card"></i> {{ c.cliente_nombre }}
+                      </span>
+                    }
                   </div>
 
                   <div class="card-meta-line">
@@ -282,6 +292,11 @@
 
                   <div class="card-subtitle-line">
                     <span class="waiter-name">Mesero: {{ c.mesero || 'Mesero Asignado' }}</span>
+                    @if (c.cliente_nombre) {
+                      <span class="client-badge" [title]="'NIT: ' + (c.cliente_nit || 'C/F')">
+                        <i class="pi pi-id-card"></i> {{ c.cliente_nombre }}
+                      </span>
+                    }
                   </div>
 
                   <div class="card-meta-line">
@@ -372,6 +387,11 @@
 
                   <div class="card-subtitle-line">
                     <span class="waiter-name">Mesero: {{ c.mesero || 'Mesero Asignado' }}</span>
+                    @if (c.cliente_nombre) {
+                      <span class="client-badge" [title]="'NIT: ' + (c.cliente_nit || 'C/F')">
+                        <i class="pi pi-id-card"></i> {{ c.cliente_nombre }}
+                      </span>
+                    }
                   </div>
 
                   <div class="card-meta-line">

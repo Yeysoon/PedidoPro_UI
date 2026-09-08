@@ -68,6 +68,9 @@ export interface Pedido {
   numero_mesa?: number;
   nombre_mesero?: string;
   mesero?: string;
+  id_cliente?: number;
+  cliente_nombre?: string;
+  cliente_nit?: string;
   total_estimado?: number;
   detalles?: DetallePedido[];
 }
@@ -80,6 +83,9 @@ export interface Comanda {
   estado?: string;
   mesero?: string;
   mesero_nombre?: string;
+  id_cliente?: number;
+  cliente_nombre?: string;
+  cliente_nit?: string;
   fecha_hora_creacion: string;
   notas_generales?: string;
   detalles: DetallePedido[];

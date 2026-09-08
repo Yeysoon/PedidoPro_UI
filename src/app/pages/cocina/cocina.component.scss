@@ -416,12 +416,36 @@
     color: var(--text-secondary);
     font-weight: 500;
     margin-top: -3px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    flex-wrap: wrap;
 
     .waiter-name {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
       display: block;
+    }
+
+    .client-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 7px;
+      border-radius: var(--radius-pill);
+      font-size: 0.68rem;
+      font-weight: 700;
+      background: rgba(14, 165, 233, 0.1);
+      color: #0284c7;
+      border: 1px solid rgba(14, 165, 233, 0.25);
+      max-width: 140px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+
+      i { font-size: 0.66rem; }
     }
   }
 

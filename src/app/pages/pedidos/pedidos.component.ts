@@ -160,6 +160,55 @@ export class PedidosComponent implements OnInit {
     return this.carrito().find(i => i.id_producto === id)?.cantidad ?? 0;
   }
 
+  showClienteModal = signal(false);
+  nuevoCliente = signal<Partial<Cliente>>({ nombre_completo: '', nit_documento: '', telefono: '', correo_electronico: '' });
+  guardandoCliente = signal(false);
+
+  abrirModalCliente() {
+    this.nuevoCliente.set({ nombre_completo: '', nit_documento: '', telefono: '', correo_electronico: '' });
+    this.showClienteModal.set(true);
+  }
+
+  cerrarModalCliente() {
+    this.showClienteModal.set(false);
+  }
+
+  updateNuevoCliente(field: string, val: string) {
+    this.nuevoCliente.update(c => ({ ...c, [field]: val }));
+  }
+
+  guardarNuevoCliente() {
+    const c = this.nuevoCliente();
+    if (!c.nombre_completo || !c.nombre_completo.trim()) {
+      this.alert.warningToast('El nombre completo del cliente es obligatorio');
+      return;
+    }
+
+    this.guardandoCliente.set(true);
+    this.clientesSvc.createCliente(c).subscribe({
+      next: (created: any) => {
+        const newId = created.id_cliente || (created.data ? created.data.id_cliente : undefined) || created.id;
+        const clientObj: Cliente = {
+          id_cliente: newId || Date.now(),
+          nombre_completo: c.nombre_completo!.trim(),
+          nit_documento: c.nit_documento?.trim() || '',
+          telefono: c.telefono?.trim() || '',
+          correo_electronico: c.correo_electronico?.trim() || ''
+        };
+
+        this.clientes.update(list => [clientObj, ...list]);
+        this.clienteId.set(clientObj.id_cliente);
+        this.alert.success('Cliente Registrado', `Cliente "${clientObj.nombre_completo}" registrado y asignado al pedido.`);
+        this.guardandoCliente.set(false);
+        this.showClienteModal.set(false);
+      },
+      error: e => {
+        this.alert.error('Error al registrar cliente', e.error?.message || 'No se pudo crear el cliente');
+        this.guardandoCliente.set(false);
+      }
+    });
+  }
+
   enviar() {
     if (!this.mesaId()) {
       this.alert.warningToast('Por favor selecciona una mesa para la orden');
@@ -173,6 +222,7 @@ export class PedidosComponent implements OnInit {
     this.sending.set(true);
     this.pedidosSvc.createPedido({
       id_mesa: this.mesaId(),
+      id_cliente: this.clienteId() || undefined,
       notas_generales: this.notas(),
       detalles: this.carrito().map(d => ({
         id_producto: d.id_producto,
@@ -184,6 +234,7 @@ export class PedidosComponent implements OnInit {
         this.alert.success('Pedido Enviado', `La orden para la Mesa ${this.mesaNum() || this.mesaId()} fue enviada a Cocina.`);
         this.carrito.set([]);
         this.notas.set('');
+        this.clienteId.set(undefined);
         this.sending.set(false);
         setTimeout(() => this.router.navigate(['/mesas']), 400);
       },
