@@ -4,8 +4,9 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MenuService } from '../../core/services/menu.service';
 import { PedidosService } from '../../core/services/pedidos.service';
 import { MesasService } from '../../core/services/mesas.service';
+import { ClientesService } from '../../core/services/clientes.service';
 import { AlertService } from '../../core/services/alert.service';
-import { Producto, Categoria, DetallePedido, Mesa } from '../../core/models';
+import { Producto, Categoria, DetallePedido, Mesa, Cliente } from '../../core/models';
 
 const DEFAULT_CATEGORIAS: Categoria[] = [
   { id_categoria: 4, nombre_categoria: 'Entradas' },
@@ -27,11 +28,14 @@ export class PedidosComponent implements OnInit {
   private menuSvc = inject(MenuService);
   private pedidosSvc = inject(PedidosService);
   private mesasSvc = inject(MesasService);
+  private clientesSvc = inject(ClientesService);
   private alert = inject(AlertService);
 
   mesaId  = signal(0);
   mesaNum = signal(0);
+  clienteId = signal<number | undefined>(undefined);
   mesas   = signal<Mesa[]>([]);
+  clientes = signal<Cliente[]>([]);
   productos = signal<Producto[]>([]);
   categorias = signal<Categoria[]>(DEFAULT_CATEGORIAS);
   carrito   = signal<DetallePedido[]>([]);
@@ -90,6 +94,11 @@ export class PedidosComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => this.loading.set(false)
+    });
+
+    this.clientesSvc.getClientes().subscribe({
+      next: c => this.clientes.set(c || []),
+      error: () => this.clientes.set([])
     });
 
     this.menuSvc.getCategorias().subscribe({
@@ -157,7 +166,7 @@ export class PedidosComponent implements OnInit {
       return;
     }
     if (!this.carrito().length) {
-      this.alert.warningToast('Agrega al menos un producto a la comanda');
+      this.alert.warningToast('Agrega al menos un producto al pedido');
       return;
     }
 
@@ -172,14 +181,14 @@ export class PedidosComponent implements OnInit {
       }))
     }).subscribe({
       next: () => {
-        this.alert.success('Comanda Enviada', `La orden para la Mesa ${this.mesaNum() || this.mesaId()} fue enviada a Cocina.`);
+        this.alert.success('Pedido Enviado', `La orden para la Mesa ${this.mesaNum() || this.mesaId()} fue enviada a Cocina.`);
         this.carrito.set([]);
         this.notas.set('');
         this.sending.set(false);
         setTimeout(() => this.router.navigate(['/mesas']), 400);
       },
       error: e => {
-        this.alert.error('Error al enviar comanda', e.error?.message || 'No se pudo registrar la comanda');
+        this.alert.error('Error al enviar pedido', e.error?.message || 'No se pudo registrar el pedido');
         this.sending.set(false);
       }
     });

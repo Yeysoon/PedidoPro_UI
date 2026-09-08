@@ -57,13 +57,13 @@
     }
   </div>
 
-  <!-- CARRITO / COMANDA TICKET PANEL -->
+  <!-- CARRITO / PEDIDO TICKET PANEL -->
   <div class="carrito-panel glass-card">
     <div class="carrito-top">
       <div class="carrito-header">
         <div class="header-left">
           <i class="pi pi-receipt header-icon"></i>
-          <h3>Ticket Comanda</h3>
+          <h3>Ticket Pedido</h3>
         </div>
         <span class="status-pill badge-neutral">{{ cantTotal() }} items</span>
       </div>
@@ -82,14 +82,29 @@
           }
         </select>
       </div>
+
+      <!-- Selector de Cliente en Ticket -->
+      <div class="mesa-select-box cliente-select-box">
+        <label for="clienteSelect">
+          <i class="pi pi-user"></i> Cliente Registrado
+        </label>
+        <select id="clienteSelect" class="form-control mesa-dropdown" [ngModel]="clienteId()" (ngModelChange)="clienteId.set(+$event || undefined)">
+          <option [value]="0">Consumidor Final (C/F)</option>
+          @for (c of clientes(); track c.id_cliente) {
+            <option [value]="c.id_cliente">
+              {{ c.nombre_completo }} ({{ c.nit_documento || 'Sin NIT' }})
+            </option>
+          }
+        </select>
+      </div>
     </div>
 
-    <!-- CUERPO DE COMANDA (Items o Estado Vacío) -->
+    <!-- CUERPO DE PEDIDO (Items o Estado Vacío) -->
     <div class="carrito-body">
       @if (!carrito().length) {
         <div class="carrito-empty">
           <i class="pi pi-shopping-cart empty-icon"></i>
-          <p>Selecciona platillos del menú para armar la comanda.</p>
+          <p>Selecciona platillos del menú para armar el pedido.</p>
         </div>
       } @else {
         <div class="carrito-items-list">
@@ -126,7 +141,7 @@
     <div class="carrito-bottom">
       @if (carrito().length > 0) {
         <div class="carrito-total-box">
-          <span>Total Comanda</span>
+          <span>Total Pedido</span>
           <span class="total-amount">{{ formatCurrency(total()) }}</span>
         </div>
       }
@@ -134,7 +149,7 @@
       <button class="btn btn-primary send-btn" [disabled]="!carrito().length || !mesaId() || sending()" (click)="enviar()">
         @if (sending()) {
           <i class="pi pi-spin pi-spinner"></i>
-          <span>Enviando Comanda...</span>
+          <span>Enviando Pedido...</span>
         } @else {
           <i class="pi pi-send"></i>
           <span>Enviar a Cocina</span>
