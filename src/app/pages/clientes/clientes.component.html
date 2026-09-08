@@ -28,8 +28,6 @@
           <tr>
             <th>NIT / Identificación</th>
             <th>Cliente</th>
-            <th>Correo Electrónico</th>
-            <th>Teléfono</th>
             <th style="text-align: right;">Acciones</th>
           </tr>
         </thead>
@@ -50,8 +48,6 @@
                   <strong class="user-cell-name">{{ c.nombre_completo }}</strong>
                 </div>
               </td>
-              <td class="text-secondary">{{ c.correo_electronico || '—' }}</td>
-              <td class="text-secondary">{{ c.telefono || '—' }}</td>
               <td style="text-align: right;">
                 <div class="row-actions">
                   <button class="action-btn edit" (click)="openEdit(c)" title="Editar cliente">
@@ -83,22 +79,12 @@
       <div class="form-grid">
         <div class="form-group full">
           <label>Nombre Completo *</label>
-          <input class="form-control" [value]="editItem().nombre_completo || ''" (input)="update('nombre_completo', $any($event.target).value)" placeholder="Ej. Carlos Martínez"/>
-        </div>
-
-        <div class="form-group">
-          <label>NIT / Identificación Fiscal</label>
-          <input class="form-control" [value]="editItem().nit_documento || ''" (input)="update('nit_documento', $any($event.target).value)" placeholder="Ej. 1234567-8 / CF"/>
-        </div>
-
-        <div class="form-group">
-          <label>Teléfono de Contacto</label>
-          <input class="form-control" [value]="editItem().telefono || ''" (input)="update('telefono', $any($event.target).value)" placeholder="Ej. +502 5555-5555"/>
+          <input class="form-control" [value]="editItem().nombre_completo || ''" (input)="update('nombre_completo', $any($event.target).value)" placeholder="Ej. Carlos Martínez" maxlength="60"/>
         </div>
 
         <div class="form-group full">
-          <label>Correo Electrónico</label>
-          <input class="form-control" type="email" [value]="editItem().correo_electronico || ''" (input)="update('correo_electronico', $any($event.target).value)" placeholder="Ej. cliente@correo.com"/>
+          <label>NIT / Identificación Fiscal</label>
+          <input class="form-control" [value]="editItem().nit_documento || ''" (input)="update('nit_documento', $any($event.target).value)" placeholder="Ej. 12345678" maxlength="13"/>
         </div>
       </div>
 

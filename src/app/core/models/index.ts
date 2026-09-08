@@ -95,8 +95,6 @@ export interface Cliente {
   id_cliente: number;
   nit_documento?: string;
   nombre_completo: string;
-  correo_electronico?: string;
-  telefono?: string;
 }
 
 export interface MetodoPago { id_metodo: number; nombre_metodo: string; }

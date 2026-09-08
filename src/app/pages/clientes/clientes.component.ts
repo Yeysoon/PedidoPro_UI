@@ -46,9 +46,7 @@ export class ClientesComponent implements OnInit {
   openCreate() {
     this.editItem.set({
       nombre_completo: '',
-      nit_documento: '',
-      telefono: '',
-      correo_electronico: ''
+      nit_documento: ''
     });
     this.isEdit.set(false);
     this.showModal.set(true);
