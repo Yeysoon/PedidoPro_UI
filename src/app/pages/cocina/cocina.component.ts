@@ -63,22 +63,22 @@ export class CocinaComponent implements OnInit, OnDestroy {
 
   // 1. Pendientes por iniciar (id_estado = 1)
   pendientesList = computed(() =>
-    this.comandasFiltradas().filter(c => Number(c.id_estado) === 1 || c.nombre_estado?.toLowerCase().includes('pendiente'))
+    this.comandasFiltradas().filter(c => Number(c.id_estado) === 1 || (c.nombre_estado && c.nombre_estado.toLowerCase().includes('pendiente')) || (c.estado && c.estado.toLowerCase().includes('pendiente')))
   );
 
   // 2. Preparándose (id_estado = 2)
   preparandoList = computed(() =>
-    this.comandasFiltradas().filter(c => Number(c.id_estado) === 2 || c.nombre_estado?.toLowerCase().includes('prepar'))
+    this.comandasFiltradas().filter(c => Number(c.id_estado) === 2 || (c.nombre_estado && c.nombre_estado.toLowerCase().includes('prepar')) || (c.estado && c.estado.toLowerCase().includes('prepar')))
   );
 
   // 3. Listo para servir (id_estado = 3)
   listosList = computed(() =>
-    this.comandasFiltradas().filter(c => Number(c.id_estado) === 3 || c.nombre_estado?.toLowerCase().includes('listo'))
+    this.comandasFiltradas().filter(c => Number(c.id_estado) === 3 || (c.nombre_estado && c.nombre_estado.toLowerCase().includes('listo')) || (c.estado && c.estado.toLowerCase().includes('listo')))
   );
 
   // 4. Servido en Mesa (id_estado = 4)
   servidosList = computed(() =>
-    this.comandasFiltradas().filter(c => Number(c.id_estado) === 4 || c.nombre_estado?.toLowerCase().includes('servid') || c.nombre_estado?.toLowerCase().includes('mesa'))
+    this.comandasFiltradas().filter(c => Number(c.id_estado) === 4 || (c.nombre_estado && (c.nombre_estado.toLowerCase().includes('servid') || c.nombre_estado.toLowerCase().includes('mesa'))) || (c.estado && (c.estado.toLowerCase().includes('servid') || c.estado.toLowerCase().includes('mesa'))))
   );
 
   pendientesCount = computed(() => this.pendientesList().length);
@@ -102,11 +102,29 @@ export class CocinaComponent implements OnInit, OnDestroy {
     }
     this.svc.getComandas().subscribe({
       next: (c: Comanda[]) => {
-        const normalized = (c || []).map(item => ({
-          ...item,
-          id_estado: Number(item.id_estado) || this.getEstadoIdPorNombre(item.nombre_estado)
-        }));
-        this.comandas.set(normalized);
+        const normalized = (c || []).map(item => {
+          const rawNombre = item.nombre_estado || item.estado || '';
+          const calculatedId = Number(item.id_estado) || this.getEstadoIdPorNombre(rawNombre);
+          const nombreFinal = rawNombre || (calculatedId === 2 ? 'En Preparación' : calculatedId === 3 ? 'Listo' : calculatedId === 4 ? 'Servido' : 'Pendiente');
+          return {
+            ...item,
+            id_estado: calculatedId,
+            nombre_estado: nombreFinal,
+            estado: nombreFinal
+          };
+        });
+
+        // Merge inteligente para preservar comandas en Listo o Servido
+        this.comandas.update(current => {
+          if (!current.length) return normalized;
+          const map = new Map<number, Comanda>();
+          // Mantener comandas activas existentes
+          current.forEach(item => map.set(item.id_pedido, item));
+          // Actualizar/incorporar las comandas recibidas de la API
+          normalized.forEach(item => map.set(item.id_pedido, item));
+          return Array.from(map.values()).sort((a, b) => (b.id_pedido || 0) - (a.id_pedido || 0));
+        });
+
         this.loading.set(false);
       },
       error: () => this.loading.set(false)

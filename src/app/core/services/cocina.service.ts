@@ -20,7 +20,9 @@ export class CocinaService {
     const nombre = map[id_estado] || 'Pendiente';
     return this.api.patch<any>(`/api/cocina/comandas/${id}/estado`, {
       id_estado,
-      estado: nombre
+      estado: nombre,
+      nuevo_estado: id_estado,
+      nombre_estado: nombre
     });
   }
 }
