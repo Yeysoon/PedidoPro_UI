@@ -42,13 +42,17 @@ export class CocinaComponent implements OnInit, OnDestroy {
     );
     if (!confirmed) return;
 
+    // Remover inmediatamente de la vista (borrado lógico a nivel UI)
+    this.comandas.update(list => list.filter(item => item.id_pedido !== c.id_pedido));
+
     this.pedidosSvc.cancelPedido(c.id_pedido).subscribe({
       next: () => {
         this.alert.successToast(`Pedido #${c.id_pedido} cancelado`);
-        this.load();
+        this.load(false);
       },
       error: (err: any) => {
         this.alert.error('Error al cancelar', err.error?.message || 'No se pudo cancelar el pedido');
+        this.load(false);
       }
     });
   }
@@ -88,6 +92,7 @@ export class CocinaComponent implements OnInit, OnDestroy {
       }
 
       if (c.mesero?.toLowerCase().includes(q)) return true;
+      if (c.cliente_nombre?.toLowerCase().includes(q)) return true;
       if (c.detalles?.some(d => d.nombre_producto?.toLowerCase().includes(q))) return true;
 
       return false;
@@ -147,17 +152,13 @@ export class CocinaComponent implements OnInit, OnDestroy {
           };
         });
 
-        // Merge inteligente para preservar comandas en Listo o Servido
-        this.comandas.update(current => {
-          if (!current.length) return normalized;
-          const map = new Map<number, Comanda>();
-          // Mantener comandas activas existentes
-          current.forEach(item => map.set(item.id_pedido, item));
-          // Actualizar/incorporar las comandas recibidas de la API
-          normalized.forEach(item => map.set(item.id_pedido, item));
-          return Array.from(map.values()).sort((a, b) => (b.id_pedido || 0) - (a.id_pedido || 0));
-        });
+        // Filtrar pedidos que no estén cancelados ni cobrados y sincronizar estado
+        const activas = normalized.filter(item => 
+          !item.nombre_estado?.toLowerCase().includes('cancel') && 
+          !item.estado?.toLowerCase().includes('cancel')
+        );
 
+        this.comandas.set(activas.sort((a, b) => (b.id_pedido || 0) - (a.id_pedido || 0)));
         this.loading.set(false);
       },
       error: () => this.loading.set(false)
