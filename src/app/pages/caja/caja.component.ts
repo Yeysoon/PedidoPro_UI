@@ -11,6 +11,7 @@ const METODOS = [
   { id: 3, nombre_metodo: 'Transferencia Bancaria', icon: 'pi pi-building-columns' }
 ];
 
+// Componente del Punto de Caja y Cobro
 @Component({
   selector: 'app-caja',
   standalone: true,
