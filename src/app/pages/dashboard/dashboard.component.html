@@ -206,51 +206,55 @@
 
     } @else if (role() === 'Cajero') {
       <!-- Caja Card 1 -->
-      <div class="kpi-card glass-card">
+      <div class="kpi-card glass-card kpi-card-watermark kpi-watermark-emerald">
         <div class="kpi-card-top">
-          <span class="kpi-title">Ingresos en Caja Hoy</span>
-          <div class="kpi-icon-box icon-emerald"><i class="pi pi-wallet"></i></div>
+          <span class="kpi-title">
+            @if (selectedPeriod() === 'weekly') { Ingresos de la Semana }
+            @else if (selectedPeriod() === 'yearly') { Ingresos del Año }
+            @else { Ingresos del Mes }
+          </span>
         </div>
         <div class="kpi-card-bottom">
-          <span class="kpi-number">{{ formatCurrency(cajaStats()?.ingresos_hoy ?? 0) }}</span>
-          <span class="trend-badge trend-up"><i class="pi pi-arrow-up-right"></i> Total Cobrado</span>
+          <span class="kpi-number">{{ formatCurrency(cajaStats()?.ingresos_periodo ?? cajaStats()?.ingresos_hoy ?? 0) }}</span>
         </div>
+        <i class="kpi-watermark-icon pi pi-wallet"></i>
       </div>
 
       <!-- Caja Card 2 -->
-      <div class="kpi-card glass-card">
+      <div class="kpi-card glass-card kpi-card-watermark kpi-watermark-sky">
         <div class="kpi-card-top">
-          <span class="kpi-title">Facturas Emitidas Hoy</span>
-          <div class="kpi-icon-box icon-sky"><i class="pi pi-file"></i></div>
+          <span class="kpi-title">
+            @if (selectedPeriod() === 'weekly') { Facturas de la Semana }
+            @else if (selectedPeriod() === 'yearly') { Facturas del Año }
+            @else { Facturas del Mes }
+          </span>
         </div>
         <div class="kpi-card-bottom">
-          <span class="kpi-number">{{ cajaStats()?.facturas_emitidas_hoy ?? 0 }}</span>
-          <span class="trend-badge trend-neutral"><i class="pi pi-check"></i> Comprobantes</span>
+          <span class="kpi-number">{{ cajaStats()?.facturas_periodo ?? cajaStats()?.facturas_emitidas_hoy ?? 0 }}</span>
         </div>
+        <i class="kpi-watermark-icon pi pi-file"></i>
       </div>
 
       <!-- Caja Card 3 -->
-      <div class="kpi-card glass-card">
+      <div class="kpi-card glass-card kpi-card-watermark kpi-watermark-amber">
         <div class="kpi-card-top">
-          <span class="kpi-title">Pedidos Listos por Cobrar</span>
-          <div class="kpi-icon-box icon-amber"><i class="pi pi-credit-card"></i></div>
+          <span class="kpi-title">Pedidos por Cobrar</span>
         </div>
         <div class="kpi-card-bottom">
           <span class="kpi-number">{{ cajaStats()?.pedidos_listos ?? pedidosListosCaja().length }}</span>
-          <span class="trend-badge trend-live"><span class="dot-indicator"></span> Pendientes</span>
         </div>
+        <i class="kpi-watermark-icon pi pi-credit-card"></i>
       </div>
 
       <!-- Caja Card 4 -->
-      <div class="kpi-card glass-card">
+      <div class="kpi-card glass-card kpi-card-watermark kpi-watermark-indigo">
         <div class="kpi-card-top">
-          <span class="kpi-title">Ingresos del Período</span>
-          <div class="kpi-icon-box icon-indigo"><i class="pi pi-chart-bar"></i></div>
+          <span class="kpi-title">Ticket Promedio</span>
         </div>
         <div class="kpi-card-bottom">
-          <span class="kpi-number">{{ formatCurrency(cajaStats()?.ingresos_periodo ?? 0) }}</span>
-          <span class="trend-badge trend-optimal"><i class="pi pi-receipt"></i> {{ cajaStats()?.facturas_periodo ?? 0 }} Facturas</span>
+          <span class="kpi-number">{{ formatCurrency((cajaStats()?.facturas_periodo && (cajaStats()?.facturas_periodo || 0) > 0) ? ((cajaStats()?.ingresos_periodo || 0) / (cajaStats()?.facturas_periodo || 1)) : 0) }}</span>
         </div>
+        <i class="kpi-watermark-icon pi pi-chart-line"></i>
       </div>
     }
   </section>
@@ -308,21 +312,7 @@
             @else if (role() === 'Mesero') { Mis Pedidos Recientes }
             @else { Actividad Reciente de Pedidos }
           </h3>
-          @if (role() !== 'Administrador' && role() !== 'Mesero' && role() !== 'Cocinero') {
-            <span class="card-subtitle">Flujo en tiempo real desde la base de datos</span>
-          }
         </div>
-        @if (role() !== 'Administrador' && role() !== 'Mesero' && role() !== 'Cocinero') {
-          <div class="table-header-tags">
-            <button type="button" class="badge badge-warning" style="cursor: pointer; border: none;" (click)="togglePendientesFilter()">
-              <i class="pi pi-filter"></i>
-              {{ pendientesCount() }} pendientes
-            </button>
-            <button class="btn-icon-more" title="Opciones de actividad" (click)="openActivityOptions()">
-              <i class="pi pi-ellipsis-h"></i>
-            </button>
-          </div>
-        }
       </div>
 
       <div class="data-table-container">
@@ -338,7 +328,7 @@
             </tr>
           </thead>
           <tbody>
-            @for (item of (role() === 'Administrador' || role() === 'Mesero' || role() === 'Cocinero' ? recentActivity().slice(0, 5) : paginatedActivity()); track item.id) {
+            @for (item of recentActivity().slice(0, 5); track item.id) {
               <tr (click)="viewActivityDetail(item)" style="cursor: pointer;" title="Click para ver detalle">
                 <td class="font-mono text-muted">{{ item.id }}</td>
                 <td>
@@ -368,25 +358,6 @@
           </tbody>
         </table>
       </div>
-
-      @if (role() !== 'Administrador' && role() !== 'Mesero' && role() !== 'Cocinero') {
-        <div class="table-pagination-row">
-          <span class="pagination-info">Mostrando {{ startEntry() }} a {{ endEntry() }} de {{ filteredActivity().length }} entradas</span>
-          <div class="pagination-pills">
-            <button class="pag-btn" [disabled]="currentPage() === 1" (click)="setPage(currentPage() - 1)" title="Página anterior">
-              <i class="pi pi-chevron-left"></i>
-            </button>
-            @for (p of pagesList(); track p) {
-              <button class="pag-btn" [class.active]="currentPage() === p" (click)="setPage(p)">
-                {{ p }}
-              </button>
-            }
-            <button class="pag-btn" [disabled]="currentPage() === totalPages()" (click)="setPage(currentPage() + 1)" title="Página siguiente">
-              <i class="pi pi-chevron-right"></i>
-            </button>
-          </div>
-        </div>
-      }
     </div>
 
     <!-- Top Platillos & Mesas Status -->
@@ -421,7 +392,7 @@
         </div>
       } @else {
         <div class="top-dishes-stack">
-          @for (p of (adminStats()?.platillos_top || meseroStats()?.platillos_top || []); track p.nombre_producto; let i = $index) {
+          @for (p of (adminStats()?.platillos_top || meseroStats()?.platillos_top || cajaStats()?.platillos_top || []); track p.nombre_producto; let i = $index) {
             <div class="top-dish-item">
               <span class="dish-rank">{{ i + 1 }}</span>
               <div class="dish-meta">

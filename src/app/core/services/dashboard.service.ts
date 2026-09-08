@@ -72,6 +72,7 @@ export interface CajaStats {
   ingresos_periodo?: number;
   facturas_periodo?: number;
   metodos_pago?: { nombre_metodo: string; total: number; cantidad: number }[];
+  platillos_top?: PlatilloTopItem[];
 }
 
 @Injectable({ providedIn: 'root' })
