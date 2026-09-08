@@ -98,7 +98,7 @@ export class MesasComponent implements OnInit {
 
   openCreate() {
     const defaultZona = +(this.zonas()[0]?.id_zona || 1);
-    this.editMesa.set({ estado: 'Libre', capacidad: 4, id_zona: defaultZona });
+    this.editMesa.set({ estado: 'Libre', capacidad: 4, id_zona: defaultZona, numero_mesa: undefined });
     this.isEdit.set(false);
     this.showModal.set(true);
   }
@@ -117,16 +117,16 @@ export class MesasComponent implements OnInit {
 
   save() {
     const d = this.editMesa();
-    if (!d.numero_mesa) {
+    if (!d.numero_mesa && d.numero_mesa !== 0) {
       this.alert.warningToast('Ingresa el número de mesa');
       return;
     }
+    const estadoFinal = d.estado ? String(d.estado).trim() : 'Libre';
     const payload = {
-      ...d,
       id_zona: +(d.id_zona || 1),
       numero_mesa: +d.numero_mesa,
       capacidad: +(d.capacidad || 4),
-      estado: (d.estado as any) || 'Libre'
+      estado: estadoFinal as any
     };
 
     const obs = this.isEdit()
@@ -135,12 +135,8 @@ export class MesasComponent implements OnInit {
 
     obs.subscribe({
       next: () => {
-        this.alert.successToast(this.isEdit() ? 'Mesa actualizada' : 'Mesa creada');
+        this.alert.successToast(this.isEdit() ? 'Mesa actualizada' : `Mesa creada en estado ${estadoFinal}`);
         this.showModal.set(false);
-        if (this.isEdit() && d.id_mesa) {
-          const zonaNombre = this.getZonaNombre(payload.id_zona);
-          this.mesas.update(list => list.map(m => m.id_mesa === d.id_mesa ? { ...m, ...payload, nombre_zona: zonaNombre } : m));
-        }
         this.load();
       },
       error: e => this.alert.error('Error al guardar', e.error?.message)

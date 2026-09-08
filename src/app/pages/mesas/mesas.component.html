@@ -110,7 +110,7 @@
           <label>Número de Mesa *</label>
           <div class="input-icon-wrap">
             <i class="pi pi-table input-icon"></i>
-            <input class="form-control" type="number" placeholder="Ej. 1, 2, 10..." [value]="editMesa().numero_mesa ?? ''" (input)="update('numero_mesa', +$any($event.target).value)"/>
+            <input class="form-control" type="number" placeholder="Ej. 1, 2, 10..." [ngModel]="editMesa().numero_mesa" (ngModelChange)="update('numero_mesa', +$event)"/>
           </div>
         </div>
 
@@ -118,7 +118,7 @@
           <label>Capacidad (personas) *</label>
           <div class="input-icon-wrap">
             <i class="pi pi-users input-icon"></i>
-            <input class="form-control" type="number" placeholder="Ej. 2, 4, 8 personas" [value]="editMesa().capacidad ?? ''" (input)="update('capacidad', +$any($event.target).value)"/>
+            <input class="form-control" type="number" placeholder="Ej. 2, 4, 8 personas" [ngModel]="editMesa().capacidad" (ngModelChange)="update('capacidad', +$event)"/>
           </div>
         </div>
 
@@ -138,12 +138,18 @@
           </div>
         </div>
 
-        <!-- ESTADO INICIAL SELECTION (Color Badges Grid) -->
+        <!-- ESTADO SELECTION (Color Badges Grid) -->
         <div class="form-group full">
-          <label>Estado Inicial</label>
+          <label>Estado de la Mesa *</label>
           <div class="selector-pills-grid state-grid">
             @for (e of estadoOpts; track e) {
-              <button type="button" class="selector-pill-card state-pill-card" [class.selected]="editMesa().estado === e" [class]="'state-' + getBadge(e)" (click)="update('estado', e)">
+              <button
+                type="button"
+                class="selector-pill-card state-pill-card"
+                [class.selected]="editMesa().estado === e"
+                [class]="'state-' + getBadge(e)"
+                (click)="update('estado', e)"
+              >
                 <span class="color-dot"></span>
                 <span class="pill-label">{{ e }}</span>
                 @if (editMesa().estado === e) {
