@@ -362,7 +362,7 @@ export class PedidosComponent implements OnInit {
         this.notas.set('');
         this.clienteId.set(undefined);
         this.sending.set(false);
-        setTimeout(() => this.router.navigate(['/mesas']), 400);
+        setTimeout(() => this.router.navigate(['/cocina']), 400);
       },
       error: e => {
         this.alert.error('Error al enviar pedido', e.error?.message || 'No se pudo registrar el pedido');
