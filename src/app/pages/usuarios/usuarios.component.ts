@@ -52,7 +52,7 @@ export class UsuariosComponent implements OnInit {
     });
 
     this.rolesSvc.getRoles().subscribe({
-      next: r => this.roles.set(r),
+      next: r => this.roles.set(r.filter(x => x.nombre_rol?.toLowerCase() !== 'prueba')),
       error: () => {}
     });
   }
