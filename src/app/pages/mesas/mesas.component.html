@@ -4,52 +4,22 @@
       <h1>Plano de <span class="highlight">Mesas y Salón</span></h1>
       <span class="header-subtitle">Control de ocupación, asignación de comensales y pedidos activos.</span>
     </div>
-    @if (isAdmin()) {
-      <button class="btn btn-primary" (click)="openCreate()">
-        <i class="pi pi-plus"></i> Nueva Mesa
-      </button>
-    }
-  </div>
-
-  <!-- FILTERS BAR WITH PILLS (No basic dropdowns) -->
-  <div class="filters-card glass-card">
-    <div class="filters-left">
-      <!-- Zona Pills Selector -->
-      <div class="filter-pill-cluster">
-        <button class="filter-chip-btn" [class.active]="filterZona() === 0" (click)="filterZona.set(0)">
-          <i class="pi pi-th-large"></i>
-          <span>Todas las zonas</span>
-        </button>
-        @for (z of zonas(); track z.id_zona) {
-          <button class="filter-chip-btn" [class.active]="filterZona() === z.id_zona" (click)="filterZona.set(z.id_zona)">
-            <i class="pi pi-map-marker"></i>
-            <span>{{ z.nombre_zona }}</span>
-          </button>
-        }
+    <div class="header-actions">
+      <div class="mesas-counters">
+        <span class="status-pill badge-success">
+          <i class="pi pi-check"></i>
+          {{ libresCount() }} Libres
+        </span>
+        <span class="status-pill badge-danger">
+          <i class="pi pi-times"></i>
+          {{ ocupadasCount() }} Ocupadas
+        </span>
       </div>
-
-      <!-- Estado Pills Selector -->
-      <div class="filter-pill-cluster">
-        <button class="filter-chip-btn" [class.active]="filterEstado() === ''" (click)="filterEstado.set('')">
-          <span>Todos</span>
+      @if (isAdmin()) {
+        <button class="btn btn-primary" (click)="openCreate()">
+          <i class="pi pi-plus"></i> Nueva Mesa
         </button>
-        @for (e of estadoOpts; track e) {
-          <button class="filter-chip-btn" [class.active]="filterEstado() === e" (click)="filterEstado.set(e)">
-            <span>{{ e }}</span>
-          </button>
-        }
-      </div>
-    </div>
-
-    <div class="mesas-counters">
-      <span class="status-pill badge-success">
-        <i class="pi pi-check"></i>
-        {{ libresCount() }} Libres
-      </span>
-      <span class="status-pill badge-danger">
-        <i class="pi pi-times"></i>
-        {{ ocupadasCount() }} Ocupadas
-      </span>
+      }
     </div>
   </div>
 
@@ -60,7 +30,7 @@
     </div>
   } @else {
     <div class="mesas-grid">
-      @for (mesa of filteredMesas(); track mesa.id_mesa) {
+      @for (mesa of mesas(); track mesa.id_mesa) {
         <div class="mesa-card glass-card" [class]="'estado-' + getBadge(mesa.estado)" (click)="openPedido(mesa)">
           <div class="mesa-header">
             <div class="mesa-title">

@@ -27,16 +27,7 @@ export class MesasComponent implements OnInit {
   showModal = signal(false);
   editMesa = signal<Partial<Mesa>>({});
   isEdit = signal(false);
-  filterZona = signal(0);
-  filterEstado = signal('');
   isAdmin = computed(() => this.auth.hasRole(['Administrador']));
-
-  filteredMesas = computed(() => {
-    let list = this.mesas();
-    if (this.filterZona()) list = list.filter(m => +m.id_zona === +this.filterZona());
-    if (this.filterEstado()) list = list.filter(m => m.estado === this.filterEstado());
-    return list;
-  });
 
   libresCount = computed(() => this.mesas().filter(m => m.estado === 'Libre').length);
   ocupadasCount = computed(() => this.mesas().filter(m => m.estado === 'Ocupada').length);
