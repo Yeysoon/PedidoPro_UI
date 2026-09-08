@@ -1,4 +1,5 @@
 import { Component, signal, computed, OnInit, OnDestroy, inject } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { CocinaService } from '../../core/services/cocina.service';
 import { AlertService } from '../../core/services/alert.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -7,7 +8,7 @@ import { Comanda } from '../../core/models';
 @Component({
   selector: 'app-cocina',
   standalone: true,
-  imports: [],
+  imports: [FormsModule],
   templateUrl: './cocina.component.html',
   styleUrl: './cocina.component.scss'
 })
@@ -17,6 +18,7 @@ export class CocinaComponent implements OnInit, OnDestroy {
   private auth = inject(AuthService);
 
   comandas = signal<Comanda[]>([]);
+  busqueda = signal('');
   loading  = signal(true);
   draggedComanda: Comanda | null = null;
   dragOverColId = signal<number | null>(null);
@@ -28,35 +30,66 @@ export class CocinaComponent implements OnInit, OnDestroy {
   isMesero = computed(() => this.userRole() === 'Mesero');
   isAdmin = computed(() => this.userRole() === 'Administrador');
 
+  // Filtro reactivo por búsqueda (ej: "Mesa 2 | Comanda #1", "Mesa 2", "#1", platillo, etc.)
+  comandasFiltradas = computed(() => {
+    const q = this.busqueda().toLowerCase().trim();
+    if (!q) return this.comandas();
+
+    return this.comandas().filter(c => {
+      const mesaText = `mesa ${c.numero_mesa}`.toLowerCase();
+      const comandaText = `comanda #${c.id_pedido}`.toLowerCase();
+      const tituloCombinado = `mesa ${c.numero_mesa} | comanda #${c.id_pedido}`.toLowerCase();
+      const numMesa = String(c.numero_mesa || '');
+      const numPedido = String(c.id_pedido || '');
+      const hashPedido = `#${c.id_pedido}`;
+
+      if (
+        mesaText.includes(q) ||
+        comandaText.includes(q) ||
+        tituloCombinado.includes(q) ||
+        numMesa === q ||
+        numPedido === q ||
+        hashPedido.includes(q)
+      ) {
+        return true;
+      }
+
+      if (c.mesero?.toLowerCase().includes(q)) return true;
+      if (c.detalles?.some(d => d.nombre_producto?.toLowerCase().includes(q))) return true;
+
+      return false;
+    });
+  });
+
   // 1. Pendientes por iniciar (id_estado = 1)
   pendientesList = computed(() =>
-    this.comandas().filter(c => Number(c.id_estado) === 1 || c.nombre_estado === 'Pendiente' || (c as any).estado === 'Pendiente')
+    this.comandasFiltradas().filter(c => Number(c.id_estado) === 1 || c.nombre_estado?.toLowerCase().includes('pendiente'))
   );
 
   // 2. Preparándose (id_estado = 2)
   preparandoList = computed(() =>
-    this.comandas().filter(c => Number(c.id_estado) === 2 || c.nombre_estado === 'En Preparación' || (c as any).estado === 'En Preparación')
+    this.comandasFiltradas().filter(c => Number(c.id_estado) === 2 || c.nombre_estado?.toLowerCase().includes('prepar'))
   );
 
   // 3. Listo para servir (id_estado = 3)
   listosList = computed(() =>
-    this.comandas().filter(c => Number(c.id_estado) === 3 || c.nombre_estado === 'Listo' || (c as any).estado === 'Listo')
+    this.comandasFiltradas().filter(c => Number(c.id_estado) === 3 || c.nombre_estado?.toLowerCase().includes('listo'))
   );
 
   // 4. Servido en Mesa (id_estado = 4)
   servidosList = computed(() =>
-    this.comandas().filter(c => Number(c.id_estado) === 4 || c.nombre_estado === 'Servido' || (c as any).estado === 'Servido')
+    this.comandasFiltradas().filter(c => Number(c.id_estado) === 4 || c.nombre_estado?.toLowerCase().includes('servid') || c.nombre_estado?.toLowerCase().includes('mesa'))
   );
 
   pendientesCount = computed(() => this.pendientesList().length);
   preparandoCount = computed(() => this.preparandoList().length);
   listosCount     = computed(() => this.listosList().length);
   servidosCount   = computed(() => this.servidosList().length);
-  totalCount      = computed(() => this.comandas().length);
+  totalCount      = computed(() => this.comandasFiltradas().length);
 
   ngOnInit() {
     this.load();
-    this.interval = setInterval(() => this.load(false), 8000);
+    this.interval = setInterval(() => this.load(false), 6000);
   }
 
   ngOnDestroy() {
@@ -68,23 +101,64 @@ export class CocinaComponent implements OnInit, OnDestroy {
       this.loading.set(true);
     }
     this.svc.getComandas().subscribe({
-      next: c => {
-        this.comandas.set(c);
+      next: (c: Comanda[]) => {
+        const normalized = (c || []).map(item => ({
+          ...item,
+          id_estado: Number(item.id_estado) || this.getEstadoIdPorNombre(item.nombre_estado)
+        }));
+        this.comandas.set(normalized);
         this.loading.set(false);
       },
       error: () => this.loading.set(false)
     });
   }
 
-  // --- VALIDACIÓN Y CAMBIO DE ESTADO SEGÚN ROL ---
+  private getEstadoIdPorNombre(nombre?: string): number {
+    if (!nombre) return 1;
+    const lower = nombre.toLowerCase();
+    if (lower.includes('prepar')) return 2;
+    if (lower.includes('listo')) return 3;
+    if (lower.includes('servid') || lower.includes('mesa')) return 4;
+    return 1;
+  }
+
+  // --- REGLAS DE BLOQUEO POR ROL ---
+  isColumnLocked(colId: number): boolean {
+    if (this.isAdmin()) return false;
+    if (this.isMesero()) {
+      return colId === 1 || colId === 2;
+    }
+    if (this.isCocinero()) {
+      return colId === 4;
+    }
+    return false;
+  }
+
+  isCardDraggable(c: Comanda): boolean {
+    if (this.isAdmin()) return true;
+    const est = Number(c.id_estado);
+    if (this.isMesero()) {
+      return est === 3 || est === 4;
+    }
+    if (this.isCocinero()) {
+      return est === 1 || est === 2 || est === 3;
+    }
+    return false;
+  }
+
+  // --- CAMBIO DE ESTADO SEGÚN ROL ---
   cambiarEstado(c: Comanda, nuevoEstadoId: number) {
     const estadoActual = Number(c.id_estado);
     if (estadoActual === nuevoEstadoId) return;
 
-    // Validación para COCINERO: solo puede gestionar estados 1, 2 y 3
+    if (this.isColumnLocked(nuevoEstadoId)) {
+      this.alert.warningToast('Esta columna está bloqueada para tu rol.');
+      return;
+    }
+
     if (this.isCocinero()) {
       if (nuevoEstadoId === 4) {
-        this.alert.warningToast('El Cocinero solo gestiona hasta "Listo para servir". El Mesero se encarga de servirlo en mesa.');
+        this.alert.warningToast('El Cocinero solo gestiona hasta "Listo para servir". El Mesero entrega a la mesa.');
         return;
       }
       if (estadoActual === 4) {
@@ -93,10 +167,9 @@ export class CocinaComponent implements OnInit, OnDestroy {
       }
     }
 
-    // Validación para MESERO: solo puede gestionar entre 3 (Listo) y 4 (Servido)
     if (this.isMesero()) {
       if (estadoActual === 1 || estadoActual === 2) {
-        this.alert.warningToast('El Mesero solo puede gestionar pedidos que ya estén "Listos para servir".');
+        this.alert.warningToast('El Mesero no puede modificar comandas en preparación de cocina.');
         return;
       }
       if (nuevoEstadoId === 1 || nuevoEstadoId === 2) {
@@ -136,6 +209,10 @@ export class CocinaComponent implements OnInit, OnDestroy {
 
   // --- HTML5 DRAG AND DROP KANBAN ---
   onDragStart(event: DragEvent, c: Comanda) {
+    if (!this.isCardDraggable(c)) {
+      event.preventDefault();
+      return;
+    }
     this.draggedComanda = c;
     if (event.dataTransfer) {
       event.dataTransfer.effectAllowed = 'move';
@@ -144,6 +221,9 @@ export class CocinaComponent implements OnInit, OnDestroy {
   }
 
   onDragOver(event: DragEvent, colId: number) {
+    if (this.isColumnLocked(colId)) {
+      return;
+    }
     event.preventDefault();
     this.dragOverColId.set(colId);
     if (event.dataTransfer) {
@@ -159,6 +239,11 @@ export class CocinaComponent implements OnInit, OnDestroy {
     event.preventDefault();
     this.dragOverColId.set(null);
     if (!this.draggedComanda) return;
+    if (this.isColumnLocked(targetEstadoId)) {
+      this.alert.warningToast('Esta columna está bloqueada para tu rol.');
+      this.draggedComanda = null;
+      return;
+    }
     const c = this.draggedComanda;
     this.draggedComanda = null;
     this.cambiarEstado(c, targetEstadoId);

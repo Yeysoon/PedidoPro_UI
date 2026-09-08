@@ -1,26 +1,35 @@
 <div class="fade-in cocina-page">
-  <!-- Encabezado de la página -->
+  <!-- Encabezado de la página con Barra de Búsqueda -->
   <div class="page-header">
     <div class="header-left">
       <h1>Tablero Kanban de <span class="highlight">Cocina</span></h1>
       <span class="header-subtitle">
         @if (isCocinero()) {
-          Modo Cocinero: gestiona comandas desde <strong>Pendientes</strong> hasta <strong>Listo para servir</strong>.
+          Modo Cocinero: gestiona comandas entre <strong>Pendientes</strong>, <strong>Preparándose</strong> y <strong>Listo para servir</strong> (Servido en Mesa bloqueado).
         } @else if (isMesero()) {
-          Modo Mesero: gestiona pedidos desde <strong>Listo para servir</strong> hasta <strong>Servido en Mesa</strong>.
+          Modo Mesero: gestiona pedidos desde <strong>Listo para servir</strong> hasta <strong>Servido en Mesa</strong> (Preparación de cocina bloqueada).
         } @else {
-          Control general de comandas por estados. Arrastra las tarjetas o usa las acciones rápidas.
+          Control general de comandas por estados. Arrastra las tarjetas entre columnas.
         }
       </span>
     </div>
-    <div class="header-actions">
-      <button class="btn btn-ghost btn-sm" (click)="load(true)" title="Recargar comandas">
-        <i class="pi pi-refresh" [class.pi-spin]="loading()"></i>
-        <span>Actualizar</span>
-      </button>
-      <div class="auto-refresh-pill">
-        <span class="pulse-dot"></span>
-        <span>En Vivo (8s)</span>
+
+    <!-- Barra de búsqueda reactiva en tiempo real -->
+    <div class="header-search-wrap">
+      <div class="input-icon-wrap search-box">
+        <i class="pi pi-search input-icon"></i>
+        <input
+          type="text"
+          class="form-control search-input"
+          placeholder="Buscar por mesa o comanda (ej: Mesa 2 | Comanda #1)..."
+          [ngModel]="busqueda()"
+          (ngModelChange)="busqueda.set($event)"
+        />
+        @if (busqueda()) {
+          <button class="clear-search-btn" (click)="busqueda.set('')" title="Limpiar búsqueda">
+            <i class="pi pi-times"></i>
+          </button>
+        }
       </div>
     </div>
   </div>
@@ -31,7 +40,7 @@
       <p>Cargando tablero Kanban de cocina...</p>
     </div>
   } @else {
-    <!-- TABLERO KANBAN DE 4 COLUMNAS -->
+    <!-- TABLERO KANBAN DE 4 COLUMNAS (CON BÚSQUEDA Y BLOQUEO POR ROL) -->
     <div class="kanban-board">
 
       <!-- ========================================= -->
@@ -39,6 +48,7 @@
       <!-- ========================================= -->
       <div
         class="kanban-column col-pendiente"
+        [class.col-locked]="isColumnLocked(1)"
         [class.drag-over]="dragOverColId() === 1"
         (dragover)="onDragOver($event, 1)"
         (dragleave)="onDragLeave($event)"
@@ -49,20 +59,26 @@
             <span class="col-dot dot-amber"></span>
             <span class="col-title">Pendientes por iniciar</span>
           </div>
-          <span class="col-badge badge-amber">{{ pendientesCount() }}/{{ totalCount() }}</span>
+          <div class="col-header-right">
+            @if (isColumnLocked(1)) {
+              <span class="col-locked-badge"><i class="pi pi-lock"></i> Bloqueado</span>
+            }
+            <span class="col-badge badge-amber">{{ pendientesCount() }}/{{ totalCount() }}</span>
+          </div>
         </div>
 
         <div class="column-cards-container">
           @if (!pendientesList().length) {
             <div class="column-empty">
               <i class="pi pi-inbox"></i>
-              <p>Sin comandas pendientes</p>
+              <p>{{ busqueda() ? 'Sin resultados' : 'Sin comandas pendientes' }}</p>
             </div>
           } @else {
             @for (c of pendientesList(); track c.id_pedido) {
               <div
                 class="kanban-card card-pendiente"
-                draggable="true"
+                [class.card-locked]="!isCardDraggable(c)"
+                [attr.draggable]="isCardDraggable(c)"
                 (dragstart)="onDragStart($event, c)"
                 (dragend)="onDragEnd()"
               >
@@ -114,17 +130,6 @@
                       </div>
                     }
                   </div>
-
-                  <!-- Botones según rol -->
-                  @if (isCocinero() || isAdmin()) {
-                    <div class="card-bottom-actions">
-                      <button class="btn-card btn-forward-amber" (click)="cambiarEstado(c, 2)" title="Iniciar Preparación">
-                        <i class="pi pi-play"></i>
-                        <span>Iniciar Preparación</span>
-                        <i class="pi pi-arrow-right"></i>
-                      </button>
-                    </div>
-                  }
                 </div>
               </div>
             }
@@ -137,6 +142,7 @@
       <!-- ========================================= -->
       <div
         class="kanban-column col-preparando"
+        [class.col-locked]="isColumnLocked(2)"
         [class.drag-over]="dragOverColId() === 2"
         (dragover)="onDragOver($event, 2)"
         (dragleave)="onDragLeave($event)"
@@ -147,20 +153,26 @@
             <span class="col-dot dot-sky"></span>
             <span class="col-title">Preparándose</span>
           </div>
-          <span class="col-badge badge-sky">{{ preparandoCount() }}/{{ totalCount() }}</span>
+          <div class="col-header-right">
+            @if (isColumnLocked(2)) {
+              <span class="col-locked-badge"><i class="pi pi-lock"></i> Bloqueado</span>
+            }
+            <span class="col-badge badge-sky">{{ preparandoCount() }}/{{ totalCount() }}</span>
+          </div>
         </div>
 
         <div class="column-cards-container">
           @if (!preparandoList().length) {
             <div class="column-empty">
               <i class="pi pi-spin pi-spinner"></i>
-              <p>Sin comandas en preparación</p>
+              <p>{{ busqueda() ? 'Sin resultados' : 'Sin comandas en preparación' }}</p>
             </div>
           } @else {
             @for (c of preparandoList(); track c.id_pedido) {
               <div
                 class="kanban-card card-preparando"
-                draggable="true"
+                [class.card-locked]="!isCardDraggable(c)"
+                [attr.draggable]="isCardDraggable(c)"
                 (dragstart)="onDragStart($event, c)"
                 (dragend)="onDragEnd()"
               >
@@ -212,20 +224,6 @@
                       </div>
                     }
                   </div>
-
-                  @if (isCocinero() || isAdmin()) {
-                    <div class="card-bottom-actions split-two">
-                      <button class="btn-card btn-back" (click)="cambiarEstado(c, 1)" title="Regresar a Pendiente">
-                        <i class="pi pi-arrow-left"></i>
-                        <span>Pendiente</span>
-                      </button>
-                      <button class="btn-card btn-forward-emerald" (click)="cambiarEstado(c, 3)" title="Marcar como Listo">
-                        <i class="pi pi-check"></i>
-                        <span>Listo</span>
-                        <i class="pi pi-arrow-right"></i>
-                      </button>
-                    </div>
-                  }
                 </div>
               </div>
             }
@@ -238,6 +236,7 @@
       <!-- ========================================= -->
       <div
         class="kanban-column col-listo"
+        [class.col-locked]="isColumnLocked(3)"
         [class.drag-over]="dragOverColId() === 3"
         (dragover)="onDragOver($event, 3)"
         (dragleave)="onDragLeave($event)"
@@ -248,20 +247,26 @@
             <span class="col-dot dot-emerald"></span>
             <span class="col-title">Listo para servir</span>
           </div>
-          <span class="col-badge badge-emerald">{{ listosCount() }}/{{ totalCount() }}</span>
+          <div class="col-header-right">
+            @if (isColumnLocked(3)) {
+              <span class="col-locked-badge"><i class="pi pi-lock"></i> Bloqueado</span>
+            }
+            <span class="col-badge badge-emerald">{{ listosCount() }}/{{ totalCount() }}</span>
+          </div>
         </div>
 
         <div class="column-cards-container">
           @if (!listosList().length) {
             <div class="column-empty">
               <i class="pi pi-check-circle"></i>
-              <p>Sin pedidos por servir</p>
+              <p>{{ busqueda() ? 'Sin resultados' : 'Sin pedidos por servir' }}</p>
             </div>
           } @else {
             @for (c of listosList(); track c.id_pedido) {
               <div
                 class="kanban-card card-listo"
-                draggable="true"
+                [class.card-locked]="!isCardDraggable(c)"
+                [attr.draggable]="isCardDraggable(c)"
                 (dragstart)="onDragStart($event, c)"
                 (dragend)="onDragEnd()"
               >
@@ -309,22 +314,6 @@
                       </div>
                     }
                   </div>
-
-                  <div class="card-bottom-actions" [class.split-two]="isCocinero() || isAdmin()">
-                    @if (isCocinero() || isAdmin()) {
-                      <button class="btn-card btn-back" (click)="cambiarEstado(c, 2)" title="Regresar a Preparándose">
-                        <i class="pi pi-arrow-left"></i>
-                        <span>Cocinar</span>
-                      </button>
-                    }
-                    @if (isMesero() || isAdmin()) {
-                      <button class="btn-card btn-forward-purple" (click)="cambiarEstado(c, 4)" title="Pasar a Servido en Mesa">
-                        <i class="pi pi-send"></i>
-                        <span>Servir en Mesa</span>
-                        <i class="pi pi-arrow-right"></i>
-                      </button>
-                    }
-                  </div>
                 </div>
               </div>
             }
@@ -337,6 +326,7 @@
       <!-- ========================================= -->
       <div
         class="kanban-column col-servido"
+        [class.col-locked]="isColumnLocked(4)"
         [class.drag-over]="dragOverColId() === 4"
         (dragover)="onDragOver($event, 4)"
         (dragleave)="onDragLeave($event)"
@@ -347,20 +337,26 @@
             <span class="col-dot dot-purple"></span>
             <span class="col-title">Servido en Mesa</span>
           </div>
-          <span class="col-badge badge-purple">{{ servidosCount() }}/{{ totalCount() }}</span>
+          <div class="col-header-right">
+            @if (isColumnLocked(4)) {
+              <span class="col-locked-badge"><i class="pi pi-lock"></i> Bloqueado</span>
+            }
+            <span class="col-badge badge-purple">{{ servidosCount() }}/{{ totalCount() }}</span>
+          </div>
         </div>
 
         <div class="column-cards-container">
           @if (!servidosList().length) {
             <div class="column-empty">
               <i class="pi pi-users"></i>
-              <p>Sin pedidos servidos</p>
+              <p>{{ busqueda() ? 'Sin resultados' : 'Sin pedidos servidos' }}</p>
             </div>
           } @else {
             @for (c of servidosList(); track c.id_pedido) {
               <div
                 class="kanban-card card-servido"
-                draggable="true"
+                [class.card-locked]="!isCardDraggable(c)"
+                [attr.draggable]="isCardDraggable(c)"
                 (dragstart)="onDragStart($event, c)"
                 (dragend)="onDragEnd()"
               >
@@ -408,15 +404,6 @@
                       </div>
                     }
                   </div>
-
-                  @if (isMesero() || isAdmin()) {
-                    <div class="card-bottom-actions">
-                      <button class="btn-card btn-back" (click)="cambiarEstado(c, 3)" title="Regresar a Listo para servir">
-                        <i class="pi pi-arrow-left"></i>
-                        <span>Regresar a Listo</span>
-                      </button>
-                    </div>
-                  }
                 </div>
               </div>
             }

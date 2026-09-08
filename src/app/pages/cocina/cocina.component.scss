@@ -15,47 +15,86 @@
   flex-wrap: wrap;
   gap: 12px;
 
-  .header-actions {
+  .header-left {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 260px;
+  }
+
+  // BARRA DE BÚSQUEDA ELEGANTE EN EL HEADER
+  .header-search-wrap {
     display: flex;
     align-items: center;
-    gap: 12px;
-  }
-}
+    min-width: 320px;
+    max-width: 420px;
+    flex: 1 1 auto;
+    justify-content: flex-end;
 
-.auto-refresh-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 14px;
-  border-radius: var(--radius-pill);
-  background: var(--surface-subtle);
-  border: 1px solid var(--surface-border);
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--text-secondary);
+    @media (max-width: 768px) {
+      min-width: 100%;
+      max-width: 100%;
+    }
 
-  .pulse-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #10b981;
-    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
-    animation: pulse 2s infinite;
-  }
-}
+    .search-box {
+      position: relative;
+      width: 100%;
+      display: flex;
+      align-items: center;
 
-@keyframes pulse {
-  0% {
-    transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
-  }
-  70% {
-    transform: scale(1);
-    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
-  }
-  100% {
-    transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+      .input-icon {
+        position: absolute;
+        left: 14px;
+        font-size: 0.88rem;
+        color: var(--text-muted);
+        pointer-events: none;
+      }
+
+      .search-input {
+        width: 100%;
+        padding: 9px 36px 9px 38px;
+        border-radius: var(--radius-pill);
+        background: var(--surface-card);
+        border: 1px solid var(--surface-border);
+        color: var(--text-color);
+        font-size: 0.84rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        transition: all 0.2s ease;
+
+        &:focus {
+          border-color: var(--primary-color);
+          box-shadow: 0 0 0 3px var(--primary-subtle);
+          background: var(--surface-card);
+        }
+
+        &::placeholder {
+          color: var(--text-muted);
+          font-size: 0.8rem;
+        }
+      }
+
+      .clear-search-btn {
+        position: absolute;
+        right: 10px;
+        background: var(--surface-subtle);
+        border: 1px solid var(--surface-border);
+        color: var(--text-muted);
+        font-size: 0.72rem;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.15s ease;
+
+        &:hover {
+          background: var(--surface-hover);
+          color: var(--text-color);
+        }
+      }
+    }
   }
 }
 
@@ -75,21 +114,21 @@
 }
 
 // ----------------------------------------------------
-// TABLERO KANBAN (4 COLUMNAS FLUIDAS Y SCROLL INDEPENDIENTE)
+// TABLERO KANBAN (4 COLUMNAS FLUIDAS)
 // ----------------------------------------------------
 .kanban-board {
   flex: 1 1 0;
   min-height: 0;
   display: grid;
-  grid-template-columns: repeat(4, minmax(280px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
   align-items: stretch;
   height: 100%;
-  overflow-x: auto;
+  overflow-x: hidden;
   overflow-y: hidden;
-  padding-bottom: 6px;
+  padding-bottom: 4px;
 
-  @media (max-width: 1200px) {
+  @media (max-width: 1024px) {
     grid-template-columns: repeat(2, 1fr);
     overflow-y: auto;
     height: auto;
@@ -119,13 +158,53 @@
     box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.3);
   }
 
+  // ESTADO BLOQUEADO POR ROL (Mesero o Cocinero)
+  &.col-locked {
+    background: rgba(15, 23, 42, 0.03);
+    border-style: dashed;
+    border-color: rgba(148, 163, 184, 0.5);
+    opacity: 0.72;
+
+    .column-header {
+      opacity: 0.85;
+      filter: saturate(0.8);
+    }
+
+    .col-locked-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 7px;
+      border-radius: var(--radius-pill);
+      font-size: 0.68rem;
+      font-weight: 700;
+      background: rgba(0, 0, 0, 0.08);
+      color: var(--text-secondary);
+      border: 1px solid rgba(0, 0, 0, 0.1);
+
+      i { font-size: 0.65rem; }
+    }
+
+    .kanban-card {
+      cursor: not-allowed;
+      box-shadow: none;
+      background: rgba(255, 255, 255, 0.75);
+
+      &:hover {
+        transform: none;
+        box-shadow: none;
+        border-color: var(--surface-border);
+      }
+    }
+  }
+
   // ENCABEZADOS DE COLUMNA
   .column-header {
     flex-shrink: 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 14px;
+    padding: 10px 12px;
     border-radius: 10px;
     font-weight: 700;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
@@ -133,12 +212,14 @@
     .col-title-group {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 7px;
+      min-width: 0;
 
       .col-dot {
         width: 8px;
         height: 8px;
         border-radius: 50%;
+        flex-shrink: 0;
 
         &.dot-amber   { background: #f59e0b; box-shadow: 0 0 6px #f59e0b; }
         &.dot-sky     { background: #0284c7; box-shadow: 0 0 6px #0284c7; }
@@ -147,7 +228,7 @@
       }
 
       .col-title {
-        font-size: 0.86rem;
+        font-size: 0.82rem;
         font-weight: 700;
         letter-spacing: -0.01em;
         white-space: nowrap;
@@ -156,13 +237,21 @@
       }
     }
 
+    .col-header-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
     .col-badge {
-      padding: 3px 9px;
-      border-radius: 12px;
-      font-size: 0.74rem;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-size: 0.72rem;
       font-weight: 800;
       font-family: var(--font-mono);
-      background: rgba(255, 255, 255, 0.7);
+      background: rgba(255, 255, 255, 0.75);
+      flex-shrink: 0;
     }
 
     &.header-pendiente {
@@ -202,7 +291,7 @@
     flex-direction: column;
     gap: 12px;
     overflow-y: auto;
-    padding: 4px 6px 12px 2px;
+    padding: 4px 4px 12px 2px;
     scrollbar-width: thin;
     scrollbar-color: var(--surface-border) transparent;
 
@@ -233,10 +322,10 @@
 }
 
 // ----------------------------------------------------
-// TARJETAS KANBAN (TAMAÑO NORMAL, SIN ENCOGERSE)
+// TARJETAS KANBAN
 // ----------------------------------------------------
 .kanban-card {
-  flex-shrink: 0; /* EVITA QUE SE APLASTEN LAS TARJETAS */
+  flex-shrink: 0;
   width: 100%;
   display: flex;
   position: relative;
@@ -250,19 +339,23 @@
   user-select: none;
   box-sizing: border-box;
 
-  &:hover {
+  &:hover:not(.card-locked) {
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
     border-color: rgba(14, 165, 233, 0.4);
   }
 
-  &:active {
+  &:active:not(.card-locked) {
     cursor: grabbing;
     transform: scale(1.02) rotate(1deg);
     box-shadow: 0 14px 28px rgba(0, 0, 0, 0.18);
   }
 
-  // Banda lateral izquierda
+  &.card-locked {
+    cursor: not-allowed;
+    user-select: none;
+  }
+
   .card-color-stripe {
     width: 4px;
     flex-shrink: 0;
@@ -275,14 +368,13 @@
 
   .card-main-content {
     flex: 1 1 auto;
-    padding: 12px 14px;
+    padding: 12px 12px;
     display: flex;
     flex-direction: column;
     gap: 9px;
     min-width: 0;
   }
 
-  // 1. Título de la tarjeta
   .card-header-line {
     display: flex;
     align-items: center;
@@ -307,7 +399,7 @@
       }
 
       .card-title {
-        font-size: 0.88rem;
+        font-size: 0.86rem;
         font-weight: 700;
         color: var(--text-color);
         margin: 0;
@@ -319,7 +411,6 @@
     }
   }
 
-  // 2. Subtítulo / Mesero
   .card-subtitle-line {
     font-size: 0.74rem;
     color: var(--text-secondary);
@@ -334,23 +425,22 @@
     }
   }
 
-  // 3. Meta (Fecha, tiempo transcurrido y avatar)
   .card-meta-line {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
 
     .time-container {
       display: flex;
       align-items: center;
-      gap: 6px;
-      font-size: 0.72rem;
+      gap: 5px;
+      font-size: 0.7rem;
       color: var(--text-secondary);
       flex-wrap: wrap;
 
       i {
-        font-size: 0.75rem;
+        font-size: 0.72rem;
         color: var(--text-muted);
       }
 
@@ -362,9 +452,9 @@
         display: inline-flex;
         align-items: center;
         gap: 3px;
-        padding: 2px 6px;
+        padding: 2px 5px;
         border-radius: 4px;
-        font-size: 0.68rem;
+        font-size: 0.65rem;
         font-weight: 700;
 
         &.elapsed-amber {
@@ -390,11 +480,11 @@
     }
 
     .waiter-avatar {
-      width: 26px;
-      height: 26px;
+      width: 24px;
+      height: 24px;
       border-radius: 50%;
       color: #ffffff;
-      font-size: 0.68rem;
+      font-size: 0.65rem;
       font-weight: 800;
       display: flex;
       align-items: center;
@@ -404,12 +494,11 @@
     }
   }
 
-  // 4. Notas
   .card-note-box {
     display: flex;
     align-items: flex-start;
     gap: 6px;
-    padding: 6px 9px;
+    padding: 6px 8px;
     border-radius: 6px;
     background: rgba(245, 158, 11, 0.1);
     border: 1px solid rgba(245, 158, 11, 0.25);
@@ -418,7 +507,7 @@
     line-height: 1.35;
 
     i {
-      font-size: 0.78rem;
+      font-size: 0.75rem;
       margin-top: 1px;
     }
 
@@ -441,27 +530,26 @@
     }
   }
 
-  // 5. Lista de platos
   .card-dishes-list {
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    padding: 8px 0;
+    gap: 5px;
+    padding: 7px 0;
     border-top: 1px dashed var(--surface-border);
     border-bottom: 1px dashed var(--surface-border);
 
     .dish-item {
       display: flex;
       align-items: center;
-      gap: 7px;
-      font-size: 0.78rem;
+      gap: 6px;
+      font-size: 0.76rem;
 
       .dish-qty {
-        font-size: 0.72rem;
+        font-size: 0.7rem;
         font-weight: 800;
-        padding: 2px 6px;
+        padding: 2px 5px;
         border-radius: 4px;
-        min-width: 24px;
+        min-width: 22px;
         text-align: center;
 
         &.qty-amber   { color: #d97706; background: rgba(245, 158, 11, 0.14); }
@@ -483,82 +571,9 @@
         font-size: 0.65rem;
         color: var(--rose-text);
         background: var(--rose-bg);
-        padding: 1px 5px;
+        padding: 1px 4px;
         border-radius: 4px;
         border: 1px solid var(--rose-border);
-      }
-    }
-  }
-
-  // 6. Botones de acción rápida
-  .card-bottom-actions {
-    display: flex;
-    gap: 8px;
-    margin-top: 2px;
-
-    &.split-two {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-    }
-
-    .btn-card {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      padding: 7px 10px;
-      font-size: 0.75rem;
-      font-weight: 700;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: all 0.15s ease;
-      width: 100%;
-      border: 1px solid transparent;
-
-      i { font-size: 0.72rem; }
-
-      &.btn-forward-amber {
-        background: rgba(245, 158, 11, 0.15);
-        border-color: rgba(245, 158, 11, 0.35);
-        color: #d97706;
-
-        &:hover {
-          background: #f59e0b;
-          color: #ffffff;
-        }
-      }
-
-      &.btn-forward-emerald {
-        background: rgba(16, 185, 129, 0.15);
-        border-color: rgba(16, 185, 129, 0.35);
-        color: #059669;
-
-        &:hover {
-          background: #10b981;
-          color: #ffffff;
-        }
-      }
-
-      &.btn-forward-purple {
-        background: rgba(168, 85, 247, 0.15);
-        border-color: rgba(168, 85, 247, 0.35);
-        color: #7c3aed;
-
-        &:hover {
-          background: #a855f7;
-          color: #ffffff;
-        }
-      }
-
-      &.btn-back {
-        background: var(--surface-subtle);
-        border-color: var(--surface-border);
-        color: var(--text-secondary);
-
-        &:hover {
-          background: var(--surface-hover);
-          color: var(--text-color);
-        }
       }
     }
   }
@@ -571,6 +586,21 @@ html.dark {
   .kanban-column {
     background: #0d1322;
     border-color: rgba(255, 255, 255, 0.08);
+
+    &.col-locked {
+      background: rgba(0, 0, 0, 0.28);
+      border-color: rgba(255, 255, 255, 0.1);
+
+      .col-locked-badge {
+        background: rgba(255, 255, 255, 0.08);
+        color: var(--text-muted);
+        border-color: rgba(255, 255, 255, 0.1);
+      }
+
+      .kanban-card {
+        background: rgba(19, 27, 46, 0.5);
+      }
+    }
 
     .column-header {
       &.header-pendiente {
@@ -607,7 +637,7 @@ html.dark {
     background: #131b2e;
     border-color: rgba(255, 255, 255, 0.08);
 
-    &:hover {
+    &:hover:not(.card-locked) {
       border-color: rgba(14, 165, 233, 0.5);
     }
   }
