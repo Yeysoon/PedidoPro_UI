@@ -213,4 +213,198 @@
       cursor: pointer;
     }
   }
+
+  // --- SECCIÓN INGREDIENTES ---
+  .ingredientes-section {
+    border-top: 1px solid var(--surface-border);
+    padding-top: 16px;
+    margin-top: 6px;
+
+    .section-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+      gap: 6px;
+
+      .section-label {
+        font-size: 0.86rem;
+        font-weight: 700;
+        color: var(--text-color);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+
+        i {
+          color: var(--primary-color);
+          font-size: 0.95rem;
+        }
+      }
+
+      .section-hint {
+        font-size: 0.74rem;
+        color: var(--text-muted);
+      }
+    }
+
+    .ingrediente-picker-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .picker-select-wrap {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .picker-qty-wrap {
+        position: relative;
+        width: 130px;
+        flex-shrink: 0;
+
+        .qty-input {
+          padding-right: 48px;
+        }
+
+        .unit-badge {
+          position: absolute;
+          right: 8px;
+          top: 50%;
+          transform: translateY(-50%);
+          font-size: 0.7rem;
+          font-weight: 700;
+          color: var(--text-muted);
+          background: var(--surface-hover);
+          padding: 2px 6px;
+          border-radius: var(--radius-xs);
+          pointer-events: none;
+        }
+      }
+
+      .add-ing-btn {
+        height: 38px;
+        padding: 0 16px;
+        border-radius: var(--radius-sm);
+        font-size: 0.82rem;
+        font-weight: 600;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+    }
+
+    .ingredientes-chips-box {
+      min-height: 85px;
+      background: var(--surface-subtle);
+      border: 1.5px dashed var(--surface-border);
+      border-radius: var(--radius-sm);
+      padding: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-content: flex-start;
+      margin-top: 10px;
+
+      .ingrediente-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--surface-card);
+        border: 1px solid var(--surface-border);
+        padding: 5px 8px 5px 12px;
+        border-radius: var(--radius-pill);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        font-size: 0.82rem;
+        transition: all 0.15s ease;
+
+        .chip-content {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+
+          .chip-icon {
+            color: var(--emerald, #10b981);
+            font-size: 0.8rem;
+          }
+
+          .chip-name {
+            font-weight: 600;
+            color: var(--text-color);
+          }
+
+          .chip-qty {
+            background: rgba(99, 102, 241, 0.12);
+            color: var(--primary-color);
+            font-weight: 700;
+            font-size: 0.72rem;
+            padding: 2px 7px;
+            border-radius: var(--radius-pill);
+          }
+        }
+
+        .chip-remove-btn {
+          background: transparent;
+          border: none;
+          color: var(--text-muted);
+          cursor: pointer;
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 0.7rem;
+          transition: all 0.15s ease;
+
+          &:hover {
+            color: #ffffff;
+            background: var(--rose, #ef4444);
+          }
+        }
+
+        &:hover {
+          border-color: var(--primary-color);
+          transform: translateY(-1px);
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+        }
+      }
+
+      .empty-chips-hint {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        height: 65px;
+        color: var(--text-muted);
+        font-size: 0.8rem;
+        text-align: center;
+
+        i {
+          font-size: 0.95rem;
+        }
+
+        strong {
+          color: var(--text-color);
+        }
+      }
+    }
+  }
+}
+
+.animate-pop {
+  animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }

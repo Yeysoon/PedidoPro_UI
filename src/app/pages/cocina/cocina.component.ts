@@ -1,11 +1,35 @@
 import { Component, signal, computed, OnInit, OnDestroy, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 import { CocinaService } from '../../core/services/cocina.service';
 import { PedidosService } from '../../core/services/pedidos.service';
+import { InventarioService } from '../../core/services/inventario.service';
+import { MenuService } from '../../core/services/menu.service';
 import { AlertService } from '../../core/services/alert.service';
 import { AuthService } from '../../core/services/auth.service';
-import { Comanda } from '../../core/models';
+import { Comanda, Ingrediente, Producto } from '../../core/models';
+
+export interface CheckIngredienteItem {
+  id_ingrediente: number;
+  nombre_ingrediente: string;
+  unidad_medida: string;
+  cantidad_requerida: number;
+  stock_actual: number;
+  tiene_stock: boolean;
+  checked: boolean;
+}
+
+export interface DetallePreparacionItem {
+  id_detalle?: number;
+  id_producto?: number;
+  nombre_producto: string;
+  cantidad: number;
+  notas_especiales?: string;
+  ingredientes: CheckIngredienteItem[];
+  sin_receta: boolean;
+  checked_item: boolean;
+}
 
 @Component({
   selector: 'app-cocina',
@@ -17,6 +41,8 @@ import { Comanda } from '../../core/models';
 export class CocinaComponent implements OnInit, OnDestroy {
   private svc = inject(CocinaService);
   private pedidosSvc = inject(PedidosService);
+  private inventarioSvc = inject(InventarioService);
+  private menuSvc = inject(MenuService);
   private alert = inject(AlertService);
   private auth = inject(AuthService);
   private router = inject(Router);
@@ -27,6 +53,61 @@ export class CocinaComponent implements OnInit, OnDestroy {
   draggedComanda: Comanda | null = null;
   dragOverColId = signal<number | null>(null);
   private interval: any;
+
+  // --- MODAL DE DETALLE & CONTROL DE PREPARACIÓN DE COMANDAS ---
+  showModalDetalle      = signal(false);
+  modalComanda          = signal<Comanda | null>(null);
+  modalDetalles         = signal<DetallePreparacionItem[]>([]);
+  loadingModalDetalle   = signal(false);
+  ingredientesInventario = signal<Ingrediente[]>([]);
+
+  totalIngredientesCount = computed(() => {
+    let count = 0;
+    for (const d of this.modalDetalles()) {
+      if (d.ingredientes.length > 0) {
+        count += d.ingredientes.length;
+      } else {
+        count += 1;
+      }
+    }
+    return count;
+  });
+
+  totalCheckedCount = computed(() => {
+    let count = 0;
+    for (const d of this.modalDetalles()) {
+      if (d.ingredientes.length > 0) {
+        count += d.ingredientes.filter(i => i.checked).length;
+      } else if (d.checked_item) {
+        count += 1;
+      }
+    }
+    return count;
+  });
+
+  todosChecked = computed(() => {
+    const details = this.modalDetalles();
+    if (!details.length) return false;
+    for (const d of details) {
+      if (d.ingredientes.length > 0) {
+        if (!d.ingredientes.every(i => i.checked)) return false;
+      } else {
+        if (!d.checked_item) return false;
+      }
+    }
+    return true;
+  });
+
+  todosTienenStock = computed(() => {
+    const details = this.modalDetalles();
+    if (!details.length) return true;
+    for (const d of details) {
+      for (const i of d.ingredientes) {
+        if (!i.tiene_stock) return false;
+      }
+    }
+    return true;
+  });
 
   editarPedido(c: Comanda, event: Event) {
     event.stopPropagation();
@@ -55,6 +136,191 @@ export class CocinaComponent implements OnInit, OnDestroy {
         this.load(false);
       }
     });
+  }
+
+  // --- ABRIR MODAL DE DETALLE (ADMIN Y COCINERO) ---
+  async abrirDetalle(c: Comanda) {
+    if (!this.isAdmin() && !this.isCocinero()) return;
+
+    this.modalComanda.set(c);
+    this.showModalDetalle.set(true);
+    this.loadingModalDetalle.set(true);
+
+    try {
+      // 1. Obtener inventario actual y catálogo de productos en tiempo real
+      const [ings, menuProds] = await Promise.all([
+        firstValueFrom(this.inventarioSvc.getIngredientes()).catch(() => [] as Ingrediente[]),
+        firstValueFrom(this.menuSvc.getMenu()).catch(() => [] as Producto[])
+      ]);
+      this.ingredientesInventario.set(ings || []);
+
+      // 2. Obtener recetas de cada platillo del pedido
+      const detallesItems: DetallePreparacionItem[] = [];
+
+      for (const d of c.detalles || []) {
+        let prodId = d.id_producto;
+        if (!prodId && d.nombre_producto && Array.isArray(menuProds)) {
+          const matchedProd = menuProds.find(
+            p => p.nombre_producto?.trim().toLowerCase() === d.nombre_producto?.trim().toLowerCase()
+          );
+          if (matchedProd) {
+            prodId = matchedProd.id_producto;
+          }
+        }
+
+        let receta: any[] = [];
+        if (prodId) {
+          const rawReceta = await firstValueFrom(this.inventarioSvc.getReceta(prodId)).catch(() => []);
+          receta = Array.isArray(rawReceta)
+            ? rawReceta
+            : (rawReceta && Array.isArray((rawReceta as any).data) ? (rawReceta as any).data : []);
+        }
+
+        const ingredientesChequeo: CheckIngredienteItem[] = [];
+        if (receta && Array.isArray(receta) && receta.length > 0) {
+          for (const r of receta) {
+            const currentStockItem = (ings || []).find(i => Number(i.id_ingrediente) === Number(r.id_ingrediente));
+            const stockActual = currentStockItem ? Number(currentStockItem.stock_actual) : 0;
+            const cantidadRequerida = Number((Number(r.cantidad_necesaria || 1) * Number(d.cantidad || 1)).toFixed(2));
+            const tieneStock = stockActual >= cantidadRequerida;
+
+            ingredientesChequeo.push({
+              id_ingrediente: Number(r.id_ingrediente),
+              nombre_ingrediente: r.nombre_ingrediente || currentStockItem?.nombre_ingrediente || 'Ingrediente',
+              unidad_medida: r.unidad_medida || currentStockItem?.unidad_medida || '',
+              cantidad_requerida: cantidadRequerida,
+              stock_actual: stockActual,
+              tiene_stock: tieneStock,
+              checked: Number(c.id_estado) >= 2 // Si ya está en preparación, listo o servido, inicializa tachado y consumido
+            });
+          }
+        }
+
+        detallesItems.push({
+          id_detalle: d.id_detalle,
+          id_producto: prodId,
+          nombre_producto: d.nombre_producto || 'Platillo',
+          cantidad: Number(d.cantidad || 1),
+          notas_especiales: d.notas_especiales,
+          ingredientes: ingredientesChequeo,
+          sin_receta: ingredientesChequeo.length === 0,
+          checked_item: Number(c.id_estado) >= 2
+        });
+      }
+
+      this.modalDetalles.set(detallesItems);
+      this.loadingModalDetalle.set(false);
+    } catch (e) {
+      console.error('Error al preparar detalle de comanda:', e);
+      this.loadingModalDetalle.set(false);
+    }
+  }
+
+  isChecklistEditable = computed(() => this.modalComanda()?.id_estado === 1);
+
+  toggleIngredienteCheck(dishIdx: number, ingIdx: number) {
+    if (!this.isChecklistEditable()) return;
+    this.modalDetalles.update(list => {
+      const copy = [...list];
+      const dish = { ...copy[dishIdx] };
+      const ings = [...dish.ingredientes];
+      ings[ingIdx] = { ...ings[ingIdx], checked: !ings[ingIdx].checked };
+      dish.ingredientes = ings;
+      copy[dishIdx] = dish;
+      return copy;
+    });
+  }
+
+  toggleDishItemCheck(dishIdx: number) {
+    if (!this.isChecklistEditable()) return;
+    this.modalDetalles.update(list => {
+      const copy = [...list];
+      copy[dishIdx] = { ...copy[dishIdx], checked_item: !copy[dishIdx].checked_item };
+      return copy;
+    });
+  }
+
+  toggleCheckAll() {
+    if (!this.isChecklistEditable()) return;
+    const allChecked = this.todosChecked();
+    this.modalDetalles.update(list =>
+      list.map(dish => ({
+        ...dish,
+        checked_item: !allChecked,
+        ingredientes: dish.ingredientes.map(ing => ({
+          ...ing,
+          checked: !allChecked
+        }))
+      }))
+    );
+  }
+
+  isDishFullyChecked(d: DetallePreparacionItem): boolean {
+    if (d.ingredientes.length > 0) {
+      return d.ingredientes.every(i => i.checked);
+    }
+    return d.checked_item;
+  }
+
+  rebajarInventario() {
+    const comanda = this.modalComanda();
+    if (!comanda) return;
+
+    if (!this.todosTienenStock()) {
+      this.alert.error('Stock Insuficiente', 'No se puede rebajar el inventario porque hay insumos sin existencias en almacén.');
+      return;
+    }
+
+    if (!this.todosChecked()) {
+      this.alert.warningToast('Por favor marca todos los ingredientes de la comanda antes de rebajar.');
+      return;
+    }
+
+    this.showModalDetalle.set(false);
+
+    this.svc.updateEstado(comanda.id_pedido, 2).subscribe({
+      next: () => {
+        this.alert.successToast(`Inventario rebajado exitosamente. Pedido #${comanda.id_pedido} en preparación.`);
+        this.load(false);
+      },
+      error: e => {
+        this.alert.error('Error al rebajar inventario', e.error?.message || 'No se pudo actualizar el pedido');
+        this.load(false);
+      }
+    });
+  }
+
+  avanzarEstadoModal(nuevoEstadoId: number) {
+    const comanda = this.modalComanda();
+    if (!comanda) return;
+
+    if (!this.todosTienenStock()) {
+      this.alert.error('Stock Insuficiente', 'No se puede avanzar el pedido porque faltan ingredientes en el inventario.');
+      return;
+    }
+
+    this.cambiarEstado(comanda, nuevoEstadoId);
+    this.showModalDetalle.set(false);
+  }
+
+  getEstadoNombre(id: number): string {
+    const map: Record<number, string> = {
+      1: 'Pendiente por iniciar',
+      2: 'Preparándose en cocina',
+      3: 'Listo para servir',
+      4: 'Servido en Mesa'
+    };
+    return map[id] || 'Comanda';
+  }
+
+  getEstadoBadgeClass(id: number): string {
+    const map: Record<number, string> = {
+      1: 'warning',
+      2: 'info',
+      3: 'success',
+      4: 'indigo'
+    };
+    return map[id] || 'neutral';
   }
 
   // Roles

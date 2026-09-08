@@ -711,3 +711,844 @@ html.dark {
     }
   }
 }
+
+// ----------------------------------------------------
+// CLICKABLE CARD EFFECTS
+// ----------------------------------------------------
+.kanban-card.card-clickable {
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    border-color: var(--primary-color, #0ea5e9);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+// ----------------------------------------------------
+// MODAL DE DETALLE DE COMANDA & CHECKLIST DE COCINA
+// ----------------------------------------------------
+.modal-backdrop-custom {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  animation: fadeInModal 0.2s ease-out forwards;
+}
+
+@keyframes fadeInModal {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUpModal {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modal-cocina-box {
+  width: 100%;
+  max-width: 680px;
+  max-height: 90vh;
+  background: var(--surface-card, #ffffff);
+  border: 1px solid var(--surface-border, #e2e8f0);
+  border-radius: var(--radius-xl, 16px);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: slideUpModal 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+
+  // HEADER
+  .modal-cocina-header {
+    padding: 20px 24px 16px;
+    background: var(--surface-card, #ffffff);
+    border-bottom: 1px solid var(--surface-border, #e2e8f0);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    flex-shrink: 0;
+
+    .modal-header-left {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex: 1;
+
+      .modal-badge-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        align-self: flex-start;
+        padding: 3px 10px;
+        border-radius: var(--radius-pill, 9999px);
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+
+        .status-pulse-dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: currentColor;
+          animation: pulseDot 1.6s infinite ease-in-out;
+        }
+
+        &.status-badge-warning {
+          background: #fef3c7;
+          color: #b45309;
+        }
+        &.status-badge-info {
+          background: #e0f2fe;
+          color: #0369a1;
+        }
+        &.status-badge-success {
+          background: #dcfce7;
+          color: #15803d;
+        }
+        &.status-badge-indigo {
+          background: #f3e8ff;
+          color: #7e22ce;
+        }
+      }
+
+      .modal-comanda-title {
+        margin: 0;
+        font-size: 1.3rem;
+        font-weight: 800;
+        color: var(--text-color, #0f172a);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        i {
+          color: var(--primary-color, #0ea5e9);
+          font-size: 1.2rem;
+        }
+      }
+
+      .modal-subtitle-info {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        font-size: 0.82rem;
+        color: var(--text-muted, #64748b);
+
+        span {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+
+          i {
+            font-size: 0.8rem;
+            color: var(--text-muted, #94a3b8);
+          }
+        }
+      }
+    }
+
+    .btn-modal-close {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 1px solid var(--surface-border, #e2e8f0);
+      background: var(--surface-subtle, #f8fafc);
+      color: var(--text-muted, #64748b);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.15s ease;
+      flex-shrink: 0;
+
+      &:hover {
+        background: #fee2e2;
+        color: #ef4444;
+        border-color: #fca5a5;
+      }
+    }
+  }
+
+  // BODY
+  .modal-cocina-body {
+    padding: 20px 24px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    flex: 1;
+
+    .modal-loading-state {
+      padding: 40px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      color: var(--text-muted);
+      text-align: center;
+
+      i {
+        color: var(--primary-color);
+      }
+    }
+
+    // STOCK ALERT BANNERS
+    .stock-alert-banner {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 16px;
+      border-radius: var(--radius-lg, 12px);
+      font-size: 0.83rem;
+
+      i {
+        font-size: 1.2rem;
+        flex-shrink: 0;
+        margin-top: 2px;
+      }
+
+      .alert-content {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+
+        strong {
+          font-weight: 700;
+        }
+
+        p {
+          margin: 0;
+          opacity: 0.92;
+          line-height: 1.35;
+        }
+      }
+
+      &.alert-danger {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #991b1b;
+
+        i {
+          color: #dc2626;
+        }
+      }
+
+      &.alert-success {
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        color: #166534;
+
+        i {
+          color: #16a34a;
+        }
+      }
+    }
+
+    // NOTAS GENERALES
+    .modal-comanda-notes {
+      padding: 10px 14px;
+      background: #faf5ff;
+      border: 1px solid #e9d5ff;
+      border-radius: var(--radius-md, 8px);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+
+      .notes-header {
+        font-size: 0.76rem;
+        font-weight: 700;
+        color: #7e22ce;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .notes-text {
+        margin: 0;
+        font-size: 0.84rem;
+        color: #581c87;
+        line-height: 1.35;
+      }
+    }
+
+    // CHECKLIST TOOLBAR
+    .checklist-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding-bottom: 4px;
+      border-bottom: 1px dashed var(--surface-border, #e2e8f0);
+
+      .progress-info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+
+        .checklist-title {
+          font-size: 0.88rem;
+          font-weight: 700;
+          color: var(--text-color, #0f172a);
+        }
+
+        .checklist-counter {
+          font-size: 0.76rem;
+          color: var(--text-muted, #64748b);
+
+          .badge-locked-notice {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            color: #15803d;
+            font-weight: 700;
+          }
+        }
+      }
+
+      .btn-check-all {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 12px;
+        background: var(--surface-subtle, #f1f5f9);
+        border: 1px solid var(--surface-border, #cbd5e1);
+        border-radius: var(--radius-pill, 9999px);
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: var(--text-color, #334155);
+        cursor: pointer;
+        transition: all 0.15s ease;
+
+        &:hover {
+          background: var(--primary-subtle, #e0f2fe);
+          border-color: var(--primary-color, #0ea5e9);
+          color: var(--primary-color, #0284c7);
+        }
+      }
+    }
+
+    // LISTA DE PLATILLOS & CHECKLIST
+    .dishes-checklist-container {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+
+      .dish-check-card {
+        background: var(--surface-subtle, #f8fafc);
+        border: 1px solid var(--surface-border, #e2e8f0);
+        border-radius: var(--radius-lg, 12px);
+        padding: 14px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        transition: all 0.18s ease;
+
+        &.dish-complete {
+          background: rgba(240, 253, 244, 0.7);
+          border-color: #86efac;
+        }
+
+        .dish-check-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+
+          .dish-title-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+
+            .dish-qty-badge {
+              background: var(--primary-color, #0ea5e9);
+              color: #ffffff;
+              padding: 2px 7px;
+              border-radius: var(--radius-pill, 9999px);
+              font-size: 0.75rem;
+              font-weight: 800;
+            }
+
+            .dish-card-name {
+              font-size: 0.95rem;
+              font-weight: 700;
+              color: var(--text-color, #0f172a);
+            }
+
+            .dish-ready-pill {
+              display: inline-flex;
+              align-items: center;
+              gap: 4px;
+              background: #dcfce7;
+              color: #15803d;
+              padding: 1px 7px;
+              border-radius: var(--radius-pill, 9999px);
+              font-size: 0.7rem;
+              font-weight: 700;
+            }
+          }
+
+          .custom-dish-checkbox {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+
+            input[type="checkbox"] {
+              display: none;
+            }
+
+            .checkbox-custom-box {
+              width: 18px;
+              height: 18px;
+              border: 2px solid var(--surface-border, #94a3b8);
+              border-radius: 4px;
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
+              background: #ffffff;
+              transition: all 0.15s ease;
+
+              &::after {
+                content: '';
+                width: 5px;
+                height: 9px;
+                border: solid #ffffff;
+                border-width: 0 2px 2px 0;
+                transform: rotate(45deg) scale(0);
+                margin-top: -2px;
+                transition: transform 0.15s ease;
+              }
+            }
+
+            input[type="checkbox"]:checked + .checkbox-custom-box {
+              background: #16a34a;
+              border-color: #16a34a;
+
+              &::after {
+                transform: rotate(45deg) scale(1);
+              }
+            }
+          }
+        }
+
+        .dish-especificaciones {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 0.78rem;
+          color: #b45309;
+          background: #fef3c7;
+          padding: 4px 10px;
+          border-radius: 6px;
+        }
+
+        .ingredients-list {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+
+          .ingredients-list-title {
+            font-size: 0.74rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            color: var(--text-muted, #64748b);
+            margin-top: 2px;
+          }
+
+          .ingredient-check-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 8px 12px;
+            background: var(--surface-card, #ffffff);
+            border: 1px solid var(--surface-border, #e2e8f0);
+            border-radius: var(--radius-md, 8px);
+            cursor: pointer;
+            transition: all 0.15s ease;
+
+            &:hover {
+              border-color: var(--primary-color, #0ea5e9);
+              background: #f0f9ff;
+            }
+
+            &.ing-checked {
+              background: #f0fdf4;
+              border-color: #86efac;
+
+              .ing-name {
+                text-decoration: line-through;
+                color: var(--text-muted, #64748b);
+              }
+            }
+
+            &.ing-disabled {
+              cursor: default;
+              &:hover {
+                border-color: var(--surface-border, #e2e8f0);
+                background: var(--surface-card, #ffffff);
+              }
+              &.ing-checked:hover {
+                border-color: #86efac;
+                background: #f0fdf4;
+              }
+            }
+
+            .ing-left {
+              display: flex;
+              align-items: center;
+              gap: 10px;
+
+              .custom-ing-checkbox {
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+
+                &.chk-disabled {
+                  cursor: default;
+                  pointer-events: none;
+                }
+
+                input[type="checkbox"] {
+                  display: none;
+                }
+
+                .checkbox-custom-box {
+                  width: 18px;
+                  height: 18px;
+                  border: 2px solid var(--surface-border, #94a3b8);
+                  border-radius: 4px;
+                  display: inline-flex;
+                  align-items: center;
+                  justify-content: center;
+                  background: #ffffff;
+                  transition: all 0.15s ease;
+
+                  &::after {
+                    content: '';
+                    width: 5px;
+                    height: 9px;
+                    border: solid #ffffff;
+                    border-width: 0 2px 2px 0;
+                    transform: rotate(45deg) scale(0);
+                    margin-top: -2px;
+                    transition: transform 0.15s ease;
+                  }
+                }
+
+                input[type="checkbox"]:checked + .checkbox-custom-box {
+                  background: #16a34a;
+                  border-color: #16a34a;
+
+                  &::after {
+                    transform: rotate(45deg) scale(1);
+                  }
+                }
+              }
+
+              .ing-info {
+                display: flex;
+                flex-direction: column;
+                gap: 1px;
+
+                .ing-name {
+                  font-size: 0.86rem;
+                  font-weight: 600;
+                  color: var(--text-color, #1e293b);
+                }
+
+                .ing-qty-req {
+                  font-size: 0.74rem;
+                  color: var(--text-muted, #64748b);
+                }
+              }
+            }
+
+            .ing-right {
+              .stock-status-pill {
+                display: inline-flex;
+                align-items: center;
+                gap: 5px;
+                padding: 3px 8px;
+                border-radius: var(--radius-pill, 9999px);
+                font-size: 0.73rem;
+                font-weight: 600;
+
+                &.in-stock {
+                  background: #e0f2fe;
+                  color: #0369a1;
+                  border: 1px solid #bae6fd;
+                }
+
+                &.out-stock {
+                  background: #fee2e2;
+                  color: #dc2626;
+                  border: 1px solid #fca5a5;
+                }
+              }
+            }
+          }
+        }
+
+        .dish-no-recipe-notice {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 0.78rem;
+          color: var(--text-muted, #64748b);
+          background: rgba(0, 0, 0, 0.03);
+          padding: 6px 10px;
+          border-radius: 6px;
+        }
+      }
+    }
+  }
+
+  // FOOTER
+  .modal-cocina-footer {
+    padding: 14px 24px;
+    background: var(--surface-card, #ffffff);
+    border-top: 1px solid var(--surface-border, #e2e8f0);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-shrink: 0;
+
+    .btn-cancel-modal {
+      padding: 9px 18px;
+      border-radius: var(--radius-md, 8px);
+      border: 1px solid var(--surface-border, #cbd5e1);
+      background: var(--surface-subtle, #f8fafc);
+      color: var(--text-color, #334155);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+
+      &:hover {
+        background: var(--surface-hover, #e2e8f0);
+      }
+    }
+
+    .footer-actions-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+
+      .btn-action-modal {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 9px 18px;
+        border-radius: var(--radius-md, 8px);
+        font-size: 0.85rem;
+        font-weight: 700;
+        cursor: pointer;
+        border: none;
+        transition: all 0.15s ease;
+
+        &:disabled {
+          opacity: 0.45;
+          cursor: not-allowed;
+          filter: grayscale(0.6);
+        }
+
+        &.btn-rebajar {
+          background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+          color: #ffffff;
+          box-shadow: 0 4px 12px rgba(14, 165, 233, 0.35);
+
+          &:hover:not(:disabled) {
+            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+            box-shadow: 0 6px 16px rgba(14, 165, 233, 0.45);
+            transform: translateY(-1px);
+          }
+
+          &:active:not(:disabled) {
+            transform: translateY(0);
+          }
+        }
+
+        &.btn-start-prep {
+          background: #0284c7;
+          color: #ffffff;
+          box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);
+
+          &:hover:not(:disabled) {
+            background: #0369a1;
+          }
+        }
+
+        &.btn-ready-serve {
+          background: #16a34a;
+          color: #ffffff;
+          box-shadow: 0 2px 6px rgba(22, 163, 74, 0.3);
+
+          &:hover:not(:disabled) {
+            background: #15803d;
+            box-shadow: 0 4px 12px rgba(22, 163, 74, 0.4);
+          }
+        }
+
+        &.btn-served {
+          background: #7c3aed;
+          color: #ffffff;
+          box-shadow: 0 2px 6px rgba(124, 58, 237, 0.3);
+
+          &:hover:not(:disabled) {
+            background: #6d28d9;
+          }
+        }
+      }
+    }
+  }
+}
+
+// ----------------------------------------------------
+// DARK MODE FOR MODAL & CHECKLIST
+// ----------------------------------------------------
+html.dark {
+  .modal-cocina-box {
+    background: #0f172a;
+    border-color: rgba(255, 255, 255, 0.1);
+
+    .modal-cocina-header {
+      background: #0f172a;
+      border-bottom-color: rgba(255, 255, 255, 0.08);
+
+      .modal-comanda-title {
+        color: #f1f5f9;
+      }
+
+      .btn-modal-close {
+        background: #1e293b;
+        border-color: rgba(255, 255, 255, 0.1);
+        color: #94a3b8;
+
+        &:hover {
+          background: rgba(239, 68, 68, 0.2);
+          color: #f87171;
+          border-color: rgba(239, 68, 68, 0.4);
+        }
+      }
+    }
+
+    .modal-cocina-body {
+      .modal-comanda-notes {
+        background: rgba(126, 34, 206, 0.15);
+        border-color: rgba(168, 85, 247, 0.3);
+
+        .notes-header { color: #d8b4fe; }
+        .notes-text { color: #e9d5ff; }
+      }
+
+      .checklist-toolbar {
+        border-bottom-color: rgba(255, 255, 255, 0.08);
+
+        .checklist-title { color: #f1f5f9; }
+
+        .btn-check-all {
+          background: #1e293b;
+          border-color: rgba(255, 255, 255, 0.1);
+          color: #cbd5e1;
+
+          &:hover {
+            background: #0369a1;
+            color: #ffffff;
+          }
+        }
+      }
+
+      .dishes-checklist-container {
+        .dish-check-card {
+          background: #1e293b;
+          border-color: rgba(255, 255, 255, 0.08);
+
+          &.dish-complete {
+            background: rgba(22, 101, 52, 0.2);
+            border-color: rgba(34, 197, 94, 0.4);
+          }
+
+          .dish-check-header {
+            .dish-card-name { color: #f8fafc; }
+          }
+
+          .ingredients-list {
+            .ingredient-check-item {
+              background: #0f172a;
+              border-color: rgba(255, 255, 255, 0.08);
+
+              &:hover {
+                background: #1e293b;
+                border-color: #0ea5e9;
+              }
+
+              &.ing-checked {
+                background: rgba(22, 101, 52, 0.15);
+                border-color: rgba(34, 197, 94, 0.3);
+
+                .ing-name { color: #64748b; }
+              }
+
+              &.ing-no-stock {
+                background: rgba(220, 38, 38, 0.12);
+                border-color: rgba(239, 68, 68, 0.35);
+              }
+
+              .ing-left .ing-info .ing-name {
+                color: #f1f5f9;
+              }
+
+              .custom-ing-checkbox .checkbox-custom-box {
+                background: #1e293b;
+                border-color: rgba(255, 255, 255, 0.2);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    .modal-cocina-footer {
+      background: #0f172a;
+      border-top-color: rgba(255, 255, 255, 0.08);
+
+      .btn-cancel-modal {
+        background: #1e293b;
+        border-color: rgba(255, 255, 255, 0.1);
+        color: #e2e8f0;
+
+        &:hover {
+          background: #334155;
+        }
+      }
+    }
+  }
+}
+

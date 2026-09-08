@@ -116,16 +116,61 @@
           </select>
         </div>
 
-        <div class="form-group full">
-          <label>Disponibilidad en Cocina</label>
-          <div class="toggle-row">
-            <input type="checkbox" id="disp" [checked]="editProd().disponible" (change)="update('disponible', $any($event.target).checked)"/>
-            <label for="disp" class="toggle-label">
-              <span class="status-pill" [class.badge-success]="editProd().disponible" [class.badge-danger]="!editProd().disponible">
-                <i [class]="editProd().disponible ? 'pi pi-check' : 'pi pi-ban'"></i>
-                {{ editProd().disponible ? 'Disponible para pedidos' : 'Agotado temporalmente' }}
-              </span>
+        <!-- SECCIÓN INGREDIENTES / RECETA DE INVENTARIO -->
+        <div class="form-group full ingredientes-section">
+          <div class="section-title-row">
+            <label class="section-label">
+              <i class="pi pi-box"></i>
+              Ingredientes Requeridos (Inventario)
             </label>
+            <span class="section-hint">Se descontarán automáticamente al ordenar</span>
+          </div>
+
+          <!-- Selector con Dropdown, Cantidad y Botón + -->
+          <div class="ingrediente-picker-row">
+            <div class="picker-select-wrap">
+              <select class="form-control" [ngModel]="selectedIngredienteId()" (ngModelChange)="selectedIngredienteId.set($event ? +$event : null)">
+                <option [ngValue]="null">-- Seleccionar Ingrediente del Inventario --</option>
+                @for (ing of ingredientesDisponibles(); track ing.id_ingrediente) {
+                  <option [ngValue]="ing.id_ingrediente">
+                    {{ ing.nombre_ingrediente }} ({{ ing.unidad_medida }}) - Stock: {{ ing.stock_actual }}
+                  </option>
+                }
+              </select>
+            </div>
+
+            <div class="picker-qty-wrap">
+              <input class="form-control qty-input" type="number" min="0.01" step="any" placeholder="Cant." [ngModel]="selectedCantidad()" (ngModelChange)="selectedCantidad.set(+$event)"/>
+              @if (getSelectedIngredienteUnidad()) {
+                <span class="unit-badge">{{ getSelectedIngredienteUnidad() }}</span>
+              }
+            </div>
+
+            <button type="button" class="btn btn-primary add-ing-btn" (click)="addIngrediente()" title="Agregar ingrediente a la receta">
+              <i class="pi pi-plus"></i>
+              <span>Agregar</span>
+            </button>
+          </div>
+
+          <!-- Contenedor de Burbujitas / Chips -->
+          <div class="ingredientes-chips-box">
+            @for (item of recetaIngredientes(); track item.id_ingrediente; let idx = $index) {
+              <div class="ingrediente-chip animate-pop">
+                <div class="chip-content">
+                  <i class="pi pi-check-circle chip-icon"></i>
+                  <span class="chip-name">{{ item.nombre_ingrediente }}</span>
+                  <span class="chip-qty">{{ item.cantidad_necesaria }} {{ item.unidad_medida }}</span>
+                </div>
+                <button type="button" class="chip-remove-btn" (click)="removeIngrediente(idx)" title="Eliminar ingrediente">
+                  <i class="pi pi-times"></i>
+                </button>
+              </div>
+            } @empty {
+              <div class="empty-chips-hint">
+                <i class="pi pi-info-circle"></i>
+                <span>No hay ingredientes agregados. Selecciona del menú superior y pulsa <strong>+ Agregar</strong>.</span>
+              </div>
+            }
           </div>
         </div>
       </div>

@@ -78,9 +78,11 @@
               <div
                 class="kanban-card card-pendiente"
                 [class.card-locked]="!isCardDraggable(c)"
+                [class.card-clickable]="isAdmin() || isCocinero()"
                 [attr.draggable]="isCardDraggable(c)"
                 (dragstart)="onDragStart($event, c)"
                 (dragend)="onDragEnd()"
+                (click)="abrirDetalle(c)"
               >
                 <div class="card-color-stripe stripe-amber"></div>
 
@@ -184,9 +186,11 @@
               <div
                 class="kanban-card card-preparando"
                 [class.card-locked]="!isCardDraggable(c)"
+                [class.card-clickable]="isAdmin() || isCocinero()"
                 [attr.draggable]="isCardDraggable(c)"
                 (dragstart)="onDragStart($event, c)"
                 (dragend)="onDragEnd()"
+                (click)="abrirDetalle(c)"
               >
                 <div class="card-color-stripe stripe-sky"></div>
 
@@ -280,9 +284,11 @@
               <div
                 class="kanban-card card-listo"
                 [class.card-locked]="!isCardDraggable(c)"
+                [class.card-clickable]="isAdmin() || isCocinero()"
                 [attr.draggable]="isCardDraggable(c)"
                 (dragstart)="onDragStart($event, c)"
                 (dragend)="onDragEnd()"
+                (click)="abrirDetalle(c)"
               >
                 <div class="card-color-stripe stripe-emerald"></div>
 
@@ -372,9 +378,11 @@
               <div
                 class="kanban-card card-servido"
                 [class.card-locked]="!isCardDraggable(c)"
+                [class.card-clickable]="isAdmin() || isCocinero()"
                 [attr.draggable]="isCardDraggable(c)"
                 (dragstart)="onDragStart($event, c)"
                 (dragend)="onDragEnd()"
+                (click)="abrirDetalle(c)"
               >
                 <div class="card-color-stripe stripe-purple"></div>
 
@@ -432,3 +440,187 @@
     </div>
   }
 </div>
+
+<!-- ======================================================= -->
+<!-- MODAL DETALLE DE COMANDA & CHECKLIST DE INGREDIENTES -->
+<!-- ======================================================= -->
+@if (showModalDetalle() && modalComanda()) {
+  <div class="modal-backdrop-custom" (click)="showModalDetalle.set(false)">
+    <div class="modal-cocina-box" (click)="$event.stopPropagation()">
+      
+      <!-- HEADER -->
+      <div class="modal-cocina-header">
+        <div class="modal-header-left">
+          <div class="modal-badge-status status-badge-{{ getEstadoBadgeClass(modalComanda()!.id_estado) }}">
+            <span class="status-pulse-dot"></span>
+            {{ getEstadoNombre(modalComanda()!.id_estado) }}
+          </div>
+          <h2 class="modal-comanda-title">
+            <i class="pi pi-receipt"></i>
+            Mesa {{ modalComanda()!.numero_mesa }} &bull; Pedido #{{ modalComanda()!.id_pedido }}
+          </h2>
+          <div class="modal-subtitle-info">
+            <span><i class="pi pi-user"></i> Cliente: <strong>{{ modalComanda()!.cliente_nombre || 'Consumidor Final (C/F)' }}</strong></span>
+            @if (modalComanda()!.mesero) {
+              <span><i class="pi pi-id-card"></i> Mesero: <strong>{{ modalComanda()!.mesero }}</strong></span>
+            }
+            <span><i class="pi pi-clock"></i> {{ formatearFechaHora(modalComanda()!.fecha_hora_creacion) }} ({{ tiempoTranscurrido(modalComanda()!.fecha_hora_creacion) }})</span>
+          </div>
+        </div>
+        <button class="btn-modal-close" (click)="showModalDetalle.set(false)" title="Cerrar modal">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+
+      <!-- BODY -->
+      <div class="modal-cocina-body">
+        @if (loadingModalDetalle()) {
+          <div class="modal-loading-state">
+            <i class="pi pi-spin pi-spinner text-3xl"></i>
+            <p>Cargando receta y verificando disponibilidad en inventario...</p>
+          </div>
+        } @else {
+          <!-- STOCK ALERT (SOLO SI FALTA INVENTARIO) -->
+          @if (!todosTienenStock()) {
+            <div class="stock-alert-banner alert-danger">
+              <i class="pi pi-exclamation-triangle"></i>
+              <div class="alert-content">
+                <strong>¡Stock Insuficiente en Almacén!</strong>
+                <p>Uno o más ingredientes requeridos para este pedido no cuentan con existencias suficientes en el inventario. No se podrá marcar como <strong>Listo para servir</strong> hasta regularizar el stock.</p>
+              </div>
+            </div>
+          }
+
+          <!-- NOTAS GENERALES -->
+          @if (modalComanda()!.notas_generales) {
+            <div class="modal-comanda-notes">
+              <div class="notes-header"><i class="pi pi-comment"></i> Observaciones Generales del Pedido:</div>
+              <p class="notes-text">{{ modalComanda()!.notas_generales }}</p>
+            </div>
+          }
+
+          <!-- TOOLBAR: MARCAR TODO / PROGRESO -->
+          <div class="checklist-toolbar">
+            <div class="progress-info">
+              <span class="checklist-title">Checklist de Ingredientes & Preparación</span>
+              <span class="checklist-counter">
+                @if (isChecklistEditable()) {
+                  {{ totalCheckedCount() }} de {{ totalIngredientesCount() }} verificados
+                } @else {
+                  <span class="badge-locked-notice"><i class="pi pi-lock"></i> Ingredientes rebajados de inventario (solo lectura)</span>
+                }
+              </span>
+            </div>
+            @if (isChecklistEditable()) {
+              <button class="btn-check-all" (click)="toggleCheckAll()" type="button">
+                <i [class]="todosChecked() ? 'pi pi-times' : 'pi pi-check-square'"></i>
+                {{ todosChecked() ? 'Desmarcar todo' : 'Marcar todo listo' }}
+              </button>
+            }
+          </div>
+
+          <!-- LISTA DE PLATILLOS & INGREDIENTES -->
+          <div class="dishes-checklist-container">
+            @for (dish of modalDetalles(); track $index; let dIdx = $index) {
+              <div class="dish-check-card" [class.dish-complete]="isDishFullyChecked(dish)">
+                <div class="dish-check-header">
+                  <div class="dish-title-group">
+                    <span class="dish-qty-badge">{{ dish.cantidad }}x</span>
+                    <span class="dish-card-name">{{ dish.nombre_producto }}</span>
+                    @if (isDishFullyChecked(dish)) {
+                      <span class="dish-ready-pill"><i class="pi pi-check"></i> Listo</span>
+                    }
+                  </div>
+                  @if (dish.sin_receta) {
+                    <label class="custom-dish-checkbox" [class.chk-disabled]="!isChecklistEditable()">
+                      <input
+                        type="checkbox"
+                        [checked]="dish.checked_item"
+                        [disabled]="!isChecklistEditable()"
+                        (change)="toggleDishItemCheck(dIdx)"
+                      />
+                      <span class="checkbox-custom-box"></span>
+                      <span class="dish-chk-label">Verificado</span>
+                    </label>
+                  }
+                </div>
+
+                @if (dish.notas_especiales) {
+                  <div class="dish-especificaciones">
+                    <i class="pi pi-tag"></i>
+                    <span><strong>Nota del cliente:</strong> {{ dish.notas_especiales }}</span>
+                  </div>
+                }
+
+                @if (dish.ingredientes.length > 0) {
+                  <div class="ingredients-list">
+                    <div class="ingredients-list-title">Ingredientes Requeridos (Receta):</div>
+                    @for (ing of dish.ingredientes; track ing.id_ingrediente; let iIdx = $index) {
+                      <div
+                        class="ingredient-check-item"
+                        [class.ing-checked]="ing.checked"
+                        [class.ing-no-stock]="!ing.tiene_stock"
+                        [class.ing-disabled]="!isChecklistEditable()"
+                        (click)="toggleIngredienteCheck(dIdx, iIdx)"
+                      >
+                        <div class="ing-left">
+                          <label class="custom-ing-checkbox" [class.chk-disabled]="!isChecklistEditable()" (click)="$event.stopPropagation()">
+                            <input
+                              type="checkbox"
+                              [checked]="ing.checked"
+                              [disabled]="!isChecklistEditable()"
+                              (change)="toggleIngredienteCheck(dIdx, iIdx)"
+                            />
+                            <span class="checkbox-custom-box"></span>
+                          </label>
+                          <div class="ing-info">
+                            <span class="ing-name">{{ ing.nombre_ingrediente }}</span>
+                            <span class="ing-qty-req">Requerido: <strong>{{ ing.cantidad_requerida }} {{ ing.unidad_medida }}</strong></span>
+                          </div>
+                        </div>
+
+                        <div class="ing-right">
+                          <div class="stock-status-pill" [class.in-stock]="ing.tiene_stock" [class.out-stock]="!ing.tiene_stock">
+                            <i [class]="ing.tiene_stock ? 'pi pi-box' : 'pi pi-exclamation-triangle'"></i>
+                            <span>Stock actual: <strong>{{ ing.stock_actual }} {{ ing.unidad_medida }}</strong></span>
+                          </div>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                } @else {
+                  <div class="dish-no-recipe-notice">
+                    <i class="pi pi-info-circle"></i>
+                    <span>Este producto no tiene receta de ingredientes registrada. Marca el platillo directamente al completarlo.</span>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- FOOTER -->
+      <div class="modal-cocina-footer">
+        <button class="btn-cancel-modal" (click)="showModalDetalle.set(false)" type="button">
+          Cerrar
+        </button>
+
+        <div class="footer-actions-group">
+          @if (modalComanda()!.id_estado === 1) {
+            <button
+              class="btn-action-modal btn-rebajar"
+              type="button"
+              (click)="rebajarInventario()"
+              [disabled]="!todosTienenStock() || !todosChecked()"
+              [title]="!todosTienenStock() ? 'No hay suficiente stock en inventario para rebajar' : (!todosChecked() ? 'Debes marcar todos los ingredientes antes de rebajar' : 'Rebajar insumos de inventario y pasar a En Preparación')"
+            >
+              <i class="pi pi-box"></i> Rebajar
+            </button>
+          }
+        </div>
+      </div>
+
+    </div>
+  </div>
+}
