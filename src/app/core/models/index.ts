@@ -64,8 +64,11 @@ export interface Pedido {
   fecha_hora_creacion: string;
   notas_generales?: string;
   nombre_estado?: string;
+  estado?: string;
   numero_mesa?: number;
   nombre_mesero?: string;
+  mesero?: string;
+  total_estimado?: number;
   detalles?: DetallePedido[];
 }
 
