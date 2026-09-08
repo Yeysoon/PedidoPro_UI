@@ -13,17 +13,24 @@ import { Comanda } from '../../core/models';
 export class CocinaComponent implements OnInit, OnDestroy {
   comandas = signal<Comanda[]>([]);
   loading  = signal(true);
+  draggedComanda: Comanda | null = null;
   private interval: any;
 
-  pendientes = computed(() => this.comandas().filter(c => c.id_estado === 1).length);
-  preparando = computed(() => this.comandas().filter(c => c.id_estado === 2).length);
-  listos     = computed(() => this.comandas().filter(c => c.id_estado === 3).length);
+  pendientesList = computed(() =>
+    this.comandas().filter(c => c.id_estado === 1 || c.nombre_estado === 'Pendiente' || (c as any).estado === 'Pendiente')
+  );
 
-  estados = [
-    { id: 1, nombre: 'Pendiente', next: 2, label: 'Iniciar Preparación', icon: 'pi pi-play' },
-    { id: 2, nombre: 'En Preparación', next: 3, label: 'Marcar Listo', icon: 'pi pi-check' },
-    { id: 3, nombre: 'Listo', next: null, label: null, icon: null },
-  ];
+  preparandoList = computed(() =>
+    this.comandas().filter(c => c.id_estado === 2 || c.nombre_estado === 'En Preparación' || (c as any).estado === 'En Preparación')
+  );
+
+  listosList = computed(() =>
+    this.comandas().filter(c => c.id_estado === 3 || c.nombre_estado === 'Listo' || (c as any).estado === 'Listo')
+  );
+
+  pendientesCount = computed(() => this.pendientesList().length);
+  preparandoCount = computed(() => this.preparandoList().length);
+  listosCount     = computed(() => this.listosList().length);
 
   constructor(
     private svc: CocinaService,
@@ -32,49 +39,89 @@ export class CocinaComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.load();
-    this.interval = setInterval(() => this.load(), 15000);
+    this.interval = setInterval(() => this.load(false), 10000);
   }
 
   ngOnDestroy() {
-    clearInterval(this.interval);
+    if (this.interval) clearInterval(this.interval);
   }
 
-  load() {
+  load(showLoading = true) {
+    if (showLoading && !this.comandas().length) {
+      this.loading.set(true);
+    }
     this.svc.getComandas().subscribe({
-      next: c => { this.comandas.set(c); this.loading.set(false); },
+      next: c => {
+        this.comandas.set(c);
+        this.loading.set(false);
+      },
       error: () => this.loading.set(false)
     });
   }
 
-  getEstado(id: number) {
-    return this.estados.find(e => e.id === id);
-  }
-
-  getBadge(nombre: string) {
-    const m: Record<string, string> = {
-      'Pendiente': 'pendiente',
-      'En Preparación': 'preparacion',
-      'Listo': 'listo'
+  cambiarEstado(c: Comanda, nuevoEstadoId: number) {
+    const estadoNombres: Record<number, string> = {
+      1: 'Pendiente',
+      2: 'En Preparación',
+      3: 'Listo'
     };
-    return m[nombre] ?? 'pendiente';
-  }
+    const nombre = estadoNombres[nuevoEstadoId] || 'Pendiente';
 
-  avanzar(c: Comanda) {
-    const est = this.getEstado(c.id_estado);
-    if (!est?.next) return;
+    // Actualización optimista local
+    this.comandas.update(list =>
+      list.map(item =>
+        item.id_pedido === c.id_pedido
+          ? { ...item, id_estado: nuevoEstadoId, nombre_estado: nombre, estado: nombre }
+          : item
+      )
+    );
 
-    this.svc.updateEstado(c.id_pedido, est.next).subscribe({
+    this.svc.updateEstado(c.id_pedido, nuevoEstadoId).subscribe({
       next: () => {
-        this.alert.successToast(`Pedido #${c.id_pedido} actualizado`);
-        this.load();
+        this.alert.successToast(`Comanda #${c.id_pedido} movida a "${nombre}"`);
+        this.load(false);
       },
-      error: e => this.alert.error('Error', e.error?.message)
+      error: e => {
+        this.alert.error('Error al actualizar estado', e.error?.message);
+        this.load(false);
+      }
     });
   }
 
+  // --- DRAG & DROP HTML5 API ---
+  onDragStart(event: DragEvent, c: Comanda) {
+    this.draggedComanda = c;
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', String(c.id_pedido));
+    }
+  }
+
+  onDragOver(event: DragEvent) {
+    event.preventDefault();
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = 'move';
+    }
+  }
+
+  onDrop(event: DragEvent, targetEstadoId: number) {
+    event.preventDefault();
+    if (!this.draggedComanda) return;
+    if (this.draggedComanda.id_estado !== targetEstadoId) {
+      this.cambiarEstado(this.draggedComanda, targetEstadoId);
+    }
+    this.draggedComanda = null;
+  }
+
+  onDragEnd() {
+    this.draggedComanda = null;
+  }
+
   tiempoTranscurrido(fecha: string) {
+    if (!fecha) return '0 min';
     const diff = Date.now() - new Date(fecha).getTime();
     const min = Math.floor(diff / 60000);
+    if (min < 1) return 'Justo ahora';
     if (min < 60) return `${min} min`;
     return `${Math.floor(min / 60)}h ${min % 60}min`;
   }

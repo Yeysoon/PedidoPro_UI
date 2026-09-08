@@ -1,110 +1,264 @@
-<div class="fade-in">
+<div class="fade-in cocina-page">
   <div class="page-header">
     <div class="header-left">
-      <h1>Comandas y Pedidos en <span class="highlight">Cocina</span></h1>
-      <span class="header-subtitle">Gestión de tiempos de preparación, órdenes de salón y despacho inmediato.</span>
+      <h1>Tablero Kanban de <span class="highlight">Cocina</span></h1>
+      <span class="header-subtitle">Control de tiempos y flujo de comandas por estados: arrastra o mueve cada orden.</span>
     </div>
-    <div class="auto-refresh-pill">
-      <i class="pi pi-sync pi-spin"></i>
-      <span>Tiempo Real Activo</span>
-    </div>
-  </div>
-
-  <!-- QUICK KPI STATS -->
-  <div class="quick-stats-row">
-    <div class="stat-card glass-card">
-      <div class="stat-icon-box icon-amber">
-        <i class="pi pi-hourglass"></i>
-      </div>
-      <div class="stat-meta">
-        <span class="stat-num">{{ pendientes() }}</span>
-        <span class="stat-label">Pendientes por iniciar</span>
-      </div>
-    </div>
-
-    <div class="stat-card glass-card">
-      <div class="stat-icon-box icon-sky">
-        <i class="pi pi-bell"></i>
-      </div>
-      <div class="stat-meta">
-        <span class="stat-num">{{ preparando() }}</span>
-        <span class="stat-label">En Preparación</span>
-      </div>
-    </div>
-
-    <div class="stat-card glass-card">
-      <div class="stat-icon-box icon-emerald">
-        <i class="pi pi-check-circle"></i>
-      </div>
-      <div class="stat-meta">
-        <span class="stat-num">{{ listos() }}</span>
-        <span class="stat-label">Listos para Servir</span>
+    <div class="header-actions">
+      <button class="btn btn-ghost btn-sm" (click)="load(true)" title="Recargar comandas">
+        <i class="pi pi-refresh" [class.pi-spin]="loading()"></i>
+        <span>Actualizar</span>
+      </button>
+      <div class="auto-refresh-pill">
+        <span class="pulse-dot"></span>
+        <span>En Vivo (10s)</span>
       </div>
     </div>
   </div>
 
-  @if (loading()) {
+  @if (loading() && !comandas().length) {
     <div class="loading-state">
       <i class="pi pi-spin pi-spinner spin-icon"></i>
-      <p>Actualizando órdenes de cocina...</p>
-    </div>
-  } @else if (!comandas().length) {
-    <div class="empty-state glass-card">
-      <i class="pi pi-check-circle empty-icon"></i>
-      <h3>Cocina al día</h3>
-      <p>No hay comandas pendientes en este momento.</p>
+      <p>Cargando tablero Kanban de cocina...</p>
     </div>
   } @else {
-    <div class="comandas-grid">
-      @for (c of comandas(); track c.id_pedido) {
-        <div class="comanda-card glass-card" [class]="'estado-' + getBadge(c.nombre_estado)">
-          <div class="comanda-header">
-            <div>
-              <div class="mesa-title">
-                <i class="pi pi-table"></i>
-                <span class="mesa-label">Mesa {{ c.numero_mesa }}</span>
-              </div>
-              <span class="pedido-id">Comanda #{{ c.id_pedido }}</span>
-            </div>
-            <div class="header-right">
-              <span class="badge" [class]="'badge-' + getBadge(c.nombre_estado)">
-                <span class="dot-indicator"></span>
-                {{ c.nombre_estado }}
-              </span>
-              <span class="tiempo">
-                <i class="pi pi-clock"></i>
-                {{ tiempoTranscurrido(c.fecha_hora_creacion) }}
-              </span>
-            </div>
+    <!-- TABLERO KANBAN DE 3 COLUMNAS -->
+    <div class="kanban-board">
+
+      <!-- COLUMNA 1: PENDIENTE -->
+      <div
+        class="kanban-column col-pendiente"
+        (dragover)="onDragOver($event)"
+        (drop)="onDrop($event, 1)"
+      >
+        <div class="column-header">
+          <div class="col-title-group">
+            <span class="col-dot dot-amber"></span>
+            <h3>Pendiente</h3>
           </div>
+          <span class="col-counter counter-amber">{{ pendientesCount() }}</span>
+        </div>
 
-          @if (c.notas_generales) {
-            <div class="notas-box">
-              <i class="pi pi-info-circle"></i>
-              <span>{{ c.notas_generales }}</span>
+        <div class="column-cards-container">
+          @if (!pendientesList().length) {
+            <div class="column-empty">
+              <i class="pi pi-inbox"></i>
+              <p>Sin comandas pendientes</p>
             </div>
-          }
+          } @else {
+            @for (c of pendientesList(); track c.id_pedido) {
+              <div
+                class="kanban-card card-pendiente glass-card"
+                draggable="true"
+                (dragstart)="onDragStart($event, c)"
+                (dragend)="onDragEnd()"
+              >
+                <div class="card-header">
+                  <div class="mesa-badge">
+                    <i class="pi pi-table"></i>
+                    <strong>Mesa {{ c.numero_mesa }}</strong>
+                  </div>
+                  <div class="time-badge">
+                    <i class="pi pi-clock"></i>
+                    <span>{{ tiempoTranscurrido(c.fecha_hora_creacion) }}</span>
+                  </div>
+                </div>
 
-          <div class="items-list">
-            @for (d of c.detalles; track d.id_producto) {
-              <div class="item-row">
-                <span class="item-qty">{{ d.cantidad }}x</span>
-                <span class="item-name">{{ d.nombre_producto }}</span>
-                @if (d.notas_especiales) {
-                  <span class="item-nota">{{ d.notas_especiales }}</span>
+                <div class="card-sub-header">
+                  <span class="comanda-id">Orden #{{ c.id_pedido }}</span>
+                  @if (c.mesero) {
+                    <span class="mesero-tag"><i class="pi pi-user"></i> {{ c.mesero }}</span>
+                  }
+                </div>
+
+                @if (c.notas_generales) {
+                  <div class="card-notes">
+                    <i class="pi pi-info-circle"></i>
+                    <span>{{ c.notas_generales }}</span>
+                  </div>
                 }
+
+                <div class="card-items">
+                  @for (d of c.detalles; track d.id_detalle || d.id_producto) {
+                    <div class="item-line">
+                      <span class="qty-pill">{{ d.cantidad }}x</span>
+                      <span class="item-text">{{ d.nombre_producto }}</span>
+                      @if (d.notas_especiales) {
+                        <span class="item-spec">{{ d.notas_especiales }}</span>
+                      }
+                    </div>
+                  }
+                </div>
+
+                <div class="card-actions">
+                  <button class="btn btn-action btn-start" (click)="cambiarEstado(c, 2)" title="Pasar a En Preparación">
+                    <i class="pi pi-play"></i>
+                    <span>Iniciar Preparación</span>
+                    <i class="pi pi-arrow-right"></i>
+                  </button>
+                </div>
               </div>
             }
-          </div>
-
-          @if (getEstado(c.id_estado)?.next) {
-            <button class="btn avanzar-btn" [class.btn-primary]="c.id_estado===1" [class.btn-success]="c.id_estado===2" (click)="avanzar(c)">
-              <i [class]="getEstado(c.id_estado)?.icon"></i>
-              <span>{{ getEstado(c.id_estado)?.label }}</span>
-            </button>
           }
         </div>
-      }
+      </div>
+
+      <!-- COLUMNA 2: EN PREPARACIÓN / EN CURSO -->
+      <div
+        class="kanban-column col-preparando"
+        (dragover)="onDragOver($event)"
+        (drop)="onDrop($event, 2)"
+      >
+        <div class="column-header">
+          <div class="col-title-group">
+            <span class="col-dot dot-sky"></span>
+            <h3>En Preparación</h3>
+          </div>
+          <span class="col-counter counter-sky">{{ preparandoCount() }}</span>
+        </div>
+
+        <div class="column-cards-container">
+          @if (!preparandoList().length) {
+            <div class="column-empty">
+              <i class="pi pi-hourglass"></i>
+              <p>Sin comandas en preparación</p>
+            </div>
+          } @else {
+            @for (c of preparandoList(); track c.id_pedido) {
+              <div
+                class="kanban-card card-preparando glass-card"
+                draggable="true"
+                (dragstart)="onDragStart($event, c)"
+                (dragend)="onDragEnd()"
+              >
+                <div class="card-header">
+                  <div class="mesa-badge">
+                    <i class="pi pi-table"></i>
+                    <strong>Mesa {{ c.numero_mesa }}</strong>
+                  </div>
+                  <div class="time-badge time-active">
+                    <i class="pi pi-spin pi-spinner"></i>
+                    <span>{{ tiempoTranscurrido(c.fecha_hora_creacion) }}</span>
+                  </div>
+                </div>
+
+                <div class="card-sub-header">
+                  <span class="comanda-id">Orden #{{ c.id_pedido }}</span>
+                  @if (c.mesero) {
+                    <span class="mesero-tag"><i class="pi pi-user"></i> {{ c.mesero }}</span>
+                  }
+                </div>
+
+                @if (c.notas_generales) {
+                  <div class="card-notes">
+                    <i class="pi pi-info-circle"></i>
+                    <span>{{ c.notas_generales }}</span>
+                  </div>
+                }
+
+                <div class="card-items">
+                  @for (d of c.detalles; track d.id_detalle || d.id_producto) {
+                    <div class="item-line">
+                      <span class="qty-pill">{{ d.cantidad }}x</span>
+                      <span class="item-text">{{ d.nombre_producto }}</span>
+                      @if (d.notas_especiales) {
+                        <span class="item-spec">{{ d.notas_especiales }}</span>
+                      }
+                    </div>
+                  }
+                </div>
+
+                <div class="card-actions split-actions">
+                  <button class="btn btn-action btn-back" (click)="cambiarEstado(c, 1)" title="Regresar a Pendiente">
+                    <i class="pi pi-arrow-left"></i>
+                    <span>Pendiente</span>
+                  </button>
+                  <button class="btn btn-action btn-done" (click)="cambiarEstado(c, 3)" title="Marcar como Listo">
+                    <i class="pi pi-check"></i>
+                    <span>Marcar Listo</span>
+                    <i class="pi pi-arrow-right"></i>
+                  </button>
+                </div>
+              </div>
+            }
+          }
+        </div>
+      </div>
+
+      <!-- COLUMNA 3: LISTO / HECHO -->
+      <div
+        class="kanban-column col-listo"
+        (dragover)="onDragOver($event)"
+        (drop)="onDrop($event, 3)"
+      >
+        <div class="column-header">
+          <div class="col-title-group">
+            <span class="col-dot dot-emerald"></span>
+            <h3>Listo / Despacho</h3>
+          </div>
+          <span class="col-counter counter-emerald">{{ listosCount() }}</span>
+        </div>
+
+        <div class="column-cards-container">
+          @if (!listosList().length) {
+            <div class="column-empty">
+              <i class="pi pi-check-circle"></i>
+              <p>Sin pedidos listos pendientes de entrega</p>
+            </div>
+          } @else {
+            @for (c of listosList(); track c.id_pedido) {
+              <div
+                class="kanban-card card-listo glass-card"
+                draggable="true"
+                (dragstart)="onDragStart($event, c)"
+                (dragend)="onDragEnd()"
+              >
+                <div class="card-header">
+                  <div class="mesa-badge badge-ready">
+                    <i class="pi pi-check-circle"></i>
+                    <strong>Mesa {{ c.numero_mesa }}</strong>
+                  </div>
+                  <div class="time-badge time-ready">
+                    <i class="pi pi-bell"></i>
+                    <span>Listo</span>
+                  </div>
+                </div>
+
+                <div class="card-sub-header">
+                  <span class="comanda-id">Orden #{{ c.id_pedido }}</span>
+                  @if (c.mesero) {
+                    <span class="mesero-tag"><i class="pi pi-user"></i> {{ c.mesero }}</span>
+                  }
+                </div>
+
+                @if (c.notas_generales) {
+                  <div class="card-notes">
+                    <i class="pi pi-info-circle"></i>
+                    <span>{{ c.notas_generales }}</span>
+                  </div>
+                }
+
+                <div class="card-items">
+                  @for (d of c.detalles; track d.id_detalle || d.id_producto) {
+                    <div class="item-line">
+                      <span class="qty-pill pill-ready">{{ d.cantidad }}x</span>
+                      <span class="item-text">{{ d.nombre_producto }}</span>
+                    </div>
+                  }
+                </div>
+
+                <div class="card-actions">
+                  <button class="btn btn-action btn-back" (click)="cambiarEstado(c, 2)" title="Regresar a Preparación">
+                    <i class="pi pi-arrow-left"></i>
+                    <span>Regresar a Preparación</span>
+                  </button>
+                </div>
+              </div>
+            }
+          }
+        </div>
+      </div>
+
     </div>
   }
 </div>
