@@ -1,4 +1,4 @@
-import { Component, signal, OnInit, inject } from '@angular/core';
+import { Component, signal, computed, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { UsuariosService } from '../../core/services/usuarios.service';
 import { RolesService } from '../../core/services/roles.service';
@@ -17,10 +17,23 @@ export class UsuariosComponent implements OnInit {
   private rolesSvc = inject(RolesService);
   private alert = inject(AlertService);
 
-  usuarios   = signal<Usuario[]>([]);
-  roles      = signal<Rol[]>([]);
-  loading    = signal(true);
-  saving     = signal(false);
+  usuarios      = signal<Usuario[]>([]);
+  roles         = signal<Rol[]>([]);
+  loading       = signal(true);
+  saving        = signal(false);
+  filterStatus  = signal<'activos' | 'inactivos'>('activos');
+
+  countActivos = computed(() => this.usuarios().filter(u => !!u.activo).length);
+  countInactivos = computed(() => this.usuarios().filter(u => !u.activo).length);
+
+  filteredUsuarios = computed(() => {
+    const status = this.filterStatus();
+    return this.usuarios().filter(u => status === 'activos' ? !!u.activo : !u.activo);
+  });
+
+  setFilter(status: 'activos' | 'inactivos') {
+    this.filterStatus.set(status);
+  }
 
   // Modal Usuario
   showModal = signal(false);

@@ -7,6 +7,48 @@
   border-radius: var(--radius-pill);
 }
 
+.filter-pill-group {
+  display: flex;
+  align-items: center;
+  background: var(--surface-subtle);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-pill);
+  padding: 3px;
+  gap: 2px;
+
+  .pill-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+    border: none;
+    padding: 7px 14px;
+    border-radius: var(--radius-pill);
+    font-family: var(--font-main);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+
+    i {
+      font-size: 0.8rem;
+    }
+
+    &.active {
+      background: var(--primary-color);
+      color: var(--primary-contrast);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+    }
+
+    &:hover:not(.active) {
+      color: var(--text-color);
+      background: var(--surface-hover);
+    }
+  }
+}
+
 .filter-pill-cluster {
   display: flex;
   align-items: center;

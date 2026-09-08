@@ -5,6 +5,18 @@
       <span class="header-subtitle">Administración de colaboradores, estados de acceso y cuentas de usuario.</span>
     </div>
     <div class="header-actions">
+      <!-- Filtro Activos / Inactivos -->
+      <div class="filter-pill-group">
+        <button class="pill-btn" [class.active]="filterStatus() === 'activos'" (click)="setFilter('activos')">
+          <i class="pi pi-check-circle"></i>
+          <span>Activos ({{ countActivos() }})</span>
+        </button>
+        <button class="pill-btn" [class.active]="filterStatus() === 'inactivos'" (click)="setFilter('inactivos')">
+          <i class="pi pi-times-circle"></i>
+          <span>Inactivos ({{ countInactivos() }})</span>
+        </button>
+      </div>
+
       <button class="btn btn-primary" (click)="openCreate()">
         <i class="pi pi-user-plus"></i> Nuevo Colaborador
       </button>
@@ -29,7 +41,7 @@
           </tr>
         </thead>
         <tbody>
-          @for (u of usuarios(); track u.id_usuario) {
+          @for (u of filteredUsuarios(); track u.id_usuario) {
             <tr>
               <td>
                 <div class="user-row-cell">
@@ -67,6 +79,13 @@
                     <i [class]="u.activo ? 'pi pi-lock-open' : 'pi pi-lock'"></i>
                   </button>
                 </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 40px;">
+                <i class="pi pi-info-circle" style="margin-right: 8px;"></i>
+                No se encontraron colaboradores {{ filterStatus() === 'activos' ? 'activos' : 'inactivos' }} en el sistema.
               </td>
             </tr>
           }
