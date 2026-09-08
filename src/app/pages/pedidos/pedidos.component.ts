@@ -7,6 +7,13 @@ import { MesasService } from '../../core/services/mesas.service';
 import { AlertService } from '../../core/services/alert.service';
 import { Producto, Categoria, DetallePedido, Mesa } from '../../core/models';
 
+const DEFAULT_CATEGORIAS: Categoria[] = [
+  { id_categoria: 4, nombre_categoria: 'Entradas' },
+  { id_categoria: 2, nombre_categoria: 'Bebidas' },
+  { id_categoria: 1, nombre_categoria: 'Platos Fuertes' },
+  { id_categoria: 3, nombre_categoria: 'Postres' }
+];
+
 @Component({
   selector: 'app-pedidos',
   standalone: true,
@@ -26,7 +33,7 @@ export class PedidosComponent implements OnInit {
   mesaNum = signal(0);
   mesas   = signal<Mesa[]>([]);
   productos = signal<Producto[]>([]);
-  categorias = signal<Categoria[]>([]);
+  categorias = signal<Categoria[]>(DEFAULT_CATEGORIAS);
   carrito   = signal<DetallePedido[]>([]);
   catActiva = signal(0);
   notas     = signal('');
@@ -35,8 +42,9 @@ export class PedidosComponent implements OnInit {
 
   filtrados = () => {
     const p = this.productos();
-    const cat = this.catActiva();
-    return cat ? p.filter(x => x.id_categoria === cat && x.disponible) : p.filter(x => x.disponible);
+    const cat = Number(this.catActiva());
+    if (!cat) return p.filter(x => x.disponible);
+    return p.filter(x => Number(x.id_categoria) === cat && x.disponible);
   };
 
   total = () => this.carrito().reduce((s, d) => s + ((d.precio_unitario_historico ?? 0) * d.cantidad), 0);
@@ -75,7 +83,14 @@ export class PedidosComponent implements OnInit {
     });
 
     this.menuSvc.getCategorias().subscribe({
-      next: c => this.categorias.set(c)
+      next: c => {
+        if (c && c.length > 0) {
+          this.categorias.set(c);
+        } else {
+          this.categorias.set(DEFAULT_CATEGORIAS);
+        }
+      },
+      error: () => this.categorias.set(DEFAULT_CATEGORIAS)
     });
   }
 
@@ -161,18 +176,13 @@ export class PedidosComponent implements OnInit {
   }
 
   getCatIcon(catId: number): string {
-    const cat = this.categorias().find(c => c.id_categoria === catId)?.nombre_categoria ?? '';
-    const m: Record<string, string> = {
-      'Bebidas': 'pi pi-glass',
-      'Postres': 'pi pi-sparkles',
-      'Entradas': 'pi pi-tag',
-      'Sopas': 'pi pi-compass',
-      'Mariscos': 'pi pi-star',
-      'Carnes': 'pi pi-box',
-      'Pastas': 'pi pi-palette',
-      'Pizzas': 'pi pi-circle'
-    };
-    return m[cat] ?? 'pi pi-book';
+    const cat = this.categorias().find(c => Number(c.id_categoria) === Number(catId))?.nombre_categoria ?? '';
+    const name = cat.toLowerCase();
+    if (name.includes('entrada')) return 'pi pi-tag';
+    if (name.includes('bebida')) return 'pi pi-glass';
+    if (name.includes('fuerte') || name.includes('plato')) return 'pi pi-box';
+    if (name.includes('postre')) return 'pi pi-sparkles';
+    return 'pi pi-book';
   }
 
   formatCurrency(n: number) {

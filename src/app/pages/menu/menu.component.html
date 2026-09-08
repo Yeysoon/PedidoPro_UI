@@ -108,10 +108,10 @@
         </div>
 
         <div class="form-group">
-          <label>Categoría</label>
+          <label>Categoría *</label>
           <select class="form-control" [ngModel]="editProd().id_categoria" (ngModelChange)="update('id_categoria', +$event)">
             @for (c of categorias(); track c.id_categoria) {
-              <option [value]="c.id_categoria">{{ c.nombre_categoria }}</option>
+              <option [ngValue]="c.id_categoria">{{ c.nombre_categoria }}</option>
             }
           </select>
         </div>
