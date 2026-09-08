@@ -2,10 +2,13 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  min-height: calc(100vh - 180px);
+  height: calc(100vh - 175px);
+  max-height: calc(100vh - 175px);
+  overflow: hidden;
 }
 
 .page-header {
+  flex-shrink: 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -75,15 +78,18 @@
 // KANBAN BOARD 3-COLUMN GRID
 // ----------------------------------------------------
 .kanban-board {
+  flex: 1;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 18px;
-  align-items: flex-start;
-  min-height: calc(100vh - 220px);
+  align-items: stretch;
+  height: 100%;
+  overflow: hidden;
 
   @media (max-width: 1024px) {
     grid-template-columns: 1fr;
-    gap: 20px;
+    overflow-y: auto;
+    height: auto;
   }
 }
 
@@ -95,23 +101,24 @@
   border-radius: var(--radius-md);
   padding: 14px;
   gap: 12px;
-  min-height: 480px;
-  max-height: calc(100vh - 220px);
+  height: 100%;
+  overflow: hidden;
   transition: all 0.2s ease;
 
   &.col-pendiente {
-    border-top: 4px solid var(--amber);
+    border-top: 4px solid var(--amber, #f59e0b);
   }
 
   &.col-preparando {
-    border-top: 4px solid var(--sky, #0284c7);
+    border-top: 4px solid #0284c7;
   }
 
   &.col-listo {
-    border-top: 4px solid var(--emerald);
+    border-top: 4px solid var(--emerald, #10b981);
   }
 
   .column-header {
+    flex-shrink: 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -128,9 +135,9 @@
         height: 10px;
         border-radius: 50%;
 
-        &.dot-amber { background: var(--amber); box-shadow: 0 0 8px rgba(245, 158, 11, 0.5); }
-        &.dot-sky { background: var(--sky, #0284c7); box-shadow: 0 0 8px rgba(2, 132, 199, 0.5); }
-        &.dot-emerald { background: var(--emerald); box-shadow: 0 0 8px rgba(16, 185, 129, 0.5); }
+        &.dot-amber { background: #f59e0b; box-shadow: 0 0 8px rgba(245, 158, 11, 0.5); }
+        &.dot-sky { background: #0284c7; box-shadow: 0 0 8px rgba(2, 132, 199, 0.5); }
+        &.dot-emerald { background: #10b981; box-shadow: 0 0 8px rgba(16, 185, 129, 0.5); }
       }
 
       h3 {
@@ -150,21 +157,21 @@
       font-family: var(--font-mono);
 
       &.counter-amber {
-        background: var(--amber-bg);
-        color: var(--amber-text);
-        border: 1px solid var(--amber-border);
+        background: rgba(245, 158, 11, 0.15);
+        color: #f59e0b;
+        border: 1px solid rgba(245, 158, 11, 0.3);
       }
 
       &.counter-sky {
-        background: var(--sky-bg, rgba(2, 132, 199, 0.12));
-        color: var(--sky-text, #38bdf8);
-        border: 1px solid var(--sky-border, rgba(2, 132, 199, 0.3));
+        background: rgba(2, 132, 199, 0.15);
+        color: #38bdf8;
+        border: 1px solid rgba(2, 132, 199, 0.3);
       }
 
       &.counter-emerald {
-        background: var(--emerald-bg);
-        color: var(--emerald-text);
-        border: 1px solid var(--emerald-border);
+        background: rgba(16, 185, 129, 0.15);
+        color: #34d399;
+        border: 1px solid rgba(16, 185, 129, 0.3);
       }
     }
   }
@@ -216,6 +223,8 @@
   cursor: grab;
   transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
   user-select: none;
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
 
   &:hover {
     transform: translateY(-2px);
@@ -227,15 +236,15 @@
   }
 
   &.card-pendiente {
-    border-left: 3px solid var(--amber);
+    border-left: 4px solid #f59e0b;
   }
 
   &.card-preparando {
-    border-left: 3px solid var(--sky, #0284c7);
+    border-left: 4px solid #0284c7;
   }
 
   &.card-listo {
-    border-left: 3px solid var(--emerald);
+    border-left: 4px solid #10b981;
   }
 
   .card-header {
@@ -275,15 +284,15 @@
       border: 1px solid var(--surface-border);
 
       &.time-active {
-        color: var(--sky-text, #38bdf8);
-        background: var(--sky-bg, rgba(2, 132, 199, 0.12));
-        border-color: var(--sky-border, rgba(2, 132, 199, 0.3));
+        color: #38bdf8;
+        background: rgba(2, 132, 199, 0.15);
+        border-color: rgba(2, 132, 199, 0.3);
       }
 
       &.time-ready {
-        color: var(--emerald-text);
-        background: var(--emerald-bg);
-        border-color: var(--emerald-border);
+        color: #34d399;
+        background: rgba(16, 185, 129, 0.15);
+        border-color: rgba(16, 185, 129, 0.3);
       }
     }
   }
@@ -318,9 +327,9 @@
     gap: 6px;
     padding: 6px 10px;
     border-radius: var(--radius-xs);
-    background: var(--amber-bg);
-    border: 1px solid var(--amber-border);
-    color: var(--amber-text);
+    background: rgba(245, 158, 11, 0.12);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    color: #f59e0b;
     font-size: 0.74rem;
     line-height: 1.3;
 
@@ -356,8 +365,8 @@
         text-align: center;
 
         &.pill-ready {
-          color: var(--emerald-text);
-          border-color: var(--emerald-border);
+          color: #34d399;
+          border-color: rgba(16, 185, 129, 0.3);
         }
       }
 
@@ -406,23 +415,23 @@
       }
 
       &.btn-start {
-        background: var(--amber-bg);
-        border: 1px solid var(--amber-border);
-        color: var(--amber-text);
+        background: rgba(245, 158, 11, 0.15);
+        border: 1px solid rgba(245, 158, 11, 0.3);
+        color: #f59e0b;
 
         &:hover {
-          background: var(--amber);
+          background: #f59e0b;
           color: #ffffff;
         }
       }
 
       &.btn-done {
-        background: var(--emerald-bg);
-        border: 1px solid var(--emerald-border);
-        color: var(--emerald-text);
+        background: rgba(16, 185, 129, 0.15);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        color: #34d399;
 
         &:hover {
-          background: var(--emerald);
+          background: #10b981;
           color: #ffffff;
         }
       }
