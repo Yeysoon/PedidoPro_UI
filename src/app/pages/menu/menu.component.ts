@@ -32,8 +32,28 @@ export class MenuComponent implements OnInit {
 
   filtrados = computed(() => {
     let list = this.productos();
-    if (this.catActiva()) list = list.filter(p => Number(p.id_categoria) === Number(this.catActiva()));
-    if (this.search()) list = list.filter(p => p.nombre_producto.toLowerCase().includes(this.search().toLowerCase()));
+    const catId = Number(this.catActiva());
+    const query = this.search().toLowerCase().trim();
+
+    if (catId > 0) {
+      const catObj = this.categorias().find(c => Number(c.id_categoria) === catId);
+      const catName = catObj?.nombre_categoria?.toLowerCase().trim();
+
+      list = list.filter(p => {
+        const pCatId = Number(p.id_categoria);
+        if (pCatId && pCatId === catId) return true;
+        if (p.nombre_categoria && catName && p.nombre_categoria.toLowerCase().trim() === catName) return true;
+        return false;
+      });
+    }
+
+    if (query) {
+      list = list.filter(p =>
+        p.nombre_producto.toLowerCase().includes(query) ||
+        (p.descripcion && p.descripcion.toLowerCase().includes(query))
+      );
+    }
+
     return list;
   });
 
@@ -49,9 +69,16 @@ export class MenuComponent implements OnInit {
 
   load() {
     this.svc.getMenu().subscribe({
-      next: p => { this.productos.set(p); this.loading.set(false); },
-      error: e => { this.alert.error('Error al cargar menú', e.error?.message); this.loading.set(false); }
+      next: p => {
+        this.productos.set(p);
+        this.loading.set(false);
+      },
+      error: e => {
+        this.alert.error('Error al cargar menú', e.error?.message);
+        this.loading.set(false);
+      }
     });
+
     this.svc.getCategorias().subscribe({
       next: c => {
         if (c && c.length > 0) {
@@ -133,8 +160,14 @@ export class MenuComponent implements OnInit {
     });
   }
 
-  getCatNombre(id: number) {
-    return this.categorias().find(c => Number(c.id_categoria) === Number(id))?.nombre_categoria ?? 'General';
+  getCatNombre(p: any) {
+    if (typeof p === 'object' && p !== null) {
+      if (p.nombre_categoria) return p.nombre_categoria;
+      const found = this.categorias().find(c => Number(c.id_categoria) === Number(p.id_categoria));
+      return found?.nombre_categoria ?? 'General';
+    }
+    const id = Number(p);
+    return this.categorias().find(c => Number(c.id_categoria) === id)?.nombre_categoria ?? 'General';
   }
 
   getCatIcon(cat: string): string {

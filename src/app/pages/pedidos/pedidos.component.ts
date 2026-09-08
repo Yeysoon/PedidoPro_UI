@@ -1,4 +1,4 @@
-import { Component, signal, OnInit, inject } from '@angular/core';
+import { Component, signal, computed, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MenuService } from '../../core/services/menu.service';
@@ -40,12 +40,22 @@ export class PedidosComponent implements OnInit {
   loading   = signal(true);
   sending   = signal(false);
 
-  filtrados = () => {
+  filtrados = computed(() => {
     const p = this.productos();
-    const cat = Number(this.catActiva());
-    if (!cat) return p.filter(x => x.disponible);
-    return p.filter(x => Number(x.id_categoria) === cat && x.disponible);
-  };
+    const catId = Number(this.catActiva());
+    if (!catId) return p.filter(x => x.disponible);
+
+    const catObj = this.categorias().find(c => Number(c.id_categoria) === catId);
+    const catName = catObj?.nombre_categoria?.toLowerCase().trim();
+
+    return p.filter(x => {
+      if (!x.disponible) return false;
+      const pCatId = Number(x.id_categoria);
+      if (pCatId && pCatId === catId) return true;
+      if (x.nombre_categoria && catName && x.nombre_categoria.toLowerCase().trim() === catName) return true;
+      return false;
+    });
+  });
 
   total = () => this.carrito().reduce((s, d) => s + ((d.precio_unitario_historico ?? 0) * d.cantidad), 0);
   cantTotal = () => this.carrito().reduce((s, d) => s + d.cantidad, 0);
