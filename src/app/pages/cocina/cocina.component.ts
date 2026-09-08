@@ -37,16 +37,20 @@ export class CocinaComponent implements OnInit, OnDestroy {
 
     return this.comandas().filter(c => {
       const mesaText = `mesa ${c.numero_mesa}`.toLowerCase();
+      const pedidoText = `pedido #${c.id_pedido}`.toLowerCase();
       const comandaText = `comanda #${c.id_pedido}`.toLowerCase();
-      const tituloCombinado = `mesa ${c.numero_mesa} | comanda #${c.id_pedido}`.toLowerCase();
+      const tituloCombinado = `mesa ${c.numero_mesa} | pedido #${c.id_pedido}`.toLowerCase();
+      const tituloCombinadoComanda = `mesa ${c.numero_mesa} | comanda #${c.id_pedido}`.toLowerCase();
       const numMesa = String(c.numero_mesa || '');
       const numPedido = String(c.id_pedido || '');
       const hashPedido = `#${c.id_pedido}`;
 
       if (
         mesaText.includes(q) ||
+        pedidoText.includes(q) ||
         comandaText.includes(q) ||
         tituloCombinado.includes(q) ||
+        tituloCombinadoComanda.includes(q) ||
         numMesa === q ||
         numPedido === q ||
         hashPedido.includes(q)
@@ -180,14 +184,14 @@ export class CocinaComponent implements OnInit, OnDestroy {
         return;
       }
       if (estadoActual === 4) {
-        this.alert.warningToast('No puedes modificar una comanda que ya fue servida.');
+        this.alert.warningToast('No puedes modificar un pedido que ya fue servido.');
         return;
       }
     }
 
     if (this.isMesero()) {
       if (estadoActual === 1 || estadoActual === 2) {
-        this.alert.warningToast('El Mesero no puede modificar comandas en preparación de cocina.');
+        this.alert.warningToast('El Mesero no puede modificar pedidos en preparación de cocina.');
         return;
       }
       if (nuevoEstadoId === 1 || nuevoEstadoId === 2) {
@@ -215,11 +219,11 @@ export class CocinaComponent implements OnInit, OnDestroy {
 
     this.svc.updateEstado(c.id_pedido, nuevoEstadoId).subscribe({
       next: () => {
-        this.alert.successToast(`Comanda #${c.id_pedido} actualizada a "${nombre}"`);
+        this.alert.successToast(`Pedido #${c.id_pedido} actualizado a "${nombre}"`);
         this.load(false);
       },
       error: e => {
-        this.alert.error('Error al actualizar estado', e.error?.message || 'No se pudo actualizar la comanda');
+        this.alert.error('Error al actualizar estado', e.error?.message || 'No se pudo actualizar el pedido');
         this.load(false);
       }
     });

@@ -5,11 +5,11 @@
       <h1>Tablero Kanban de <span class="highlight">Cocina</span></h1>
       <span class="header-subtitle">
         @if (isCocinero()) {
-          Modo Cocinero: gestiona comandas entre <strong>Pendientes</strong>, <strong>Preparándose</strong> y <strong>Listo para servir</strong> (Servido en Mesa bloqueado).
+          Modo Cocinero: gestiona pedidos entre <strong>Pendientes</strong>, <strong>Preparándose</strong> y <strong>Listo para servir</strong> (Servido en Mesa bloqueado).
         } @else if (isMesero()) {
           Modo Mesero: gestiona pedidos desde <strong>Listo para servir</strong> hasta <strong>Servido en Mesa</strong> (Preparación de cocina bloqueada).
         } @else {
-          Control general de comandas por estados. Arrastra las tarjetas entre columnas.
+          Control general de pedidos por estados. Arrastra las tarjetas entre columnas.
         }
       </span>
     </div>
@@ -21,7 +21,7 @@
         <input
           type="text"
           class="form-control search-input"
-          placeholder="Buscar por mesa o comanda (ej: Mesa 2 | Comanda #1)..."
+          placeholder="Buscar por mesa o pedido (ej: Mesa 2 | Pedido #1)..."
           [ngModel]="busqueda()"
           (ngModelChange)="busqueda.set($event)"
         />
@@ -71,7 +71,7 @@
           @if (!pendientesList().length) {
             <div class="column-empty">
               <i class="pi pi-inbox"></i>
-              <p>{{ busqueda() ? 'Sin resultados' : 'Sin comandas pendientes' }}</p>
+              <p>{{ busqueda() ? 'Sin resultados' : 'Sin pedidos pendientes' }}</p>
             </div>
           } @else {
             @for (c of pendientesList(); track c.id_pedido) {
@@ -88,7 +88,7 @@
                   <div class="card-header-line">
                     <div class="card-title-wrap">
                       <span class="status-indicator-dot dot-red"></span>
-                      <h3 class="card-title">Mesa {{ c.numero_mesa }} | Comanda #{{ c.id_pedido }}</h3>
+                      <h3 class="card-title">Mesa {{ c.numero_mesa }} | Pedido #{{ c.id_pedido }}</h3>
                     </div>
                   </div>
 
@@ -165,7 +165,7 @@
           @if (!preparandoList().length) {
             <div class="column-empty">
               <i class="pi pi-spin pi-spinner"></i>
-              <p>{{ busqueda() ? 'Sin resultados' : 'Sin comandas en preparación' }}</p>
+              <p>{{ busqueda() ? 'Sin resultados' : 'Sin pedidos en preparación' }}</p>
             </div>
           } @else {
             @for (c of preparandoList(); track c.id_pedido) {
@@ -182,7 +182,7 @@
                   <div class="card-header-line">
                     <div class="card-title-wrap">
                       <span class="status-indicator-dot dot-sky"></span>
-                      <h3 class="card-title">Mesa {{ c.numero_mesa }} | Comanda #{{ c.id_pedido }}</h3>
+                      <h3 class="card-title">Mesa {{ c.numero_mesa }} | Pedido #{{ c.id_pedido }}</h3>
                     </div>
                   </div>
 
@@ -276,7 +276,7 @@
                   <div class="card-header-line">
                     <div class="card-title-wrap">
                       <span class="status-indicator-dot dot-emerald"></span>
-                      <h3 class="card-title">Mesa {{ c.numero_mesa }} | Comanda #{{ c.id_pedido }}</h3>
+                      <h3 class="card-title">Mesa {{ c.numero_mesa }} | Pedido #{{ c.id_pedido }}</h3>
                     </div>
                   </div>
 
@@ -366,7 +366,7 @@
                   <div class="card-header-line">
                     <div class="card-title-wrap">
                       <span class="status-indicator-dot dot-purple"></span>
-                      <h3 class="card-title">Mesa {{ c.numero_mesa }} | Comanda #{{ c.id_pedido }}</h3>
+                      <h3 class="card-title">Mesa {{ c.numero_mesa }} | Pedido #{{ c.id_pedido }}</h3>
                     </div>
                   </div>
 
