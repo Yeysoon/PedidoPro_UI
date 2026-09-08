@@ -567,6 +567,13 @@
           color: #10b981;
           font-size: 0.8rem;
         }
+
+        .field-hint {
+          font-size: 0.7rem;
+          font-weight: 400;
+          color: var(--text-muted);
+          margin-left: auto;
+        }
       }
 
       .form-control {

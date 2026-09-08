@@ -170,55 +170,42 @@
       <div class="modal-header">
         <div class="modal-header-title">
           <h2>Registrar Nuevo Cliente</h2>
-          <span class="modal-subtitle">Registra al cliente para asignarlo inmediatamente a este pedido</span>
+          <span class="modal-subtitle">Ingresa el nombre y NIT para registrarlo y asignarlo al pedido</span>
         </div>
-        <button class="close-btn" (click)="cerrarModalCliente()">
+        <button class="close-btn" (click)="cerrarModalCliente()" title="Cerrar modal">
           <i class="pi pi-times"></i>
         </button>
       </div>
 
       <div class="modal-form-grid">
         <div class="form-group full">
-          <label><i class="pi pi-user"></i> Nombre Completo *</label>
+          <label>
+            <i class="pi pi-user"></i> Nombre Completo *
+            <span class="field-hint">(Solo letras, máx. 60)</span>
+          </label>
           <input
             type="text"
             class="form-control"
             placeholder="Ej. Juan Pérez"
-            [value]="nuevoCliente().nombre_completo || ''"
-            (input)="updateNuevoCliente('nombre_completo', $any($event.target).value)"
-          />
-        </div>
-
-        <div class="form-group">
-          <label><i class="pi pi-id-card"></i> NIT / Documento</label>
-          <input
-            type="text"
-            class="form-control"
-            placeholder="Ej. 12345678-9 o C/F"
-            [value]="nuevoCliente().nit_documento || ''"
-            (input)="updateNuevoCliente('nit_documento', $any($event.target).value)"
-          />
-        </div>
-
-        <div class="form-group">
-          <label><i class="pi pi-phone"></i> Teléfono</label>
-          <input
-            type="tel"
-            class="form-control"
-            placeholder="Ej. 5555-1234"
-            [value]="nuevoCliente().telefono || ''"
-            (input)="updateNuevoCliente('telefono', $any($event.target).value)"
+            maxlength="60"
+            [value]="nuevoCliente().nombre_completo"
+            (input)="onInputNombre($any($event.target))"
           />
         </div>
 
         <div class="form-group full">
-          <label><i class="pi pi-envelope"></i> Correo Electrónico</label>
+          <label>
+            <i class="pi pi-id-card"></i> NIT / Documento
+            <span class="field-hint">(Solo números, 7-13 dígitos)</span>
+          </label>
           <input
-            type="email"
+            type="text"
+            inputmode="numeric"
             class="form-control"
-            placeholder="Ej. cliente@correo.com"
-            [value]="nuevoCliente().correo_electronico || ''"
-            (input)="updateNuevoCliente('correo_electronico', $any($event.target).value)"
+            placeholder="Ej. 12345678"
+            maxlength="13"
+            [value]="nuevoCliente().nit_documento"
+            (input)="onInputNit($any($event.target))"
           />
         </div>
       </div>

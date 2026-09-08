@@ -161,11 +161,11 @@ export class PedidosComponent implements OnInit {
   }
 
   showClienteModal = signal(false);
-  nuevoCliente = signal<Partial<Cliente>>({ nombre_completo: '', nit_documento: '', telefono: '', correo_electronico: '' });
+  nuevoCliente = signal<{ nombre_completo: string; nit_documento: string }>({ nombre_completo: '', nit_documento: '' });
   guardandoCliente = signal(false);
 
   abrirModalCliente() {
-    this.nuevoCliente.set({ nombre_completo: '', nit_documento: '', telefono: '', correo_electronico: '' });
+    this.nuevoCliente.set({ nombre_completo: '', nit_documento: '' });
     this.showClienteModal.set(true);
   }
 
@@ -173,27 +173,74 @@ export class PedidosComponent implements OnInit {
     this.showClienteModal.set(false);
   }
 
-  updateNuevoCliente(field: string, val: string) {
-    this.nuevoCliente.update(c => ({ ...c, [field]: val }));
+  onInputNombre(inputEl: HTMLInputElement) {
+    // Solo permitir letras del abecedario, tildes, ñ y espacios, máximo 60 caracteres
+    const raw = inputEl.value || '';
+    const filtered = raw.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]/g, '').slice(0, 60);
+    if (inputEl.value !== filtered) {
+      inputEl.value = filtered;
+    }
+    this.nuevoCliente.update(c => ({ ...c, nombre_completo: filtered }));
+  }
+
+  onInputNit(inputEl: HTMLInputElement) {
+    // Solo permitir números dígitos (0-9), máximo 13 dígitos
+    const raw = inputEl.value || '';
+    const filtered = raw.replace(/\D/g, '').slice(0, 13);
+    if (inputEl.value !== filtered) {
+      inputEl.value = filtered;
+    }
+    this.nuevoCliente.update(c => ({ ...c, nit_documento: filtered }));
   }
 
   guardarNuevoCliente() {
     const c = this.nuevoCliente();
-    if (!c.nombre_completo || !c.nombre_completo.trim()) {
+    const nombre = (c.nombre_completo || '').trim();
+    const nit = (c.nit_documento || '').trim();
+
+    if (!nombre) {
       this.alert.warningToast('El nombre completo del cliente es obligatorio');
       return;
     }
 
+    if (nombre.length < 3) {
+      this.alert.warningToast('El nombre debe tener al menos 3 caracteres');
+      return;
+    }
+
+    if (nombre.length > 60) {
+      this.alert.warningToast('El nombre no puede exceder 60 caracteres');
+      return;
+    }
+
+    const nameRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/;
+    if (!nameRegex.test(nombre)) {
+      this.alert.warningToast('El nombre solo debe contener letras y espacios');
+      return;
+    }
+
+    if (nit) {
+      if (!/^\d+$/.test(nit)) {
+        this.alert.warningToast('El NIT solo debe contener dígitos numéricos');
+        return;
+      }
+      if (nit.length < 7 || nit.length > 13) {
+        this.alert.warningToast('El NIT debe tener entre 7 y 13 dígitos');
+        return;
+      }
+    }
+
     this.guardandoCliente.set(true);
-    this.clientesSvc.createCliente(c).subscribe({
+    this.clientesSvc.createCliente({
+      nombre_completo: nombre,
+      nit_documento: nit
+    }).subscribe({
       next: (created: any) => {
         const newId = created.id_cliente || (created.data ? created.data.id_cliente : undefined) || created.id;
         const clientObj: Cliente = {
           id_cliente: newId || Date.now(),
-          nombre_completo: c.nombre_completo!.trim(),
-          nit_documento: c.nit_documento?.trim() || '',
-          telefono: c.telefono?.trim() || '',
-          correo_electronico: c.correo_electronico?.trim() || ''
+          nombre_completo: nombre,
+          nit_documento: nit
         };
 
         this.clientes.update(list => [clientObj, ...list]);
