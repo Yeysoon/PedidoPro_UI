@@ -1,4 +1,4 @@
-import { Component, signal, OnInit, computed, inject } from '@angular/core';
+import { Component, signal, OnInit, OnDestroy, computed, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { InventarioService } from '../../core/services/inventario.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -12,7 +12,7 @@ import { Ingrediente } from '../../core/models';
   templateUrl: './inventario.component.html',
   styleUrl: './inventario.component.scss'
 })
-export class InventarioComponent implements OnInit {
+export class InventarioComponent implements OnInit, OnDestroy {
   private svc = inject(InventarioService);
   private auth = inject(AuthService);
   private alert = inject(AlertService);
@@ -24,6 +24,7 @@ export class InventarioComponent implements OnInit {
   isEdit       = signal(false);
   editItem     = signal<Partial<Ingrediente>>({});
   search       = signal('');
+  private interval: any;
 
   filtered = () => {
     const s = this.search().toLowerCase();
@@ -32,13 +33,18 @@ export class InventarioComponent implements OnInit {
 
   ngOnInit() {
     this.load();
+    this.interval = setInterval(() => this.load(false), 3000);
   }
 
-  load() {
-    this.loading.set(true);
+  ngOnDestroy() {
+    if (this.interval) clearInterval(this.interval);
+  }
+
+  load(showLoading = true) {
+    if (showLoading) this.loading.set(true);
     this.svc.getIngredientes().subscribe({
-      next: i => { this.ingredientes.set(i); this.loading.set(false); },
-      error: () => this.loading.set(false)
+      next: i => { this.ingredientes.set(i); if (showLoading) this.loading.set(false); },
+      error: () => { if (showLoading) this.loading.set(false); }
     });
   }
 

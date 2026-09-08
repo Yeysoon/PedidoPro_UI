@@ -1,6 +1,6 @@
 import { Component, signal, OnInit, inject, computed } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { SlicePipe, CommonModule } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { MesasService } from '../../core/services/mesas.service';
 import { CocinaService } from '../../core/services/cocina.service';
 import { CajaService } from '../../core/services/caja.service';
@@ -40,7 +40,7 @@ const CATEGORY_COLORS = [
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [SlicePipe, CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })
