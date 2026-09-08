@@ -90,7 +90,12 @@ export class CajaComponent implements OnInit, OnDestroy {
 
   seleccionar(p: Pedido) {
     this.selected.set(p);
-    this.factura.set({ id_pedido: p.id_pedido, id_metodo_pago: 1, propina: 0 });
+    this.factura.set({
+      id_pedido: p.id_pedido,
+      id_metodo_pago: 1,
+      propina: 0,
+      id_cliente: p.id_cliente ? Number(p.id_cliente) : undefined
+    });
     this.showModal.set(true);
   }
 

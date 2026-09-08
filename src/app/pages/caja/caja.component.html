@@ -54,6 +54,9 @@
                 <span class="mesa-num">Mesa {{ p.numero_mesa }} | Comanda #{{ p.id_pedido }}</span>
                 <span class="mesero-name">
                   <i class="pi pi-user"></i> {{ p.mesero || 'Mesero' }}
+                  @if (p.cliente_nombre) {
+                    <span class="cliente-tag"> · <i class="pi pi-id-card"></i> {{ p.cliente_nombre }}</span>
+                  }
                 </span>
               </div>
             </div>
@@ -119,7 +122,12 @@
       <div class="modal-header">
         <div class="modal-header-title">
           <h2>Cobro de Cuenta — Mesa {{ selected()!.numero_mesa }}</h2>
-          <span class="modal-subtitle">Comanda #{{ selected()!.id_pedido }} · {{ selected()!.mesero || 'Mesero' }}</span>
+          <span class="modal-subtitle">
+            Comanda #{{ selected()!.id_pedido }} · {{ selected()!.mesero || 'Mesero' }}
+            @if (selected()!.cliente_nombre) {
+              · Cliente: <strong>{{ selected()!.cliente_nombre }}</strong>
+            }
+          </span>
         </div>
         <button class="close-btn" (click)="showModal.set(false)">
           <i class="pi pi-times"></i>
@@ -156,7 +164,7 @@
 
         <div class="form-group full">
           <label><i class="pi pi-id-card"></i> Cliente Facturación / NIT</label>
-          <select class="form-control" [value]="factura().id_cliente" (change)="updateFact('id_cliente', +$any($event.target).value || undefined)">
+          <select class="form-control" [ngModel]="factura().id_cliente || ''" (ngModelChange)="updateFact('id_cliente', $event ? +$event : undefined)">
             <option value="">Consumidor Final (C/F)</option>
             @for (c of clientes(); track c.id_cliente) {
               <option [value]="c.id_cliente">{{ c.nombre_completo }} ({{ c.nit_documento || 'Sin NIT' }})</option>
