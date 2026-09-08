@@ -78,10 +78,6 @@ export class MesasComponent implements OnInit {
   }
 
   openPedido(mesa: Mesa) {
-    if (mesa.estado !== 'Libre') {
-      this.alert.warningToast(`La Mesa ${mesa.numero_mesa} está ${mesa.estado}`);
-      return;
-    }
     this.router.navigate(['/pedidos'], { queryParams: { mesa: mesa.id_mesa, num: mesa.numero_mesa } });
   }
 
