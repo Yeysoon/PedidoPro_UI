@@ -120,6 +120,289 @@
       </div>
     }
   </div>
+
+  <!-- SECCIÓN INFERIOR: Historial de Pedidos Cobrados y Facturas Emitidas -->
+  <div class="seccion-historial-bottom glass-card">
+    
+    <!-- Barra Superior del Historial (Título, Filtro de Calendario y Buscador) -->
+    <div class="historial-toolbar">
+      <div class="historial-toolbar-left">
+        <div class="historial-header-title">
+          <span>Historial de Pedidos Cobrados y Facturas Emitidas</span>
+        </div>
+      </div>
+
+      <div class="historial-toolbar-right">
+        <!-- Filtro Dropdown de Calendario (Mes / Día) -->
+        <div class="calendar-filter-wrapper">
+          <button 
+            type="button" 
+            class="calendar-trigger-btn" 
+            [class.active]="showCalendar()"
+            (click)="toggleCalendar($event)">
+            <i class="pi pi-calendar"></i>
+            <span>{{ fechaFiltroLabel() }}</span>
+            <i class="pi pi-chevron-down chevron-icon" [class.rotated]="showCalendar()"></i>
+          </button>
+
+          @if (showCalendar()) {
+            <div class="calendar-dropdown-panel glass-card" (click)="$event.stopPropagation()">
+              <!-- Cabecera del Dropdown: Año y Selector de Modo (Mes / Día) -->
+              <div class="cal-panel-header">
+                <div class="cal-year-nav">
+                  <button type="button" class="cal-nav-btn" (click)="prevYear($event)" title="Año anterior">
+                    <i class="pi pi-chevron-left"></i>
+                  </button>
+                  <span class="cal-year-title">{{ selectedYear() }}</span>
+                  <button type="button" class="cal-nav-btn" (click)="nextYear($event)" title="Año siguiente">
+                    <i class="pi pi-chevron-right"></i>
+                  </button>
+                </div>
+
+                <div class="cal-mode-tabs">
+                  <button 
+                    type="button" 
+                    class="cal-tab-btn" 
+                    [class.active]="calendarMode() === 'mes'" 
+                    (click)="setCalendarMode('mes', $event)">
+                    Mes
+                  </button>
+                  <button 
+                    type="button" 
+                    class="cal-tab-btn" 
+                    [class.active]="calendarMode() === 'dia'" 
+                    (click)="setCalendarMode('dia', $event)">
+                    Día
+                  </button>
+                </div>
+              </div>
+
+              <!-- Vista: Selector de Mes (Grid 4x3) -->
+              @if (calendarMode() === 'mes') {
+                <div class="cal-months-grid">
+                  @for (mes of mesesNombres; track $index) {
+                    <button 
+                      type="button" 
+                      class="cal-month-btn" 
+                      [class.selected]="selectedMonth() === $index && selectedDay() === null" 
+                      (click)="selectMonth($index, $event)">
+                      {{ mes }}
+                    </button>
+                  }
+                </div>
+              }
+
+              <!-- Vista: Selector de Día (Calendario del Mes) -->
+              @if (calendarMode() === 'dia') {
+                <div class="cal-days-view">
+                  <div class="cal-month-header">
+                    <button type="button" class="cal-nav-btn sm" (click)="prevMonth($event)" title="Mes anterior">
+                      <i class="pi pi-chevron-left"></i>
+                    </button>
+                    <span class="cal-month-name">{{ mesesNombresCompletos[selectedMonth()] }}</span>
+                    <button type="button" class="cal-nav-btn sm" (click)="nextMonth($event)" title="Mes siguiente">
+                      <i class="pi pi-chevron-right"></i>
+                    </button>
+                  </div>
+
+                  <div class="cal-weekdays-row">
+                    @for (w of diasSemana; track w) {
+                      <span class="cal-weekday">{{ w }}</span>
+                    }
+                  </div>
+
+                  <div class="cal-days-grid">
+                    @for (d of diasMesArray(); track $index) {
+                      @if (d === null) {
+                        <span class="cal-day-cell blank"></span>
+                      } @else {
+                        <button 
+                          type="button" 
+                          class="cal-day-cell day-btn" 
+                          [class.selected]="selectedDay() === d" 
+                          (click)="selectDay(d, $event)">
+                          {{ d }}
+                        </button>
+                      }
+                    }
+                  </div>
+
+                  <div class="cal-days-footer">
+                    <button type="button" class="btn-todo-mes" (click)="selectTodoElMes($event)">
+                      <i class="pi pi-calendar-plus"></i> Ver todo el mes
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Buscador integrado -->
+        <div class="search-box">
+          <i class="pi pi-search search-icon"></i>
+          <input
+            type="text"
+            placeholder="Buscar factura, pedido, mesa, cliente, NIT..."
+            [ngModel]="busqueda()"
+            (ngModelChange)="onSearchChange($event)"
+            class="search-input"
+          />
+          @if (busqueda()) {
+            <button class="clear-btn" (click)="onSearchChange('')" title="Limpiar búsqueda">
+              <i class="pi pi-times"></i>
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Contenido de la Tabla -->
+    @if (!facturas().length) {
+      <div class="empty-historial">
+        <i class="pi pi-inbox empty-hist-icon"></i>
+        <h4>Sin cobros registrados en este período</h4>
+        <p>Al cobrar un pedido en caja, aparecerá aquí su registro con la opción de consultar y descargar la factura.</p>
+      </div>
+    } @else if (!facturasFiltradas().length) {
+      <div class="empty-historial">
+        <i class="pi pi-search empty-hist-icon"></i>
+        <h4>Sin resultados para la búsqueda</h4>
+        <p>No se encontraron facturas que coincidan con "{{ busqueda() }}".</p>
+      </div>
+    } @else {
+      <div class="historial-table-wrapper">
+        <table class="historial-table plain-table">
+          <thead>
+            <tr>
+              <th>Factura</th>
+              <th>Numero de Pedido</th>
+              <th>Fecha y Hora</th>
+              <th>Mesa</th>
+              <th>Atendido</th>
+              <th>Cliente</th>
+              <th>NIT Cliente</th>
+              <th>Tipo de Pago</th>
+              <th>Total a Pagar</th>
+              <th class="text-center">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (f of facturasPaginadas(); track f.id_factura) {
+              <tr class="historial-row">
+                <!-- Factura (FACPRO00001) -->
+                <td class="font-bold">{{ formatFacturaNumero(f.id_factura) }}</td>
+
+                <!-- Numero de Pedido -->
+                <td>Pedido #{{ f.id_pedido }}</td>
+
+                <!-- Fecha y Hora -->
+                <td>{{ formatearFechaHoraSimple(f.fecha_hora_pago) }}</td>
+
+                <!-- Mesa -->
+                <td>Mesa {{ f.numero_mesa }}</td>
+
+                <!-- Atendido -->
+                <td>{{ f.mesero || 'Mesero' }}</td>
+
+                <!-- Cliente -->
+                <td>{{ f.cliente || 'Consumidor Final' }}</td>
+
+                <!-- NIT Cliente -->
+                <td>{{ f.cliente_nit || 'C/F' }}</td>
+
+                <!-- Tipo de Pago -->
+                <td>{{ f.metodo_pago }}</td>
+
+                <!-- Total a Pagar -->
+                <td class="font-bold text-success">{{ formatCurrency(f.total_pagado) }}</td>
+
+                <!-- Acciones: Ver Resumen (Ojo) y Descargar PDF -->
+                <td class="text-center">
+                  <div class="table-actions-btns">
+                    <button 
+                      type="button"
+                      class="btn-action-icon btn-view" 
+                      (click)="verDetalleFactura(f.id_factura, $event)"
+                      title="Ver resumen del pedido">
+                      <i class="pi pi-eye"></i>
+                    </button>
+                    <button 
+                      type="button"
+                      class="btn-action-icon btn-download" 
+                      [disabled]="downloadingPdfId() === f.id_factura" 
+                      (click)="descargarPDF(f.id_factura, $event)"
+                      title="Descargar factura en PDF">
+                      @if (downloadingPdfId() === f.id_factura) {
+                        <i class="pi pi-spin pi-spinner"></i>
+                      } @else {
+                        <i class="pi pi-download"></i>
+                      }
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Barra de Paginación -->
+      <div class="historial-pagination-bar">
+        <div class="pagination-info">
+          <span>Mostrando <strong>{{ ((paginaActual() - 1) * itemsPorPagina()) + 1 }}</strong> a <strong>{{ Math.min(paginaActual() * itemsPorPagina(), facturasFiltradas().length) }}</strong> de <strong>{{ facturasFiltradas().length }}</strong> facturas</span>
+        </div>
+
+        <div class="pagination-controls">
+          <button 
+            type="button"
+            class="pag-btn" 
+            [disabled]="paginaActual() === 1" 
+            (click)="irAPagina(1)"
+            title="Primera página">
+            <i class="pi pi-angle-double-left"></i>
+          </button>
+          
+          <button 
+            type="button"
+            class="pag-btn" 
+            [disabled]="paginaActual() === 1" 
+            (click)="paginaAnterior()"
+            title="Página anterior">
+            <i class="pi pi-angle-left"></i>
+          </button>
+
+          @for (p of paginasArray(); track p) {
+            <button 
+              type="button"
+              class="pag-btn page-num" 
+              [class.active]="p === paginaActual()" 
+              (click)="irAPagina(p)">
+              {{ p }}
+            </button>
+          }
+
+          <button 
+            type="button"
+            class="pag-btn" 
+            [disabled]="paginaActual() === totalPaginas()" 
+            (click)="paginaSiguiente()"
+            title="Página siguiente">
+            <i class="pi pi-angle-right"></i>
+          </button>
+
+          <button 
+            type="button"
+            class="pag-btn" 
+            [disabled]="paginaActual() === totalPaginas()" 
+            (click)="irAPagina(totalPaginas())"
+            title="Última página">
+            <i class="pi pi-angle-double-right"></i>
+          </button>
+        </div>
+      </div>
+    }
+  </div>
 </div>
 
 <!-- ============================================================ -->
