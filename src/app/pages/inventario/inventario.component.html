@@ -104,8 +104,20 @@
         </div>
 
         <div class="form-group">
-          <label>Unidad de Medida</label>
-          <input class="form-control" placeholder="Ej. kg, lb, litros, unidades..." [value]="editItem().unidad_medida || ''" (input)="update('unidad_medida', $any($event.target).value)"/>
+          <label>Unidad de Medida *</label>
+          <select class="form-control" [value]="editItem().unidad_medida || 'Unidades (u)'" (change)="update('unidad_medida', $any($event.target).value)">
+            <option value="" disabled>-- Seleccione unidad de medida --</option>
+            @if (editItem().unidad_medida && !isUnitInCatalog(editItem().unidad_medida)) {
+              <option [value]="editItem().unidad_medida">{{ editItem().unidad_medida }} (Personalizada)</option>
+            }
+            @for (cat of UNIDADES_MEDIDA; track cat.grupo) {
+              <optgroup [label]="cat.grupo">
+                @for (u of cat.unidades; track u) {
+                  <option [value]="u">{{ u }}</option>
+                }
+              </optgroup>
+            }
+          </select>
         </div>
 
         <div class="form-group">

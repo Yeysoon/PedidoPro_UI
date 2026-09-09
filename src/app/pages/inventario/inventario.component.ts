@@ -26,6 +26,61 @@ export class InventarioComponent implements OnInit, OnDestroy {
   search       = signal('');
   private interval: any;
 
+  readonly UNIDADES_MEDIDA = [
+    {
+      grupo: 'Peso y Masa',
+      unidades: [
+        'Kilogramos (kg)',
+        'Gramos (g)',
+        'Libras (lb)',
+        'Onzas (oz)',
+        'Miligramos (mg)'
+      ]
+    },
+    {
+      grupo: 'Volumen y Líquidos',
+      unidades: [
+        'Litros (L)',
+        'Mililitros (ml)',
+        'Galones (gal)',
+        'Onzas líquidas (fl oz)',
+        'Botellas',
+        'Latas',
+        'Tetrapack'
+      ]
+    },
+    {
+      grupo: 'Unidades y Conteo',
+      unidades: [
+        'Unidades (u)',
+        'Piezas (pz)',
+        'Porciones',
+        'Docenas',
+        'Cajas',
+        'Paquetes (paq)',
+        'Bolsas',
+        'Frascos',
+        'Bandejas',
+        'Manojo / Atado'
+      ]
+    },
+    {
+      grupo: 'Medidas Culinarias',
+      unidades: [
+        'Cucharadas (cda)',
+        'Cucharaditas (cdta)',
+        'Tazas (tz)',
+        'Pizca',
+        'Rodajas / Rebanadas'
+      ]
+    }
+  ];
+
+  isUnitInCatalog(unit?: string): boolean {
+    if (!unit) return true;
+    return this.UNIDADES_MEDIDA.some(cat => cat.unidades.includes(unit));
+  }
+
   filtered = () => {
     const s = this.search().toLowerCase();
     return s ? this.ingredientes().filter(i => i.nombre_ingrediente.toLowerCase().includes(s)) : this.ingredientes();
@@ -51,7 +106,7 @@ export class InventarioComponent implements OnInit, OnDestroy {
   openCreate() {
     this.editItem.set({
       nombre_ingrediente: '',
-      unidad_medida: '',
+      unidad_medida: 'Unidades (u)',
       stock_actual: 0
     });
     this.isEdit.set(false);
