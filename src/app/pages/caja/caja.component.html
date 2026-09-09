@@ -1,4 +1,5 @@
 <div class="fade-in caja-page">
+  <!-- Cabecera Principal -->
   <div class="page-header">
     <div class="header-left">
       <h1>Punto de <span class="highlight">Caja y Cobros</span></h1>
@@ -6,116 +7,124 @@
     </div>
 
     <div class="header-actions">
+      <!-- Buscador en la Cabecera Superior -->
       <div class="search-box">
         <i class="pi pi-search search-icon"></i>
         <input
           type="text"
-          placeholder="Buscar mesa o comanda (ej: Mesa 2 | Comanda #1)..."
+          placeholder="Buscar factura, pedido, mesa, cliente..."
           [ngModel]="busqueda()"
-          (ngModelChange)="busqueda.set($event)"
+          (ngModelChange)="onSearchChange($event)"
           class="search-input"
         />
         @if (busqueda()) {
-          <button class="clear-btn" (click)="busqueda.set('')" title="Limpiar búsqueda">
+          <button class="clear-btn" (click)="onSearchChange('')" title="Limpiar búsqueda">
             <i class="pi pi-times"></i>
           </button>
         }
       </div>
-
-      <span class="status-pill badge-neutral count-pill">
-        <i class="pi pi-receipt"></i>
-        {{ pedidosFiltrados().length }} / {{ pedidos().length }} por cobrar
-      </span>
     </div>
   </div>
 
-  @if (loading()) {
-    <div class="loading-state">
-      <i class="pi pi-spin pi-spinner spin-icon"></i>
-      <p>Cargando comandas servidas para cobro...</p>
+  <!-- SECCIÓN SUPERIOR: Pedidos por Cobrar (Tarjetas Grid Ancho Completo) -->
+  <div class="seccion-comandas-top">
+    <div class="seccion-header">
+      <div class="seccion-title">
+        <span>Pedidos Listos para Cobrar</span>
+      </div>
     </div>
-  } @else if (!pedidosFiltrados().length) {
-    <div class="empty-state glass-card">
-      <i class="pi pi-check-circle empty-icon"></i>
-      <h3>Sin cuentas pendientes</h3>
-      <p>Cuando los pedidos pasen a estado <strong>Servido en Mesa</strong>, aparecerán automáticamente en esta bandeja para cobro.</p>
-    </div>
-  } @else {
-    <div class="pedidos-grid">
-      @for (p of pedidosFiltrados(); track p.id_pedido) {
-        <div class="pedido-card glass-card" (click)="seleccionar(p)">
-          <!-- Top de la Card -->
-          <div class="pedido-top">
-            <div class="mesa-info">
-              <div class="mesa-icon-box">
-                <i class="pi pi-table"></i>
-              </div>
-              <div class="mesa-title-wrap">
-                <span class="mesa-num">Mesa {{ p.numero_mesa }} | Comanda #{{ p.id_pedido }}</span>
-                <span class="mesero-name">
-                  <i class="pi pi-user"></i> {{ p.mesero || 'Mesero' }}
-                  @if (p.cliente_nombre) {
-                    <span class="cliente-tag"> · <i class="pi pi-id-card"></i> {{ p.cliente_nombre }}</span>
-                  }
-                </span>
-              </div>
-            </div>
 
-            <span class="status-pill badge-servido">
-              <i class="pi pi-check-circle"></i>
-              Servido en Mesa
-            </span>
-          </div>
-
-          <!-- Metadata: Fecha/Hora y Tiempo transcurrido -->
-          <div class="pedido-meta">
-            <span class="meta-item">
-              <i class="pi pi-calendar"></i>
-              {{ formatearFechaHora(p.fecha_hora_creacion) }}
-            </span>
-            <span class="meta-item elapsed-badge">
-              <i class="pi pi-clock"></i>
-              {{ tiempoTranscurrido(p.fecha_hora_creacion) }}
-            </span>
-          </div>
-
-          <!-- Notas generales si existen -->
-          @if (p.notas_generales) {
-            <div class="pedido-notas">
-              <i class="pi pi-info-circle"></i>
-              <span>{{ p.notas_generales }}</span>
-            </div>
-          }
-
-          <!-- Desglose de platillos -->
-          <div class="pedido-items-wrap">
-            @for (d of p.detalles; track d.id_detalle || d.id_producto) {
-              <div class="item-row">
-                <div class="item-left">
-                  <span class="item-qty">{{ d.cantidad }}x</span>
-                  <span class="item-name">{{ d.nombre_producto }}</span>
+    @if (loading()) {
+      <div class="loading-state glass-card">
+        <i class="pi pi-spin pi-spinner spin-icon"></i>
+        <p>Cargando pedidos servidos...</p>
+      </div>
+    } @else if (!pedidos().length) {
+      <div class="empty-state glass-card">
+        <i class="pi pi-check-circle empty-icon"></i>
+        <h3>Sin pedidos pendientes</h3>
+        <p>Cuando los pedidos pasen a estado <strong>Servido en Mesa</strong>, aparecerán aquí para cobro.</p>
+      </div>
+    } @else {
+      <div class="pedidos-cards-grid">
+        @for (p of pedidosFiltrados(); track p.id_pedido) {
+          <div class="pedido-card glass-card" (click)="seleccionar(p)">
+            <!-- Top de la Card -->
+            <div class="pedido-top">
+              <div class="mesa-info">
+                <div class="mesa-icon-box">
+                  <i class="pi pi-table"></i>
                 </div>
-                <span class="item-price">{{ formatCurrency((d.precio_unitario_historico || 0) * d.cantidad) }}</span>
+                <div class="mesa-title-wrap">
+                  <span class="mesa-num">Mesa {{ p.numero_mesa }} | Pedido #{{ p.id_pedido }}</span>
+                  <span class="mesero-name">
+                    <i class="pi pi-user"></i> {{ p.mesero || 'Mesero' }}
+                    @if (p.cliente_nombre) {
+                      <span class="cliente-tag"> · <i class="pi pi-id-card"></i> {{ p.cliente_nombre }}</span>
+                    }
+                  </span>
+                </div>
+              </div>
+
+              <span class="status-pill badge-servido">
+                <i class="pi pi-check-circle"></i>
+                Servido en Mesa
+              </span>
+            </div>
+
+            <!-- Metadata: Fecha/Hora y Tiempo transcurrido -->
+            <div class="pedido-meta">
+              <span class="meta-item">
+                <i class="pi pi-calendar"></i>
+                {{ formatearFechaHora(p.fecha_hora_creacion) }}
+              </span>
+              <span class="meta-item elapsed-badge">
+                <i class="pi pi-clock"></i>
+                {{ tiempoTranscurrido(p.fecha_hora_creacion) }}
+              </span>
+            </div>
+
+            <!-- Notas generales si existen -->
+            @if (p.notas_generales) {
+              <div class="pedido-notas">
+                <i class="pi pi-info-circle"></i>
+                <span>{{ p.notas_generales }}</span>
               </div>
             }
-          </div>
 
-          <!-- Footer con Total y Botón de Cobro -->
-          <div class="pedido-footer">
-            <div class="total-group">
-              <span class="total-label">Total a Liquidar</span>
-              <span class="pedido-total">{{ formatCurrency(getTotal(p)) }}</span>
+            <!-- Desglose de platillos -->
+            <div class="pedido-items-wrap">
+              @for (d of p.detalles; track d.id_detalle || d.id_producto) {
+                <div class="item-row">
+                  <div class="item-left">
+                    <span class="item-qty">{{ d.cantidad }}x</span>
+                    <span class="item-name">{{ d.nombre_producto }}</span>
+                  </div>
+                  <span class="item-price">{{ formatCurrency((d.precio_unitario_historico || 0) * d.cantidad) }}</span>
+                </div>
+              }
             </div>
-            <button class="btn btn-primary btn-sm cobro-btn" (click)="seleccionar(p); $event.stopPropagation()">
-              <i class="pi pi-credit-card"></i> Cobrar Cuenta
-            </button>
+
+            <!-- Footer con Total y Botón de Cobro -->
+            <div class="pedido-footer">
+              <div class="total-group">
+                <span class="total-label">Total a Liquidar</span>
+                <span class="pedido-total">{{ formatCurrency(getTotal(p)) }}</span>
+              </div>
+              <button class="btn btn-primary btn-sm cobro-btn" (click)="seleccionar(p); $event.stopPropagation()">
+                <i class="pi pi-credit-card"></i> Cobrar Cuenta
+              </button>
+            </div>
           </div>
-        </div>
-      }
-    </div>
-  }
+        }
+      </div>
+    }
+  </div>
 </div>
 
+<!-- ============================================================ -->
+<!-- MODAL DE COBRO DE CUENTA -->
+<!-- ============================================================ -->
 @if (showModal() && selected()) {
   <div class="modal-overlay" (click)="showModal.set(false)">
     <div class="modal-box glass-card" (click)="$event.stopPropagation()">
@@ -123,7 +132,7 @@
         <div class="modal-header-title">
           <h2>Cobro de Cuenta — Mesa {{ selected()!.numero_mesa }}</h2>
           <span class="modal-subtitle">
-            Comanda #{{ selected()!.id_pedido }} · {{ selected()!.mesero || 'Mesero' }}
+            Pedido #{{ selected()!.id_pedido }} · {{ selected()!.mesero || 'Mesero' }}
             @if (selected()!.cliente_nombre) {
               · Cliente: <strong>{{ selected()!.cliente_nombre }}</strong>
             }
@@ -191,3 +200,79 @@
     </div>
   </div>
 }
+
+<!-- ============================================================ -->
+<!-- MODAL DE RESUMEN DE PEDIDO / FACTURA EMITIDA (SOLO LECTURA) -->
+<!-- ============================================================ -->
+@if (showFacturaModal()) {
+  <div class="modal-overlay" (click)="cerrarDetalleFactura()">
+    <div class="modal-box glass-card" (click)="$event.stopPropagation()">
+      @if (loadingFacturaDetalle()) {
+        <div class="modal-loading-state">
+          <i class="pi pi-spin pi-spinner"></i>
+          <p>Cargando detalle del pedido...</p>
+        </div>
+      } @else if (selectedFacturaDetalle()) {
+        <div class="modal-header">
+          <div class="modal-header-title">
+            <h2>Resumen de Pedido — Mesa {{ selectedFacturaDetalle()!.numero_mesa }}</h2>
+            <span class="modal-subtitle">
+              Pedido #{{ selectedFacturaDetalle()!.id_pedido }} · {{ formatFacturaNumero(selectedFacturaDetalle()!.id_factura) }} · {{ selectedFacturaDetalle()!.mesero || 'Mesero' }}
+              @if (selectedFacturaDetalle()!.cliente) {
+                · Cliente: <strong>{{ selectedFacturaDetalle()!.cliente }}</strong>
+              }
+            </span>
+          </div>
+          <button class="close-btn" (click)="cerrarDetalleFactura()" title="Cerrar modal">
+            <i class="pi pi-times"></i>
+          </button>
+        </div>
+
+        <!-- Desglose de platillos -->
+        <div class="resumen-items-card">
+          @for (d of selectedFacturaDetalle()!.detalle_productos; track d.id_detalle || d.id_producto) {
+            <div class="resumen-row">
+              <span class="d-item-name">{{ d.cantidad }}x {{ d.nombre_producto }}</span>
+              <span class="d-item-price">{{ formatCurrency(d.subtotal || (d.cantidad * d.precio_unitario_historico)) }}</span>
+            </div>
+          }
+          <div class="resumen-row subtotal-row">
+            <span>Subtotal Consumo</span>
+            <span>{{ formatCurrency(selectedFacturaDetalle()!.subtotal) }}</span>
+          </div>
+        </div>
+
+        <!-- Información de Pago y Cliente (Estilo visual idéntico al modal de cobro) -->
+        <div class="form-grid">
+          <div class="form-group">
+            <label><i class="pi pi-wallet"></i> Método de Pago</label>
+            <div class="readonly-badge-box">
+              <span>{{ selectedFacturaDetalle()!.metodo_pago }}</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label><i class="pi pi-heart"></i> Propina Voluntaria (Q)</label>
+            <div class="readonly-badge-box">
+              <span>{{ formatCurrency(selectedFacturaDetalle()!.propina || 0) }}</span>
+            </div>
+          </div>
+
+          <div class="form-group full">
+            <label><i class="pi pi-id-card"></i> Cliente Facturación / NIT</label>
+            <div class="readonly-badge-box">
+              <span>{{ selectedFacturaDetalle()!.cliente }} ({{ selectedFacturaDetalle()!.cliente_nit || 'C/F' }})</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Total Pagado Banner -->
+        <div class="total-final-banner">
+          <span>Total Pagado</span>
+          <span class="total-val">{{ formatCurrency(selectedFacturaDetalle()!.total_pagado) }}</span>
+        </div>
+      }
+    </div>
+  </div>
+}
+
