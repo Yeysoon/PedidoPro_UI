@@ -2,5 +2,5 @@ const isLocal = typeof window !== 'undefined' && (window.location.hostname === '
 
 export const environment = {
   production: true,
-  apiUrl: isLocal ? 'http://localhost:8080' : 'https://pedidoproapi-production.up.railway.app'
+  apiUrl: isLocal ? 'http://localhost:8080' : 'https://pedidoproapi-production-0106.up.railway.app'
 };
