@@ -95,7 +95,7 @@
         </div>
         <select id="clienteSelect" class="form-control mesa-dropdown" [ngModel]="clienteId()" (ngModelChange)="clienteId.set(+$event || undefined)">
           <option [value]="0">Consumidor Final (C/F)</option>
-          @for (c of clientes(); track c.id_cliente) {
+          @for (c of clientesFiltrados(); track c.id_cliente) {
             <option [value]="c.id_cliente">
               {{ c.nombre_completo }} ({{ c.nit_documento || 'Sin NIT' }})
             </option>

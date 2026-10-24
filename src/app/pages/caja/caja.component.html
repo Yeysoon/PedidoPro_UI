@@ -451,14 +451,24 @@
 
         <div class="form-group">
           <label><i class="pi pi-heart"></i> Propina Voluntaria (Q)</label>
-          <input class="form-control" type="number" min="0" step="0.50" [value]="factura().propina" (input)="updateFact('propina', +$any($event.target).value)"/>
+          <input 
+            class="form-control" 
+            type="number" 
+            min="0" 
+            max="1000" 
+            step="1"
+            placeholder="0.00"
+            [value]="factura().propina ?? 0"
+            (keydown)="onPropinaKeyDown($event)"
+            (input)="onPropinaInput($event)"
+          />
         </div>
 
         <div class="form-group full">
           <label><i class="pi pi-id-card"></i> Cliente Facturación / NIT</label>
           <select class="form-control" [ngModel]="factura().id_cliente || ''" (ngModelChange)="updateFact('id_cliente', $event ? +$event : undefined)">
             <option value="">Consumidor Final (C/F)</option>
-            @for (c of clientes(); track c.id_cliente) {
+            @for (c of clientesFiltrados(); track c.id_cliente) {
               <option [value]="c.id_cliente">{{ c.nombre_completo }} ({{ c.nit_documento || 'Sin NIT' }})</option>
             }
           </select>

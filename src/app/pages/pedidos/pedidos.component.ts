@@ -36,6 +36,13 @@ export class PedidosComponent implements OnInit {
   clienteId = signal<number | undefined>(undefined);
   mesas   = signal<Mesa[]>([]);
   clientes = signal<Cliente[]>([]);
+  clientesFiltrados = computed(() =>
+    this.clientes().filter(c =>
+      c.id_cliente !== 1 &&
+      !c.nombre_completo?.toLowerCase().includes('consumidor final') &&
+      c.nit_documento?.trim().toUpperCase() !== 'C/F'
+    )
+  );
   productos = signal<Producto[]>([]);
   categorias = signal<Categoria[]>(DEFAULT_CATEGORIAS);
   carrito   = signal<DetallePedido[]>([]);

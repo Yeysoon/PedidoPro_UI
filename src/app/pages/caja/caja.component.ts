@@ -35,6 +35,13 @@ export class CajaComponent implements OnInit, OnDestroy {
 
   pedidos  = signal<Pedido[]>([]);
   clientes = signal<Cliente[]>([]);
+  clientesFiltrados = computed(() =>
+    this.clientes().filter(c => 
+      c.id_cliente !== 1 && 
+      !c.nombre_completo?.toLowerCase().includes('consumidor final') && 
+      c.nit_documento?.trim().toUpperCase() !== 'C/F'
+    )
+  );
   metodos  = signal(METODOS);
   loading  = signal(true);
   busqueda = signal('');
@@ -344,17 +351,23 @@ export class CajaComponent implements OnInit, OnDestroy {
 
   seleccionar(p: Pedido) {
     this.selected.set(p);
+    const cId = p.id_cliente ? Number(p.id_cliente) : undefined;
     this.factura.set({
       id_pedido: p.id_pedido,
       id_metodo_pago: 1,
       propina: 0,
-      id_cliente: p.id_cliente ? Number(p.id_cliente) : undefined
+      id_cliente: (cId && cId !== 1) ? cId : undefined
     });
     this.showModal.set(true);
   }
 
   facturar() {
     if (!this.selected()) return;
+    const propina = Number(this.factura().propina || 0);
+    if (propina < 0 || propina > 1000) {
+      this.alert.warningToast('La propina voluntaria debe ser un monto entre Q 0.00 y Q 1,000.00');
+      return;
+    }
     this.sending.set(true);
     const mesaNum = this.selected()?.numero_mesa;
     this.cajaSvc.facturar(this.factura()).subscribe({
@@ -439,6 +452,34 @@ export class CajaComponent implements OnInit, OnDestroy {
 
   updateFact(field: string, val: any) {
     this.factura.update(f => ({ ...f, [field]: val }));
+  }
+
+  onPropinaInput(event: Event) {
+    const input = event.target as HTMLInputElement;
+    let raw = input.value;
+
+    if (raw === '' || raw === null || raw === undefined) {
+      this.updateFact('propina', 0);
+      return;
+    }
+
+    let val = parseFloat(raw);
+    if (isNaN(val) || val < 0) {
+      val = 0;
+      input.value = '0';
+    } else if (val > 1000) {
+      val = 1000;
+      input.value = '1000';
+    }
+
+    this.updateFact('propina', val);
+  }
+
+  onPropinaKeyDown(event: KeyboardEvent) {
+    // Evitar signos negativos, exponentes u otros caracteres no numéricos
+    if (event.key === '-' || event.key === '+' || event.key === 'e' || event.key === 'E') {
+      event.preventDefault();
+    }
   }
 
   getInitials(name?: string): string {
