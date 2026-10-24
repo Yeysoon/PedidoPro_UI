@@ -110,7 +110,17 @@
           <label>Número de Mesa *</label>
           <div class="input-icon-wrap">
             <i class="pi pi-table input-icon"></i>
-            <input class="form-control" type="number" placeholder="Ej. 1, 2, 10..." [ngModel]="editMesa().numero_mesa" (ngModelChange)="update('numero_mesa', +$event)"/>
+            <input 
+              class="form-control" 
+              type="number" 
+              min="1" 
+              max="1000" 
+              step="1"
+              placeholder="Ej. 1, 2, 10..." 
+              [ngModel]="editMesa().numero_mesa" 
+              (keydown)="onNumeroMesaKeyDown($event)"
+              (input)="onNumeroMesaInput($event)"
+            />
           </div>
         </div>
 
@@ -118,7 +128,17 @@
           <label>Capacidad (personas) *</label>
           <div class="input-icon-wrap">
             <i class="pi pi-users input-icon"></i>
-            <input class="form-control" type="number" placeholder="Ej. 2, 4, 8 personas" [ngModel]="editMesa().capacidad" (ngModelChange)="update('capacidad', +$event)"/>
+            <input 
+              class="form-control" 
+              type="number" 
+              min="1" 
+              max="100" 
+              step="1"
+              placeholder="Ej. 2, 4, 8 personas" 
+              [ngModel]="editMesa().capacidad" 
+              (keydown)="onCapacidadKeyDown($event)"
+              (input)="onCapacidadInput($event)"
+            />
           </div>
         </div>
 

@@ -111,17 +111,73 @@ export class MesasComponent implements OnInit {
     this.showModal.set(true);
   }
 
-  save() {
-    const d = this.editMesa();
-    if (!d.numero_mesa && d.numero_mesa !== 0) {
-      this.alert.warningToast('Ingresa el número de mesa');
+  onNumeroMesaKeyDown(event: KeyboardEvent) {
+    if (event.key === '-' || event.key === '+' || event.key === 'e' || event.key === 'E' || event.key === '.') {
+      event.preventDefault();
+    }
+  }
+
+  onNumeroMesaInput(event: Event) {
+    const input = event.target as HTMLInputElement;
+    let raw = input.value;
+    if (raw === '' || raw === null || raw === undefined) {
+      this.update('numero_mesa', undefined as any);
       return;
     }
+    let val = parseInt(raw, 10);
+    if (isNaN(val) || val < 1) {
+      val = 1;
+      input.value = '1';
+    } else if (val > 1000) {
+      val = 1000;
+      input.value = '1000';
+    }
+    this.update('numero_mesa', val);
+  }
+
+  onCapacidadKeyDown(event: KeyboardEvent) {
+    if (event.key === '-' || event.key === '+' || event.key === 'e' || event.key === 'E' || event.key === '.') {
+      event.preventDefault();
+    }
+  }
+
+  onCapacidadInput(event: Event) {
+    const input = event.target as HTMLInputElement;
+    let raw = input.value;
+    if (raw === '' || raw === null || raw === undefined) {
+      this.update('capacidad', undefined as any);
+      return;
+    }
+    let val = parseInt(raw, 10);
+    if (isNaN(val) || val < 1) {
+      val = 1;
+      input.value = '1';
+    } else if (val > 100) {
+      val = 100;
+      input.value = '100';
+    }
+    this.update('capacidad', val);
+  }
+
+  save() {
+    const d = this.editMesa();
+    const numMesa = parseInt(String(d.numero_mesa), 10);
+    if (!numMesa || isNaN(numMesa) || numMesa < 1 || numMesa > 1000) {
+      this.alert.warningToast('El número de mesa debe ser un número entero entre 1 y 1000 (sin negativos)');
+      return;
+    }
+
+    const cap = parseInt(String(d.capacidad || 4), 10);
+    if (isNaN(cap) || cap < 1 || cap > 100) {
+      this.alert.warningToast('La capacidad debe ser entre 1 y 100 personas');
+      return;
+    }
+
     const estadoFinal = d.estado ? String(d.estado).trim() : 'Libre';
     const payload = {
       id_zona: +(d.id_zona || 1),
-      numero_mesa: +d.numero_mesa,
-      capacidad: +(d.capacidad || 4),
+      numero_mesa: numMesa,
+      capacidad: cap,
       estado: estadoFinal as any
     };
 
