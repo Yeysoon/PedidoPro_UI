@@ -78,13 +78,29 @@
 
       <div class="form-grid">
         <div class="form-group full">
-          <label>Nombre Completo *</label>
-          <input class="form-control" [value]="editItem().nombre_completo || ''" (input)="update('nombre_completo', $any($event.target).value)" placeholder="Ej. Carlos Martínez" maxlength="60"/>
+          <label>Nombre Completo * <span style="font-size: 0.8rem; font-weight: normal; color: var(--text-muted);">(Solo letras)</span></label>
+          <input 
+            class="form-control" 
+            [value]="editItem().nombre_completo || ''" 
+            (keydown)="onNombreKeyDown($event)"
+            (input)="onNombreInput($event)" 
+            placeholder="Ej. Carlos Martínez" 
+            maxlength="60"
+          />
         </div>
 
         <div class="form-group full">
-          <label>NIT / Identificación Fiscal</label>
-          <input class="form-control" [value]="editItem().nit_documento || ''" (input)="update('nit_documento', $any($event.target).value)" placeholder="Ej. 12345678" maxlength="13"/>
+          <label>NIT / Identificación Fiscal <span style="font-size: 0.8rem; font-weight: normal; color: var(--text-muted);">(Solo números: 7, 8, 9 o 13 dígitos)</span></label>
+          <input 
+            type="text"
+            inputmode="numeric"
+            class="form-control" 
+            [value]="editItem().nit_documento || ''" 
+            (keydown)="onNitKeyDown($event)"
+            (input)="onNitInput($event)" 
+            placeholder="Ej. 12345678" 
+            maxlength="13"
+          />
         </div>
       </div>
 

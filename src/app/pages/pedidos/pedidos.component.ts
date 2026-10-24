@@ -273,8 +273,8 @@ export class PedidosComponent implements OnInit {
         this.alert.warningToast('El NIT solo debe contener dígitos numéricos');
         return;
       }
-      if (nit.length < 7 || nit.length > 13) {
-        this.alert.warningToast('El NIT debe tener entre 7 y 13 dígitos');
+      if (![7, 8, 9, 13].includes(nit.length)) {
+        this.alert.warningToast('El NIT debe contener únicamente 7, 8, 9 o 13 dígitos');
         return;
       }
     }

@@ -58,15 +58,77 @@ export class ClientesComponent implements OnInit {
     this.showModal.set(true);
   }
 
+  onNombreKeyDown(event: KeyboardEvent) {
+    if (event.ctrlKey || event.metaKey || event.altKey) return;
+    if (event.key.length === 1 && !/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]$/.test(event.key)) {
+      event.preventDefault();
+    }
+  }
+
+  onNombreInput(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const raw = input.value || '';
+    const filtered = raw.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]/g, '').slice(0, 60);
+    if (input.value !== filtered) {
+      input.value = filtered;
+    }
+    this.update('nombre_completo', filtered);
+  }
+
+  onNitKeyDown(event: KeyboardEvent) {
+    if (event.ctrlKey || event.metaKey || event.altKey) return;
+    if (event.key.length === 1 && !/^\d$/.test(event.key)) {
+      event.preventDefault();
+    }
+  }
+
+  onNitInput(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const raw = input.value || '';
+    const filtered = raw.replace(/\D/g, '').slice(0, 13);
+    if (input.value !== filtered) {
+      input.value = filtered;
+    }
+    this.update('nit_documento', filtered);
+  }
+
   save() {
     const d = this.editItem();
-    if (!d.nombre_completo?.trim()) {
+    const nombre = (d.nombre_completo || '').trim();
+    const nit = (d.nit_documento || '').trim();
+
+    if (!nombre) {
       this.alert.warningToast('Ingresa el nombre del cliente');
       return;
     }
+
+    const nameRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/;
+    if (!nameRegex.test(nombre)) {
+      this.alert.warningToast('El nombre solo debe contener letras del abecedario');
+      return;
+    }
+
+    if (nit) {
+      if (!/^\d+$/.test(nit)) {
+        this.alert.warningToast('El NIT solo debe contener dígitos numéricos');
+        return;
+      }
+      const validLengths = [7, 8, 9, 13];
+      if (!validLengths.includes(nit.length)) {
+        this.alert.warningToast('El NIT debe contener únicamente 7, 8, 9 o 13 dígitos');
+        return;
+      }
+    }
+
+    const payload: Partial<Cliente> = {
+      ...d,
+      nombre_completo: nombre,
+      nit_documento: nit || undefined
+    };
+
     const obs = this.isEdit()
-      ? this.svc.updateCliente(d.id_cliente!, d)
-      : this.svc.createCliente(d);
+      ? this.svc.updateCliente(d.id_cliente!, payload)
+      : this.svc.createCliente(payload);
 
     obs.subscribe({
       next: () => {
