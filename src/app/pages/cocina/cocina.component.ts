@@ -325,7 +325,7 @@ export class CocinaComponent implements OnInit, OnDestroy {
 
   // Roles
   userRole = computed(() => this.auth.getRole() || 'Administrador');
-  isCocinero = computed(() => this.userRole() === 'Cocinero');
+  isCocinero = computed(() => this.userRole() === 'Cocinero' || this.userRole() === 'Cocina');
   isMesero = computed(() => this.userRole() === 'Mesero');
   isAdmin = computed(() => this.userRole() === 'Administrador');
 

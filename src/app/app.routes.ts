@@ -13,15 +13,15 @@ export const routes: Routes = [
     loadComponent: () => import('./shared/layout/shell.component').then(m => m.ShellComponent),
     canActivate: [authGuard],
     children: [
-      { path: 'dashboard', loadComponent: () => import('./pages/dashboard/dashboard.component').then(m => m.DashboardComponent), canActivate: [roleGuard], data: { roles: ['Administrador', 'Mesero', 'Cocinero', 'Cajero'] } },
+      { path: 'dashboard', loadComponent: () => import('./pages/dashboard/dashboard.component').then(m => m.DashboardComponent), canActivate: [roleGuard], data: { roles: ['Administrador', 'Mesero', 'Cocinero', 'Cocina', 'Cajero'] } },
       { path: 'mesas',     loadComponent: () => import('./pages/mesas/mesas.component').then(m => m.MesasComponent),            canActivate: [roleGuard], data: { roles: ['Mesero','Administrador'] } },
       { path: 'menu',      loadComponent: () => import('./pages/menu/menu.component').then(m => m.MenuComponent),               canActivate: [roleGuard], data: { roles: ['Administrador'] } },
       { path: 'pedidos',   loadComponent: () => import('./pages/pedidos/pedidos.component').then(m => m.PedidosComponent),      canActivate: [roleGuard], data: { roles: ['Mesero','Administrador'] } },
-      { path: 'cocina',    loadComponent: () => import('./pages/cocina/cocina.component').then(m => m.CocinaComponent),         canActivate: [roleGuard], data: { roles: ['Cocinero','Administrador', 'Mesero'] } },
+      { path: 'cocina',    loadComponent: () => import('./pages/cocina/cocina.component').then(m => m.CocinaComponent),         canActivate: [roleGuard], data: { roles: ['Cocinero', 'Cocina', 'Administrador', 'Mesero'] } },
       { path: 'caja',      loadComponent: () => import('./pages/caja/caja.component').then(m => m.CajaComponent),               canActivate: [roleGuard], data: { roles: ['Cajero','Administrador', 'Mesero'] } },
       { path: 'clientes',  loadComponent: () => import('./pages/clientes/clientes.component').then(m => m.ClientesComponent),   canActivate: [roleGuard], data: { roles: ['Cajero','Administrador'] } },
       { path: 'usuarios',  loadComponent: () => import('./pages/usuarios/usuarios.component').then(m => m.UsuariosComponent),   canActivate: [roleGuard], data: { roles: ['Administrador'] } },
-      { path: 'inventario',loadComponent: () => import('./pages/inventario/inventario.component').then(m => m.InventarioComponent), canActivate: [roleGuard], data: { roles: ['Administrador','Cocinero'] } },
+      { path: 'inventario',loadComponent: () => import('./pages/inventario/inventario.component').then(m => m.InventarioComponent), canActivate: [roleGuard], data: { roles: ['Administrador','Cocinero', 'Cocina'] } },
       { path: 'reportes',  loadComponent: () => import('./pages/reportes/reportes.component').then(m => m.ReportesComponent),   canActivate: [roleGuard], data: { roles: ['Administrador'] } },
     ]
   },

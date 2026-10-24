@@ -172,7 +172,7 @@ export class DashboardComponent implements OnInit {
         error: () => {}
       });
 
-    } else if (r === 'Cocinero') {
+    } else if (r === 'Cocinero' || r === 'Cocina') {
       this.dashboardSvc.getCocinaStats(period).subscribe({
         next: res => {
           if (res?.data) {

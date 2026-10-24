@@ -6,15 +6,15 @@ import { ThemeService } from '../../core/services/theme.service';
 import { SidebarItem } from '../../core/models';
 
 const ALL_ITEMS: SidebarItem[] = [
-  { label: 'Dashboard',    icon: 'pi pi-th-large',    route: '/dashboard', roles: ['Administrador', 'Mesero', 'Cocinero', 'Cajero'] },
+  { label: 'Dashboard',    icon: 'pi pi-th-large',    route: '/dashboard', roles: ['Administrador', 'Mesero', 'Cocinero', 'Cocina', 'Cajero'] },
   { label: 'Mesas / Salón',icon: 'pi pi-table',       route: '/mesas',     roles: ['Mesero', 'Administrador'] },
   { label: 'Tomar Pedido', icon: 'pi pi-shopping-bag',route: '/pedidos',   roles: ['Mesero', 'Administrador'] },
   { label: 'Menú',         icon: 'pi pi-book',        route: '/menu',      roles: ['Administrador'] },
-  { label: 'Cocina',       icon: 'pi pi-bell',        route: '/cocina',    roles: ['Cocinero', 'Administrador', 'Mesero'] },
+  { label: 'Cocina',       icon: 'pi pi-bell',        route: '/cocina',    roles: ['Cocinero', 'Cocina', 'Administrador', 'Mesero'] },
   { label: 'Caja y Cobro', icon: 'pi pi-credit-card', route: '/caja',      roles: ['Cajero', 'Administrador', 'Mesero'] },
   { label: 'Clientes',     icon: 'pi pi-users',       route: '/clientes',  roles: ['Cajero', 'Administrador'] },
   { label: 'Usuarios',     icon: 'pi pi-user',        route: '/usuarios',  roles: ['Administrador'] },
-  { label: 'Inventario',   icon: 'pi pi-box',         route: '/inventario',roles: ['Administrador', 'Cocinero'] },
+  { label: 'Inventario',   icon: 'pi pi-box',         route: '/inventario',roles: ['Administrador', 'Cocinero', 'Cocina'] },
   { label: 'Reportes',     icon: 'pi pi-chart-bar',   route: '/reportes',  roles: ['Administrador'] },
 ];
 
@@ -36,7 +36,7 @@ export class ShellComponent {
   isDark = computed(() => this.themeService.isDark());
 
   navItems = computed(() =>
-    ALL_ITEMS.filter(i => i.roles.includes(this.auth.getRole()))
+    ALL_ITEMS.filter(i => this.auth.hasRole(i.roles))
   );
 
   toggleSidebar() {
@@ -59,6 +59,7 @@ export class ShellComponent {
       'Administrador': 'pi pi-shield',
       'Mesero':        'pi pi-user',
       'Cocinero':      'pi pi-bell',
+      'Cocina':        'pi pi-bell',
       'Cajero':        'pi pi-credit-card'
     };
     return map[this.role()] ?? 'pi pi-user';

@@ -206,11 +206,17 @@ export class LoginComponent implements AfterViewInit, OnDestroy {
           Administrador: '/dashboard',
           Mesero: '/mesas',
           Cocinero: '/cocina',
+          Cocina: '/cocina',
           Cajero: '/caja'
         };
+        const dest = map[role] ?? (role.toLowerCase().includes('cocin') ? '/cocina' : '/dashboard');
         setTimeout(() => {
-          this.router.navigate([map[role] ?? '/mesas']);
-        }, 300);
+          this.router.navigate([dest]).then(ok => {
+            if (!ok) this.loading.set(false);
+          }).catch(() => {
+            this.loading.set(false);
+          });
+        }, 200);
       },
       error: (e) => {
         console.error('Error login detallado:', e);
