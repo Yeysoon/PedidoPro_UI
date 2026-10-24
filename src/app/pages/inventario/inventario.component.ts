@@ -119,15 +119,49 @@ export class InventarioComponent implements OnInit, OnDestroy {
     this.showModal.set(true);
   }
 
+  onStockKeyDown(event: KeyboardEvent) {
+    if (event.key === '-' || event.key === '+' || event.key === 'e' || event.key === 'E') {
+      event.preventDefault();
+    }
+  }
+
+  onStockInput(event: Event) {
+    const input = event.target as HTMLInputElement;
+    let raw = input.value;
+    if (raw === '' || raw === null || raw === undefined) {
+      this.update('stock_actual', 0);
+      return;
+    }
+    let val = parseFloat(raw);
+    if (isNaN(val) || val < 0) {
+      val = 0;
+      input.value = '0';
+    }
+    this.update('stock_actual', val);
+  }
+
   save() {
     const d = this.editItem();
     if (!d.nombre_ingrediente?.trim()) {
       this.alert.warningToast('Ingresa el nombre del insumo');
       return;
     }
+
+    const stock = Number(d.stock_actual ?? 0);
+    if (isNaN(stock) || stock < 0) {
+      this.alert.warningToast('El stock disponible no puede ser un valor negativo');
+      return;
+    }
+
+    const payload = {
+      ...d,
+      nombre_ingrediente: d.nombre_ingrediente.trim(),
+      stock_actual: stock
+    };
+
     const obs = this.isEdit()
-      ? this.svc.updateIngrediente(d.id_ingrediente!, d)
-      : this.svc.createIngrediente(d);
+      ? this.svc.updateIngrediente(d.id_ingrediente!, payload)
+      : this.svc.createIngrediente(payload);
 
     obs.subscribe({
       next: () => {
